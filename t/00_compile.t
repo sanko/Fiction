@@ -1,7 +1,11 @@
 use Test2::V0;
-use lib '../lib', 'lib', '../blib/arch/auto/Affix', '../blib/lib';
-diag 'perl ' . $^V . ' @ ' . $^X;
+use lib '../lib', 'lib', '../blib/arch', '../blib/lib', 'blib/arch', 'blib/lib', '../../', '.';
 use Affix qw[:all];
+BEGIN { chdir '../' if !-d 't'; }
+use t::lib::helper;
+$|++;
+#
+diag 'perl ' . $^V . ' @ ' . $^X;
 diag 'Affix v' . $Affix::VERSION;
 #
 diag 'Platform info:';

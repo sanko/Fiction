@@ -1,4 +1,4 @@
-package Affix 0.12 {    # 'FFI' is my middle name!
+package Affix 0.50 {    # 'FFI' is my middle name!
     use v5.38;
     use feature 'class';
     no warnings 'experimental::class';

@@ -1,7 +1,8 @@
 use Test2::V0;
-use lib '../lib', 'lib', '../blib/arch/auto/Affix', '../blib/lib';
+use lib '../lib', 'lib', '../blib/arch', '../blib/lib', 'blib/arch', 'blib/lib', '../../', '.';
 use Affix;
-#
+BEGIN { chdir '../' if !-d 't'; }
+use t::lib::helper;
 $|++;
 #
 if ( Affix::Platform::OS() =~ /Win32/ ) {

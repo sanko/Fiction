@@ -1595,19 +1595,19 @@ XS_EXTERNAL(boot_Affix) {
     //~ cv = newXSproto_portable("Affix::affix", Affix_affix, __FILE__, "$$@$");
     //~ XSANY.any_i32 = 0;
     //~ export_function("Affix", "affix", "base");
-    cv = newXSproto_portable("Affix::wrap", Affix_affix, __FILE__, "$$@$");
-    XSANY.any_i32 = 1;
-    export_function("Affix", "wrap", "base");
+    //~ cv = newXSproto_portable("Affix::wrap", Affix_affix, __FILE__, "$$@$");
+    //~ XSANY.any_i32 = 1;
+    //~ export_function("Affix", "wrap", "base");
 
-    (void)newXSproto_portable("Affix::args", Affix_args, __FILE__, "$");
-    (void)newXSproto_portable("Affix::retval", Affix_retval, __FILE__, "$");
-    (void)newXSproto_portable("Affix::lib", Affix_lib, __FILE__, "$");
+    //~ (void)newXSproto_portable("Affix::args", Affix_args, __FILE__, "$");
+    //~ (void)newXSproto_portable("Affix::retval", Affix_retval, __FILE__, "$");
+    //~ (void)newXSproto_portable("Affix::lib", Affix_lib, __FILE__, "$");
 
-    (void)newXSproto_portable("Affix::cpp_constructor", Affix_cpp_constructor, __FILE__, "$;$");
-    (void)newXSproto_portable("Affix::cpp_const", Affix_cpp_const, __FILE__, "$");
-    (void)newXSproto_portable("Affix::cpp_struct", Affix_cpp_struct, __FILE__, "$");
+    //~ (void)newXSproto_portable("Affix::cpp_constructor", Affix_cpp_constructor, __FILE__, "$;$");
+    //~ (void)newXSproto_portable("Affix::cpp_const", Affix_cpp_const, __FILE__, "$");
+    //~ (void)newXSproto_portable("Affix::cpp_struct", Affix_cpp_struct, __FILE__, "$");
 
-    (void)newXSproto_portable("Affix::DESTROY", Affix_DESTROY, __FILE__, "$");
+    //~ (void)newXSproto_portable("Affix::DESTROY", Affix_DESTROY, __FILE__, "$");
 
     (void)newXSproto_portable("Affix::END", Affix_END, __FILE__, "");
 
@@ -1720,10 +1720,10 @@ XS_EXTERNAL(boot_Affix) {
     export_constant("Affix", "SLOT_CODEREF_ARGS", "flags", SLOT_CODEREF_ARGS);
 
     //
-    boot_Affix_Aggregate(aTHX_ cv);
-    boot_Affix_pin(aTHX_ cv);
-    boot_Affix_Pointer(aTHX_ cv);
-    boot_Affix_Lib(aTHX_ cv);
+    //~ boot_Affix_Aggregate(aTHX_ cv);
+    //~ boot_Affix_pin(aTHX_ cv);
+    //~ boot_Affix_Pointer(aTHX_ cv);
+    //~ boot_Affix_Lib(aTHX_ cv);
     boot_Affix_Platform(aTHX_ cv);
 
     Perl_xs_boot_epilog(aTHX_ ax);
