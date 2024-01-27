@@ -245,7 +245,9 @@ XS_INTERNAL(Affix_memcmp) {
                 IV tmp = SvIV((SV *)(ST(1)));
                 rhs = INT2PTR(DCpointer, tmp);
             }
-            else if (SvPOK(ST(1))) { rhs = (DCpointer)(U8 *)SvPV_nolen(ST(1)); }
+            else if (SvPOK(ST(1))) {
+                rhs = (DCpointer)(U8 *)SvPV_nolen(ST(1));
+            }
             else
                 croak("dest is not of type Affix::Pointer");
             RETVAL = memcmp(lhs, rhs, count);
@@ -313,7 +315,9 @@ XS_INTERNAL(Affix_memcpy) {
         IV tmp = SvIV((SV *)(ST(1)));
         src = INT2PTR(DCpointer, tmp);
     }
-    else if (SvPOK(ST(1))) { src = (DCpointer)(U8 *)SvPV_nolen(ST(1)); }
+    else if (SvPOK(ST(1))) {
+        src = (DCpointer)(U8 *)SvPV_nolen(ST(1));
+    }
     else
         croak("dest is not of type Affix::Pointer");
     RETVAL = CopyD(src, dest, nitems, char);
@@ -354,7 +358,9 @@ XS_INTERNAL(Affix_memmove) {
         IV tmp = SvIV((SV *)(ST(1)));
         src = INT2PTR(DCpointer, tmp);
     }
-    else if (SvPOK(ST(1))) { src = (DCpointer)(U8 *)SvPV_nolen(ST(1)); }
+    else if (SvPOK(ST(1))) {
+        src = (DCpointer)(U8 *)SvPV_nolen(ST(1));
+    }
     else
         croak("dest is not of type Affix::Pointer");
 
@@ -497,7 +503,9 @@ XS_INTERNAL(Affix_Pointer_raw) {
 
         if (items < 3)
             utf8 = false;
-        else { utf8 = (bool)SvTRUE(ST(2)); }
+        else {
+            utf8 = (bool)SvTRUE(ST(2));
+        }
         {
             DCpointer ptr;
             if (sv_derived_from(ST(0), "Affix::Pointer")) {

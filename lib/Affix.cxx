@@ -554,7 +554,9 @@ extern "C" void Affix_trigger(pTHX_ CV *cv) {
             RETVAL = newSV(1);
             SV **package = AXT_TYPEDEF(affix->ret_info);
             if (package != NULL) { sv_setref_pv(RETVAL, SvPV_nolen(*package), ptr); }
-            else { sv_setref_pv(RETVAL, "Affix::Pointer::Unmanaged", ptr); }
+            else {
+                sv_setref_pv(RETVAL, "Affix::Pointer::Unmanaged", ptr);
+            }
         }
     } break;
     default:
@@ -1274,7 +1276,9 @@ XS_INTERNAL(Affix_affix) {
             if (!SvPOK(symbol)) { croak("Undefined symbol name"); }
             perl_name = SvPV_nolen(*av_fetch(tmp, 1, false));
         }
-        else if (UNLIKELY(!SvPOK(ST(1)))) { croak("Undefined symbol name"); }
+        else if (UNLIKELY(!SvPOK(ST(1)))) {
+            croak("Undefined symbol name");
+        }
         else {
             symbol = ST(1);
             perl_name = SvPV_nolen(symbol);
@@ -1394,10 +1398,14 @@ XS_INTERNAL(Affix_affix) {
                             }
                             affix->arg_info[arg_pos] = newSVsv(type);
                         }
-                        else { croak("Unexpected arg type in slot %ld", arg_pos + 1); }
+                        else {
+                            croak("Unexpected arg type in slot %ld", arg_pos + 1);
+                        }
                     }
                 }
-                else { croak("Expected a list of argument types as an array ref"); }
+                else {
+                    croak("Expected a list of argument types as an array ref");
+                }
             }
             STMT_END;
         }
@@ -1447,7 +1455,9 @@ XS_INTERNAL(Affix_affix) {
             affix->ret_info = newSVsv(ST(3));
             affix->ret_type = AXT_NUMERIC(ST(3));
         }
-        else { croak("Unknown return type"); }
+        else {
+            croak("Unknown return type");
+        }
     }
 
     if (affix->_cpp_constructor) { ++affix->num_args; } // Expect Class->new(...)
@@ -1478,6 +1488,39 @@ XS_INTERNAL(Affix_affix) {
         }                                                                                          \
     }                                                                                              \
     STMT_END;
+
+XS_INTERNAL(Affix_load_lib) {
+    dXSARGS;
+    dXSI32;
+    PING;
+    if (items != 1) croak_xs_usage(cv, "$lib");
+    DCpointer lib_handle =
+#if defined(DC__OS_Win64) || defined(DC__OS_MacOSX)
+        dlLoadLibrary(SvPV_nolen(ST(0)));
+#else
+        (DLLib *)dlopen(SvPV_nolen(ST(0)), RTLD_LAZY /* RTLD_NOW|RTLD_GLOBAL */);
+#endif
+    if (!lib_handle) { croak("Failed to load lib %s", dlerror()); }
+    SV *LIBSV = sv_newmortal();
+    sv_setref_pv(LIBSV, NULL, (DCpointer)lib_handle);
+    ST(0) = LIBSV;
+    XSRETURN(1);
+}
+
+XS_INTERNAL(Affix_list_symbols) {
+    dXSARGS;
+    dXSI32;
+    PING;
+    if (items != 1) croak_xs_usage(cv, "$lib");
+
+    //~ SvROK(ST(1)) && SvTYPE(SvRV(ST(1))) == SVt_PVAV)) {
+    //~ AV *tmp = MUTABLE_AV(SvRV(ST(1)))
+
+    //~ SV *LIBSV = sv_newmortal();
+    //~ sv_setref_pv(LIBSV, NULL, (DCpointer)lib_handle);
+    //~ ST(0) = LIBSV;
+    //~ XSRETURN(1);
+}
 
 XS_INTERNAL(Affix_args) {
     AFFIX_METHOD_GUTS
@@ -1618,6 +1661,8 @@ XS_EXTERNAL(boot_Affix) {
 
     //~ export_function("Affix", "DEFAULT_ALIGNMENT", "vars");
 
+    (void)newXSproto_portable("Affix::load_lib", Affix_load_lib, __FILE__, "$");
+
     // sizeof
     export_constant("Affix", "BOOL_SIZE", "all", BOOL_SIZE);
     export_constant("Affix", "CHAR_SIZE", "all", CHAR_SIZE);
@@ -1723,7 +1768,7 @@ XS_EXTERNAL(boot_Affix) {
     //~ boot_Affix_Aggregate(aTHX_ cv);
     //~ boot_Affix_pin(aTHX_ cv);
     //~ boot_Affix_Pointer(aTHX_ cv);
-    //~ boot_Affix_Lib(aTHX_ cv);
+    boot_Affix_Lib(aTHX_ cv);
     boot_Affix_Platform(aTHX_ cv);
 
     Perl_xs_boot_epilog(aTHX_ ax);

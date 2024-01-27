@@ -144,7 +144,9 @@ SV *ptr2sv(pTHX_ DCpointer ptr, SV *type) {
             if (ptr && wcslen((wchar_t *)ptr)) {
                 retval = wchar2utf(aTHX_ * (wchar_t **)ptr, wcslen(*(wchar_t **)ptr));
             }
-            else { retval = &PL_sv_undef; }
+            else {
+                retval = &PL_sv_undef;
+            }
         } break;
         case STRUCT_FLAG:
         case CPPSTRUCT_FLAG: {
@@ -210,7 +212,9 @@ SV *ptr2sv(pTHX_ DCpointer ptr, SV *type) {
                     if (typedef_ptr != NULL) {
                         sv_setref_pv(retval, SvPV_nolen(*typedef_ptr), ptr);
                     }
-                    else { sv_setref_pv(retval, "Affix::Pointer::Unmanaged", ptr); }
+                    else {
+                        sv_setref_pv(retval, "Affix::Pointer::Unmanaged", ptr);
+                    }
                 }
             } break;
             //~ case POINTER_FLAG:{
@@ -688,7 +692,9 @@ void *sv2ptr(pTHX_ SV *type, SV *data) {
             Newxz(ret, 1, CallbackWrapper);
             ((CallbackWrapper *)ret)->cb = dcbNewCallback(callback->sig, cbHandler, callback);
         }
-        else { Newxz(ret, 1, intptr_t); }
+        else {
+            Newxz(ret, 1, intptr_t);
+        }
     } break;
     case SV_FLAG: {
         PING;

@@ -159,9 +159,12 @@ package Affix 0.50 {    # 'FFI' is my middle name!
     sub SSize_t()   { Affix::Type::SSize_t->new() }
     sub String()    { Affix::Type::String->new() }
     sub WString()   { Affix::Type::WString->new() }
-    sub Struct   (%fields) { Affix::Type::Struct->new( fields => \%fields ) }
-    sub Array    ( $type, $size    //= () )   { Affix::Type::Array->new( type => $type, size => $size ) }
-    sub Callback ( $args, $returns //= Void ) { Affix::Type::Callback->new( args => $args, returns => $returns ) }
+    sub Struct (%fields)               { Affix::Type::Struct->new( fields => \%fields ) }
+    sub Array  ( $type, $size //= () ) { Affix::Type::Array->new( type => $type, size => $size ) }
+
+    sub Callback ( $args, $returns //= Void ) {
+        Affix::Type::Callback->new( args => $args, returns => $returns );
+    }
     sub SV() { Affix::Type::SV->new() }
     {
         # Perl isn't parsing this as a sub with a single arg when signatures are enabled. So that...
@@ -204,6 +207,7 @@ package Affix 0.50 {    # 'FFI' is my middle name!
     # Internals
     sub locate_lib    ( $lib, @dirs ) { DynaLoader::dl_findfile($lib); }
     sub locate_symbol ($name)         {...}
+    sub unload_lib    ($lib)          {...}
 
     # Let's go
     sub dl_load_flags ($modulename) {0}

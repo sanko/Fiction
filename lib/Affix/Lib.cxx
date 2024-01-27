@@ -114,36 +114,27 @@ XS_INTERNAL(Affix_Lib_list_symbols) {
     dVAR;
     dXSARGS;
     if (items != 1) croak_xs_usage(cv, "lib");
-
     AV *RETVAL;
     DLLib *lib;
-
-    if (sv_derived_from(ST(0), "Affix::Lib")) {
+    if (SvROK(ST(0))) {
         IV tmp = SvIV((SV *)SvRV(ST(0)));
         lib = INT2PTR(DLLib *, tmp);
     }
     else
         croak("lib is not of type Affix::Lib");
-
     RETVAL = newAV_mortal();
     char *name;
     Newxz(name, 1024, char);
     int len = dlGetLibraryPath(lib, name, 1024);
     if (len == 0) croak("Failed to get library name");
-    //~ #if defined(DC__C_GNU) || defined(DC__C_CLANG)
-    //~ HV *cache = get_hv(form("Affix::Cache::Symbol::%s", name), 0);
-    //~ while (HE *next = hv_iternext(cache)) {
-    //~ av_push(RETVAL, newSVsv(hv_iterkeysv(next)));
-    //~ }
-    //~ #else
     DLSyms *syms = dlSymsInit(name);
-    int count = dlSymsCount(syms);
+    PING int count = dlSymsCount(syms);
     for (int i = 0; i < count; ++i) {
-        av_push(RETVAL, newSVpv(dlSymsName(syms, i), 0));
+        const char *symbolName = dlSymsName(syms, i);
+        if (strlen(symbolName)) av_push(RETVAL, newSVpv(symbolName, 0));
     }
     dlSymsCleanup(syms);
     safefree(name);
-    //~ #endif
     ST(0) = newRV_noinc(MUTABLE_SV(RETVAL));
     XSRETURN(1);
 }
@@ -231,7 +222,7 @@ XS_INTERNAL(Affix_Lib_path) {
 void boot_Affix_Lib(pTHX_ CV *cv) {
     PERL_UNUSED_VAR(cv);
 
-    (void)newXSproto_portable("Affix::load_lib", Affix_load_lib, __FILE__, "$;$");
+    //~ (void)newXSproto_portable("Affix::load_lib", Affix_load_lib, __FILE__, "$;$");
     export_function("Affix", "load_lib", "lib");
     (void)newXSproto_portable("Affix::Lib::list_symbols", Affix_Lib_list_symbols, __FILE__, "$");
 #if defined(DC__C_GNU) || defined(DC__C_CLANG)
