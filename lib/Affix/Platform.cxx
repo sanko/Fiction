@@ -94,7 +94,7 @@ void boot_Affix_Platform(pTHX_ CV *cv) {
     const char *architecture =
 
 #ifdef DC__Arch_AMD64
-        "AMD64"
+        "x86_64"
 #elif defined DC__Arch_Intel_x86
         "Intelx86"
 #elif defined DC__Arch_Itanium
@@ -219,4 +219,43 @@ void boot_Affix_Platform(pTHX_ CV *cv) {
     register_constant("Affix::Platform", "BigEndian", boolSV(big_endian));
     register_constant("Affix::Platform", "Syscall", boolSV(syscall));
     register_constant("Affix::Platform", "AggrByValue", boolSV(aggr_by_value));
+
+    //
+    // sizeof
+    export_constant("Affix::Platform", "BOOL_SIZE", "all", BOOL_SIZE);
+    export_constant("Affix::Platform", "CHAR_SIZE", "all", CHAR_SIZE);
+    export_constant("Affix::Platform", "UCHAR_SIZE", "all", UCHAR_SIZE);
+    export_constant("Affix::Platform", "WCHAR_SIZE", "all", WCHAR_SIZE);
+    export_constant("Affix::Platform", "SHORT_SIZE", "all", SHORT_SIZE);
+    export_constant("Affix::Platform", "USHORT_SIZE", "all", USHORT_SIZE);
+    export_constant("Affix::Platform", "INT_SIZE", "all", INT_SIZE);
+    export_constant("Affix::Platform", "UINT_SIZE", "all", UINT_SIZE);
+    export_constant("Affix::Platform", "LONG_SIZE", "all", LONG_SIZE);
+    export_constant("Affix::Platform", "ULONG_SIZE", "all", ULONG_SIZE);
+    export_constant("Affix::Platform", "LONGLONG_SIZE", "all", LONGLONG_SIZE);
+    export_constant("Affix::Platform", "ULONGLONG_SIZE", "all", ULONGLONG_SIZE);
+    export_constant("Affix::Platform", "FLOAT_SIZE", "all", FLOAT_SIZE);
+    export_constant("Affix::Platform", "DOUBLE_SIZE", "all", DOUBLE_SIZE);
+    export_constant("Affix::Platform", "SIZE_T_SIZE", "all", SIZE_T_SIZE);
+    export_constant("Affix::Platform", "SSIZE_T_SIZE", "all", SSIZE_T_SIZE);
+    export_constant("Affix::Platform", "INTPTR_T_SIZE", "all", INTPTR_T_SIZE);
+    // to calculate offsetof and padding inside structs
+    export_constant("Affix::Platform", "BYTE_ALIGN", "all", AFFIX_ALIGNBYTES); // platform
+    export_constant("Affix::Platform", "BOOL_ALIGN", "all", BOOL_ALIGN);
+    export_constant("Affix::Platform", "CHAR_ALIGN", "all", CHAR_ALIGN);
+    export_constant("Affix::Platform", "UCHAR_ALIGN", "all", UCHAR_ALIGN);
+    export_constant("Affix::Platform", "WCHAR_ALIGN", "all", WCHAR_ALIGN);
+    export_constant("Affix::Platform", "SHORT_ALIGN", "all", SHORT_ALIGN);
+    export_constant("Affix::Platform", "USHORT_ALIGN", "all", USHORT_ALIGN);
+    export_constant("Affix::Platform", "INT_ALIGN", "all", INT_ALIGN);
+    export_constant("Affix::Platform", "UINT_ALIGN", "all", UINT_ALIGN);
+    export_constant("Affix::Platform", "LONG_ALIGN", "all", LONG_ALIGN);
+    export_constant("Affix::Platform", "ULONG_ALIGN", "all", ULONG_ALIGN);
+    export_constant("Affix::Platform", "LONGLONG_ALIGN", "all", LONGLONG_ALIGN);
+    export_constant("Affix::Platform", "ULONGLONG_ALIGN", "all", ULONGLONG_ALIGN);
+    export_constant("Affix::Platform", "FLOAT_ALIGN", "all", FLOAT_ALIGN);
+    export_constant("Affix::Platform", "DOUBLE_ALIGN", "all", DOUBLE_ALIGN);
+    export_constant("Affix::Platform", "SIZE_T_ALIGN", "all", SIZE_T_ALIGN);
+    export_constant("Affix::Platform", "SSIZE_T_ALIGN", "all", SSIZE_T_ALIGN);
+    export_constant("Affix::Platform", "INTPTR_T_ALIGN", "all", INTPTR_T_ALIGN);
 }

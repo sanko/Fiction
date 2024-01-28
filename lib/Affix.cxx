@@ -1663,43 +1663,7 @@ XS_EXTERNAL(boot_Affix) {
 
     (void)newXSproto_portable("Affix::load_lib", Affix_load_lib, __FILE__, "$");
 
-    // sizeof
-    export_constant("Affix", "BOOL_SIZE", "all", BOOL_SIZE);
-    export_constant("Affix", "CHAR_SIZE", "all", CHAR_SIZE);
-    export_constant("Affix", "UCHAR_SIZE", "all", UCHAR_SIZE);
-    export_constant("Affix", "WCHAR_SIZE", "all", WCHAR_SIZE);
-    export_constant("Affix", "SHORT_SIZE", "all", SHORT_SIZE);
-    export_constant("Affix", "USHORT_SIZE", "all", USHORT_SIZE);
-    export_constant("Affix", "INT_SIZE", "all", INT_SIZE);
-    export_constant("Affix", "UINT_SIZE", "all", UINT_SIZE);
-    export_constant("Affix", "LONG_SIZE", "all", LONG_SIZE);
-    export_constant("Affix", "ULONG_SIZE", "all", ULONG_SIZE);
-    export_constant("Affix", "LONGLONG_SIZE", "all", LONGLONG_SIZE);
-    export_constant("Affix", "ULONGLONG_SIZE", "all", ULONGLONG_SIZE);
-    export_constant("Affix", "FLOAT_SIZE", "all", FLOAT_SIZE);
-    export_constant("Affix", "DOUBLE_SIZE", "all", DOUBLE_SIZE);
-    export_constant("Affix", "SIZE_T_SIZE", "all", SIZE_T_SIZE);
-    export_constant("Affix", "SSIZE_T_SIZE", "all", SSIZE_T_SIZE);
-    export_constant("Affix", "INTPTR_T_SIZE", "all", INTPTR_T_SIZE);
-    // to calculate offsetof and padding inside structs
-    export_constant("Affix", "BYTE_ALIGN", "all", AFFIX_ALIGNBYTES); // platform
-    export_constant("Affix", "BOOL_ALIGN", "all", BOOL_ALIGN);
-    export_constant("Affix", "CHAR_ALIGN", "all", CHAR_ALIGN);
-    export_constant("Affix", "UCHAR_ALIGN", "all", UCHAR_ALIGN);
-    export_constant("Affix", "WCHAR_ALIGN", "all", WCHAR_ALIGN);
-    export_constant("Affix", "SHORT_ALIGN", "all", SHORT_ALIGN);
-    export_constant("Affix", "USHORT_ALIGN", "all", USHORT_ALIGN);
-    export_constant("Affix", "INT_ALIGN", "all", INT_ALIGN);
-    export_constant("Affix", "UINT_ALIGN", "all", UINT_ALIGN);
-    export_constant("Affix", "LONG_ALIGN", "all", LONG_ALIGN);
-    export_constant("Affix", "ULONG_ALIGN", "all", ULONG_ALIGN);
-    export_constant("Affix", "LONGLONG_ALIGN", "all", LONGLONG_ALIGN);
-    export_constant("Affix", "ULONGLONG_ALIGN", "all", ULONGLONG_ALIGN);
-    export_constant("Affix", "FLOAT_ALIGN", "all", FLOAT_ALIGN);
-    export_constant("Affix", "DOUBLE_ALIGN", "all", DOUBLE_ALIGN);
-    export_constant("Affix", "SIZE_T_ALIGN", "all", SIZE_T_ALIGN);
-    export_constant("Affix", "SSIZE_T_ALIGN", "all", SSIZE_T_ALIGN);
-    export_constant("Affix", "INTPTR_T_ALIGN", "all", INTPTR_T_ALIGN);
+
     // general purpose flags
     export_constant("Affix", "VOID_FLAG", "flags", VOID_FLAG);
     export_constant("Affix", "BOOL_FLAG", "flags", BOOL_FLAG);

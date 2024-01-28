@@ -4,7 +4,8 @@ package Affix 0.50 {    # 'FFI' is my middle name!
     no warnings 'experimental::class';
     use Carp qw[];
     use vars qw[@EXPORT_OK @EXPORT %EXPORT_TAGS];
-    use DynaLoader;
+    BEGIN{$DynaLoad::dl_debug=1}
+    use XSLoader;
     my $okay = 0;    # True on load
     use Exporter 'import';
     @EXPORT_OK = qw[
@@ -210,7 +211,9 @@ package Affix 0.50 {    # 'FFI' is my middle name!
     sub unload_lib    ($lib)          {...}
 
     # Let's go
-    sub dl_load_flags ($modulename) {0}
-    $okay = DynaLoader::bootstrap(__PACKAGE__);
+    #~ sub dl_load_flags ($modulename) {0}
+    $okay = #DynaLoader::bootstrap(__PACKAGE__);
+        XSLoader::load(__PACKAGE__, $Affix::VERSION);
+
 }
 1;
