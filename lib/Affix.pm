@@ -38,12 +38,6 @@ package Affix 0.50 {    # 'FFI' is my middle name!
     ];
     %EXPORT_TAGS = ( all => \@EXPORT_OK );
     #
-    class Affix::Lib {
-        field $path : param;
-        field $abi : param //= Affix::Platform::ABI_Itanium->new();
-        field $ver : param //= ();
-    }
-    #
     class Affix::Type {
         method check ($value)          {...}
         method cast  ( $from, $value ) {...}
@@ -110,11 +104,11 @@ package Affix 0.50 {    # 'FFI' is my middle name!
 
     class Affix::Type::SV : isa(Affix::Type) { }
     #
-    class Affix::Function 1 {
+    class Affix::Wrap 1 {
         field $lib : param;
         field $symbol : param;
         field $args : param    //= [];
-        field $returns : param //= Void();
+        field $returns : param //= Affix::Void();
         #
         ADJUST { warn 'adjust' }
         method DESTROY ( $global = 0 ) { warn 'destroy ', ref $self; }
@@ -185,7 +179,7 @@ package Affix 0.50 {    # 'FFI' is my middle name!
 
     # Core
     sub affix ( $lib, $symbol, $args //= [], $returns //= Void ) {
-        my $affix = Affix::Function->new( lib => $lib, symbol => $symbol, args => $args, returns => $returns );
+        my $affix = Affix::Wrap->new( lib => $lib, symbol => $symbol, args => $args, returns => $returns );
         my ($pkg) = caller(0);
         {
             no strict 'refs';

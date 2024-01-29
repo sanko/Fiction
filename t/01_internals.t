@@ -38,4 +38,7 @@ SKIP: {
     }
 };
 #
+my $affix = Affix::Wrap->new( lib => 'm', symbol => 'pow', );
+is Affix::pow_example( $symbol, 3, 4 ), 81, 'pow_example';
+#
 done_testing;

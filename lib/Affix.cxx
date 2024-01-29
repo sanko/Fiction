@@ -106,6 +106,36 @@ XS_INTERNAL(Affix_find_symbol) {
     XSRETURN(1);
 }
 
+XS_INTERNAL(Affix_pow_example) {
+    dVAR;
+    dXSARGS;
+    if (items != 3) croak_xs_usage(cv, "symbol, x, y");
+    dMY_CXT;
+
+    SV *RETVAL;
+    DCCallVM *cvm = MY_CXT.cvm;
+    dcReset(cvm);
+
+    DCpointer entry_point;
+    if (SvROK(ST(0))) {
+        IV tmp = SvIV((SV *)SvRV(ST(0)));
+        entry_point = INT2PTR(DCpointer, tmp);
+    }
+    else
+        croak("symbol is not a reference");
+
+    dcArgDouble(cvm, SvNV(ST(1)));
+
+    dcArgDouble(cvm, SvNV(ST(2)));
+
+    RETVAL = newSVnv(dcCallDouble(cvm, entry_point));
+
+    //~ SV *LIBSV = sv_newmortal();
+    //~ sv_setref_pv(LIBSV, NULL, (DCpointer)lib_handle);
+    ST(0) = (RETVAL);
+    XSRETURN(1);
+}
+
 extern "C" void Affix_trigger(pTHX_ CV *cv) {
     dSP;
     dAXMARK;
@@ -1715,6 +1745,8 @@ XS_EXTERNAL(boot_Affix) {
     (void)newXSproto_portable("Affix::list_symbols", Affix_list_symbols, __FILE__, "$");
     (void)newXSproto_portable("Affix::find_symbol", Affix_find_symbol, __FILE__, "$$");
     (void)newXSproto_portable("Affix::free_lib", Affix_free_lib, __FILE__, "$;$");
+
+    (void)newXSproto_portable("Affix::pow_example", Affix_pow_example, __FILE__, "$$$");
 
     // general purpose flags
     export_constant("Affix", "VOID_FLAG", "flags", VOID_FLAG);
