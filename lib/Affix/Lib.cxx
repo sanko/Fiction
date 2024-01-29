@@ -69,100 +69,6 @@ char *mangle(pTHX_ const char *abi, SV *affix, const char *symbol, SV *args) {
     return retval;
 }
 
-XS_INTERNAL(Affix_load_lib) {
-    dVAR;
-    dXSARGS;
-    if (items < 1 || items > 2) croak_xs_usage(cv, "lib_name, version");
-    char *_libpath = locate_lib(aTHX_ ST(0), SvIOK(ST(1)) ? ST(1) : newSV(0));
-    DLLib *lib =
-#if defined(DC__OS_Win64) || defined(DC__OS_MacOSX)
-        dlLoadLibrary(_libpath);
-#else
-        (DLLib *)dlopen(_libpath, RTLD_NOW);
-#endif
-    if (!lib) croak("Failed to load %s", dlerror());
-#if 0
-#if defined(DC__C_GNU) || defined(DC__C_CLANG)
-    HV *cache = get_hv(form("Affix::Cache::Symbol::%s", _libpath), GV_ADD);
-    DLSyms *syms = dlSymsInit(_libpath);
-    int count = dlSymsCount(syms);
-    for (int i = 0; i < count; ++i) {
-        const char *symbolName = dlSymsName(syms, i);
-        if (strncmp(symbolName, "_Z", 2) != 0) {
-            (void)hv_store(cache, symbolName, strlen(symbolName), newSVpv(symbolName, 0), 1);
-            continue;
-        }
-        int status = -1;
-        // https://gcc.gnu.org/onlinedocs/libstdc++/libstdc++-html-USERS-4.3/a01696.html
-        char *demangled_name = abi::__cxa_demangle(symbolName, NULL, NULL, &status);
-        if (!status) {
-            (void)hv_store(cache, symbolName, strlen(symbolName), newSVpv(demangled_name, 0), 1);
-            //safefree(demangled_name);
-        }
-    }
-    dlSymsCleanup(syms);
-#endif
-#endif
-    SV *RETVAL = sv_newmortal();
-    sv_setref_pv(RETVAL, "Affix::Lib", lib);
-    ST(0) = RETVAL;
-    XSRETURN(1);
-}
-
-XS_INTERNAL(Affix_Lib_list_symbols) {
-    /* dlSymsName(...) is not thread-safe on MacOS */
-    dVAR;
-    dXSARGS;
-    if (items != 1) croak_xs_usage(cv, "lib");
-    AV *RETVAL;
-    DLLib *lib;
-    if (SvROK(ST(0))) {
-        IV tmp = SvIV((SV *)SvRV(ST(0)));
-        lib = INT2PTR(DLLib *, tmp);
-    }
-    else
-        croak("lib is not of type Affix::Lib");
-    RETVAL = newAV_mortal();
-    char *name;
-    Newxz(name, 1024, char);
-    int len = dlGetLibraryPath(lib, name, 1024);
-    if (len == 0) croak("Failed to get library name");
-    DLSyms *syms = dlSymsInit(name);
-    PING int count = dlSymsCount(syms);
-    for (int i = 0; i < count; ++i) {
-        const char *symbolName = dlSymsName(syms, i);
-        if (strlen(symbolName)) av_push(RETVAL, newSVpv(symbolName, 0));
-    }
-    dlSymsCleanup(syms);
-    safefree(name);
-    ST(0) = newRV_noinc(MUTABLE_SV(RETVAL));
-    XSRETURN(1);
-}
-
-XS_INTERNAL(Affix_Lib_find_symbol) {
-    dVAR;
-    dXSARGS;
-    if (items != 2) croak_xs_usage(cv, "lib, symbol");
-    AV *RETVAL;
-    DLLib *lib;
-    if (SvROK(ST(0))) {
-        IV tmp = SvIV((SV *)SvRV(ST(0)));
-        lib = INT2PTR(DLLib *, tmp);
-    }
-    else
-        croak("lib is not of type Affix::Lib");
-    RETVAL = newAV_mortal();
-    char *name;
-    Newxz(name, 1024, char);
-
-    DCpointer lib_handle = dlFindSymbol(lib, SvPV_nolen(ST(1)));
-    if (!lib_handle) { croak("Failed to load lib %s", dlerror()); }
-    SV *LIBSV = sv_newmortal();
-    sv_setref_pv(LIBSV, NULL, (DCpointer)lib_handle);
-    ST(0) = LIBSV;
-    XSRETURN(1);
-}
-
 #if defined(DC__C_GNU) || defined(DC__C_CLANG)
 XS_INTERNAL(Affix_Lib_list_unmangled_symbols) {
     /* dlSymsName(...) is not thread-safe on MacOS */
@@ -195,23 +101,6 @@ XS_INTERNAL(Affix_Lib_list_unmangled_symbols) {
     XSRETURN(1);
 }
 #endif
-
-XS_INTERNAL(Affix_Lib_free) {
-    dVAR;
-    dXSARGS;
-    warn("FREE LIB");
-    if (items != 1) croak_xs_usage(cv, "lib");
-    DLLib *lib;
-    if (sv_derived_from(ST(0), "Affix::Lib")) {
-        IV tmp = SvIV((SV *)SvRV(ST(0)));
-        lib = INT2PTR(DLLib *, tmp);
-    }
-    else
-        croak("lib is not of type Affix::Lib");
-    if (lib != NULL) dlFreeLibrary(lib);
-    lib = NULL;
-    XSRETURN_EMPTY;
-}
 
 XS_INTERNAL(Affix_Lib_path) {
     dVAR;
@@ -247,14 +136,10 @@ void boot_Affix_Lib(pTHX_ CV *cv) {
     PERL_UNUSED_VAR(cv);
 
     //~ (void)newXSproto_portable("Affix::load_lib", Affix_load_lib, __FILE__, "$;$");
-    export_function("Affix", "load_lib", "lib");
-    (void)newXSproto_portable("Affix::Lib::list_symbols", Affix_Lib_list_symbols, __FILE__, "$");
+    //~ export_function("Affix", "load_lib", "lib");
 #if defined(DC__C_GNU) || defined(DC__C_CLANG)
     (void)newXSproto_portable("Affix::Lib::list_unmangled_symbols",
                               Affix_Lib_list_unmangled_symbols, __FILE__, "$");
 #endif
-    (void)newXSproto_portable("Affix::Lib::find_symbol", Affix_Lib_find_symbol, __FILE__, "$$");
-
     (void)newXSproto_portable("Affix::Lib::path", Affix_Lib_path, __FILE__, "$");
-    (void)newXSproto_portable("Affix::Lib::free", Affix_Lib_free, __FILE__, "$;$");
 }

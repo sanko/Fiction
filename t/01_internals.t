@@ -6,7 +6,7 @@ BEGIN { chdir '../' if !-d 't'; }
 use t::lib::helper;
 $|++;
 #
-my ( $libm, $libref );
+my ( $libm, $libref, $symbol );
 subtest find_library => sub {
     for my $test (qw[c m]) {
         my ($lib) = Affix::find_library($test);
@@ -25,14 +25,17 @@ SKIP: {
 };
 subtest load_lib => sub {
 SKIP: {
-        skip 'Failed to load libm' unless $libm;
+        skip 'Failed to locate libm' unless $libm;
         $libref = Affix::load_lib($libm);
         ok $libref, q[load_lib(...)];
     }
 };
-#
-if ($libref) {
-    note $_ for @{ Affix::Lib::list_symbols($libref) };
-}
+subtest find_symbol => sub {
+SKIP: {
+        skip 'Failed to load libm' unless $libref;
+        $symbol = Affix::find_symbol( $libref, 'pow' );
+        ok $symbol, q[find_symbol(..., 'pow')];
+    }
+};
 #
 done_testing;

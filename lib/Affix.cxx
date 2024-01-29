@@ -15,6 +15,97 @@ typedef struct {
 
 START_MY_CXT
 
+XS_INTERNAL(Affix_load_lib) {
+    dXSARGS;
+    dXSI32;
+    PING;
+    if (items != 1) croak_xs_usage(cv, "$lib");
+    DCpointer lib_handle =
+#if defined(DC__OS_Win64) || defined(DC__OS_MacOSX)
+        dlLoadLibrary(SvPV_nolen(ST(0)));
+#else
+        (DLLib *)dlopen(SvPV_nolen(ST(0)), RTLD_LAZY /* RTLD_NOW|RTLD_GLOBAL */);
+#endif
+    if (!lib_handle) {
+        croak("Failed to load lib %s", dlerror());
+    }
+    SV *LIBSV = sv_newmortal();
+    sv_setref_pv(LIBSV, NULL, (DCpointer)lib_handle);
+    ST(0) = LIBSV;
+    XSRETURN(1);
+}
+
+XS_INTERNAL(Affix_free_lib) {
+    dVAR;
+    dXSARGS;
+    if (items != 1) croak_xs_usage(cv, "lib");
+    DLLib *lib;
+    //~ if (sv_derived_from(ST(0), "Affix::Lib")) {
+    if (SvROK(ST(0))) {
+        IV tmp = SvIV((SV *)SvRV(ST(0)));
+        lib = INT2PTR(DLLib *, tmp);
+    }
+    else
+        croak("lib is not of type Affix::Lib");
+    if (lib != NULL) dlFreeLibrary(lib);
+    lib = NULL;
+    XSRETURN_EMPTY;
+}
+
+XS_INTERNAL(Affix_list_symbols) {
+    /* dlSymsName(...) is not thread-safe on MacOS */
+    dVAR;
+    dXSARGS;
+    if (items != 1) croak_xs_usage(cv, "lib");
+    AV *RETVAL;
+    DLLib *lib;
+    if (SvROK(ST(0))) {
+        IV tmp = SvIV((SV *)SvRV(ST(0)));
+        lib = INT2PTR(DLLib *, tmp);
+    }
+    else
+        croak("lib is not of type Affix::Lib");
+    RETVAL = newAV_mortal();
+    char *name;
+    Newxz(name, 1024, char);
+    int len = dlGetLibraryPath(lib, name, 1024);
+    if (len == 0) croak("Failed to get library name");
+    DLSyms *syms = dlSymsInit(name);
+    PING int count = dlSymsCount(syms);
+    for (int i = 0; i < count; ++i) {
+        const char *symbolName = dlSymsName(syms, i);
+        if (strlen(symbolName)) av_push(RETVAL, newSVpv(symbolName, 0));
+    }
+    dlSymsCleanup(syms);
+    safefree(name);
+    ST(0) = newRV_noinc(MUTABLE_SV(RETVAL));
+    XSRETURN(1);
+}
+
+XS_INTERNAL(Affix_find_symbol) {
+    dVAR;
+    dXSARGS;
+    if (items != 2) croak_xs_usage(cv, "lib, symbol");
+    AV *RETVAL;
+    DLLib *lib;
+    if (SvROK(ST(0))) {
+        IV tmp = SvIV((SV *)SvRV(ST(0)));
+        lib = INT2PTR(DLLib *, tmp);
+    }
+    else
+        croak("lib is not of type Affix::Lib");
+    RETVAL = newAV_mortal();
+    char *name;
+    Newxz(name, 1024, char);
+
+    DCpointer lib_handle = dlFindSymbol(lib, SvPV_nolen(ST(1)));
+    if (!lib_handle) { croak("Failed to load lib %s", dlerror()); }
+    SV *LIBSV = sv_newmortal();
+    sv_setref_pv(LIBSV, NULL, (DCpointer)lib_handle);
+    ST(0) = LIBSV;
+    XSRETURN(1);
+}
+
 extern "C" void Affix_trigger(pTHX_ CV *cv) {
     dSP;
     dAXMARK;
@@ -1481,41 +1572,6 @@ XS_INTERNAL(Affix_affix) {
     }                                                                                              \
     STMT_END;
 
-XS_INTERNAL(Affix_load_lib) {
-    dXSARGS;
-    dXSI32;
-    PING;
-    if (items != 1) croak_xs_usage(cv, "$lib");
-    DCpointer lib_handle =
-#if defined(DC__OS_Win64) || defined(DC__OS_MacOSX)
-        dlLoadLibrary(SvPV_nolen(ST(0)));
-#else
-        (DLLib *)dlopen(SvPV_nolen(ST(0)), RTLD_LAZY /* RTLD_NOW|RTLD_GLOBAL */);
-#endif
-    if (!lib_handle) {
-        croak("Failed to load lib %s", dlerror());
-    }
-    SV *LIBSV = sv_newmortal();
-    sv_setref_pv(LIBSV, NULL, (DCpointer)lib_handle);
-    ST(0) = LIBSV;
-    XSRETURN(1);
-}
-
-XS_INTERNAL(Affix_list_symbols) {
-    dXSARGS;
-    dXSI32;
-    PING;
-    if (items != 1) croak_xs_usage(cv, "$lib");
-
-    //~ SvROK(ST(1)) && SvTYPE(SvRV(ST(1))) == SVt_PVAV)) {
-    //~ AV *tmp = MUTABLE_AV(SvRV(ST(1)))
-
-    //~ SV *LIBSV = sv_newmortal();
-    //~ sv_setref_pv(LIBSV, NULL, (DCpointer)lib_handle);
-    //~ ST(0) = LIBSV;
-    //~ XSRETURN(1);
-}
-
 XS_INTERNAL(Affix_args) {
     AFFIX_METHOD_GUTS
     ST(0) = (MUTABLE_SV(affix->arg_info));
@@ -1656,6 +1712,9 @@ XS_EXTERNAL(boot_Affix) {
     //~ export_function("Affix", "DEFAULT_ALIGNMENT", "vars");
 
     (void)newXSproto_portable("Affix::load_lib", Affix_load_lib, __FILE__, "$");
+    (void)newXSproto_portable("Affix::list_symbols", Affix_list_symbols, __FILE__, "$");
+    (void)newXSproto_portable("Affix::find_symbol", Affix_find_symbol, __FILE__, "$$");
+    (void)newXSproto_portable("Affix::free_lib", Affix_free_lib, __FILE__, "$;$");
 
     // general purpose flags
     export_constant("Affix", "VOID_FLAG", "flags", VOID_FLAG);
