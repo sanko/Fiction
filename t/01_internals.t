@@ -1,89 +1,37 @@
+use v5.38;
 use Test2::V0;
 use lib '../lib', 'lib', '../blib/arch', '../blib/lib', 'blib/arch', 'blib/lib', '../../', '.';
 use Affix;
 BEGIN { chdir '../' if !-d 't'; }
 use t::lib::helper;
 $|++;
-use v5.38;
 #
+my ( $libm, $libref );
 subtest find_library => sub {
     for my $test (qw[c m]) {
         my ($lib) = Affix::find_library($test);
         ok $lib, qq[find_library('$test')];
         diag $lib;
+        $libm = $lib if $test eq 'm';
     }
-    subtest Windows => sub {
-    SKIP: {
-            skip 'Windows tests' unless $^O =~ /MSWin/;
-            for my $test (qw[ntdll OpenGL32 Glu32]) {
-                my ($lib) = Affix::find_library($test);
-                ok $lib, qq[find_library('$test')];
-                diag $lib;
-            }
+SKIP: {
+        skip 'Windows tests' unless $^O =~ /MSWin/;
+        for my $test (qw[ntdll OpenGL32 Glu32]) {
+            my ($lib) = Affix::find_library($test);
+            ok $lib, qq[find_library('$test')];
+            diag $lib;
         }
-    };
+    }
 };
-done_testing;
-exit;
-__END__
-die _get_soname(@libs);
-diag $_ for @libs;
-diag $libs[0];
-my $refx = Affix::load_lib( $libs[0] );
-diag $$refx;
+subtest load_lib => sub {
+SKIP: {
+        skip 'Failed to load libm' unless $libm;
+        $libref = Affix::load_lib($libm);
+        ok $libref, q[load_lib(...)];
 
-#~ diag $_ for @{ Affix::Lib::list_symbols( $refx ) };
-diag Affix::Lib::find_symbol( $refx, 'pow' );
-pass '';
-done_testing;
-exit;
-
-=cut
-def _findSoname_ldconfig(name):
-            import struct
-            if struct.calcsize('l') == 4:
-                machine = os.uname().machine + '-32'
-            else:
-                machine = os.uname().machine + '-64'
-            mach_map = {
-                'x86_64-64': 'libc6,x86-64',
-                'ppc64-64': 'libc6,64bit',
-                'sparc64-64': 'libc6,64bit',
-                's390x-64': 'libc6,64bit',
-                'ia64-64': 'libc6,IA-64',
-                }
-            abi_type = mach_map.get(machine, 'libc6')
-
-            # XXX assuming GLIBC's ldconfig (with option -p)
-            regex = r'\s+(lib%s\.[^\s]+)\s+\(%s'
-            regex = os.fsencode(regex % (re.escape(name), abi_type))
-            try:
-                with subprocess.Popen(['/sbin/ldconfig', '-p'],
-                                      stdin=subprocess.DEVNULL,
-                                      stderr=subprocess.DEVNULL,
-                                      stdout=subprocess.PIPE,
-                                      env={'LC_ALL': 'C', 'LANG': 'C'}) as p:
-                    res = re.search(regex, p.stdout.read())
-                    if res:
-                        return os.fsdecode(res.group(1))
-            except OSError:
-                pass
-=cut
-
-# does not work on windows:
-my $lib = Affix::locate_lib( Affix::Platform::OS() =~ /Win\d\d/ ? 'ntdll' : 'm' );
-use Path::Tiny;
-diag $lib;
-$lib = readlink $lib if -l $lib;
-diag $lib;
-$lib = path $lib;
-diag $lib;
-
-#~ use Data::Dump;
-#~ ddx $lib;
-my $ref = Affix::load_lib( $lib->absolute );
-diag $_ for @{ Affix::Lib::list_symbols($ref) };
+        #~ note $_ for @{ Affix::Lib::list_symbols($libref) };
+    }
+};
 #
-pass 'yep';
 #
 done_testing;
