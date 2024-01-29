@@ -4,7 +4,15 @@ package Affix 0.50 {    # 'FFI' is my middle name!
     no warnings 'experimental::class';
     use Carp qw[];
     use vars qw[@EXPORT_OK @EXPORT %EXPORT_TAGS];
-    BEGIN { $DynaLoad::dl_debug = 1 }
+
+    BEGIN {
+        $DynaLoad::dl_debug = 1;
+        my $platform = 'Affix::Platform::' . (
+            $^O =~ /MSWin/ ? 'Windows' : $^O =~ /darwin/ ? 'MacOS' : $^O =~ /bsd/i ? 'BSD' :    # XXX: dragonfly, etc.
+                'Unix'
+        );
+        eval qq[require $platform; $platform->import(':all')];
+    }
     use XSLoader;
     my $okay = 0;    # True on load
     use Exporter 'import';
@@ -26,6 +34,7 @@ package Affix 0.50 {    # 'FFI' is my middle name!
         affix wrap pin unpin
         malloc calloc realloc free memchr memcmp memset memcpy sizeof offsetof
         raw hexdump
+        find_library
     ];
     %EXPORT_TAGS = ( all => \@EXPORT_OK );
     #

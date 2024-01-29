@@ -6,15 +6,23 @@ use t::lib::helper;
 $|++;
 use v5.38;
 #
-my $platform = 'Affix::Platform::' . (
-    $^O =~ /MSWin/ ? 'Windows' : $^O =~ /darwin/ ? 'MacOS' : $^O =~ /bsd/i ? 'BSD' :    # XXX: dragonfly, etc.
-        'Unix'
-);
-diag $platform;
-eval qq[require $platform; $platform->import(':all')];
-my ($lib) = find_library( $^O =~ /MSWin/ ? 'ntdll' : 'm' );
-ok $lib, $lib;
-diag $lib;
+subtest find_library => sub {
+    for my $test (qw[c m]) {
+        my ($lib) = Affix::find_library($test);
+        ok $lib, qq[find_library('$test')];
+        diag $lib;
+    }
+    subtest Windows => sub {
+    SKIP: {
+            skip 'Windows tests' unless $^O =~ /MSWin/;
+            for my $test (qw[ntdll OpenGL32 Glu32]) {
+                my ($lib) = Affix::find_library($test);
+                ok $lib, qq[find_library('$test')];
+                diag $lib;
+            }
+        }
+    };
+};
 done_testing;
 exit;
 __END__
