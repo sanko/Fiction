@@ -155,15 +155,13 @@ XS_INTERNAL(Affix_Lib_find_symbol) {
     char *name;
     Newxz(name, 1024, char);
 
-DCpointer lib_handle =
-        dlFindSymbol(lib, SvPV_nolen(ST(1)));
+    DCpointer lib_handle = dlFindSymbol(lib, SvPV_nolen(ST(1)));
     if (!lib_handle) { croak("Failed to load lib %s", dlerror()); }
     SV *LIBSV = sv_newmortal();
     sv_setref_pv(LIBSV, NULL, (DCpointer)lib_handle);
     ST(0) = LIBSV;
     XSRETURN(1);
 }
-
 
 #if defined(DC__C_GNU) || defined(DC__C_CLANG)
 XS_INTERNAL(Affix_Lib_list_unmangled_symbols) {
@@ -255,7 +253,7 @@ void boot_Affix_Lib(pTHX_ CV *cv) {
     (void)newXSproto_portable("Affix::Lib::list_unmangled_symbols",
                               Affix_Lib_list_unmangled_symbols, __FILE__, "$");
 #endif
-        (void)newXSproto_portable("Affix::Lib::find_symbol", Affix_Lib_find_symbol, __FILE__, "$$");
+    (void)newXSproto_portable("Affix::Lib::find_symbol", Affix_Lib_find_symbol, __FILE__, "$$");
 
     (void)newXSproto_portable("Affix::Lib::path", Affix_Lib_path, __FILE__, "$");
     (void)newXSproto_portable("Affix::Lib::free", Affix_Lib_free, __FILE__, "$;$");

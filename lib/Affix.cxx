@@ -188,9 +188,9 @@ extern "C" void Affix_trigger(pTHX_ CV *cv) {
             }
 #if WCHAR_MAX == LONG_MAX
             dcArgLong(cvm, value);
-#elseif WCHAR_MAX == INT_MAX
+#elif WCHAR_MAX == INT_MAX
             dcArgInt(cvm, value);
-#elseif WCHAR_MAX == SHORT_MAX
+#elif WCHAR_MAX == SHORT_MAX
             dcArgShort(cvm, value);
 #else
             dcArgChar(cvm, value);
@@ -454,9 +454,9 @@ extern "C" void Affix_trigger(pTHX_ CV *cv) {
         const char *pat = "W";
 #if WCHAR_MAX == LONG_MAX
         container = sv_2mortal(newSViv((int)dcCallLong(cvm, affix->entry_point)));
-#elseif WCHAR_MAX == INT_MAX
+#elif WCHAR_MAX == INT_MAX
         container = newSViv((int)dcCallInt(cvm, affix->entry_point));
-#elseif WCHAR_MAX == SHORT_MAX
+#elif WCHAR_MAX == SHORT_MAX
         container = newSViv((short)dcCallShort(cvm, affix->entry_point));
 #else
         container = newSViv((char)dcCallChar(cvm, affix->entry_point));
@@ -554,9 +554,7 @@ extern "C" void Affix_trigger(pTHX_ CV *cv) {
             RETVAL = newSV(1);
             SV **package = AXT_TYPEDEF(affix->ret_info);
             if (package != NULL) { sv_setref_pv(RETVAL, SvPV_nolen(*package), ptr); }
-            else {
-                sv_setref_pv(RETVAL, "Affix::Pointer::Unmanaged", ptr);
-            }
+            else { sv_setref_pv(RETVAL, "Affix::Pointer::Unmanaged", ptr); }
         }
     } break;
     default:
@@ -1276,9 +1274,7 @@ XS_INTERNAL(Affix_affix) {
             if (!SvPOK(symbol)) { croak("Undefined symbol name"); }
             perl_name = SvPV_nolen(*av_fetch(tmp, 1, false));
         }
-        else if (UNLIKELY(!SvPOK(ST(1)))) {
-            croak("Undefined symbol name");
-        }
+        else if (UNLIKELY(!SvPOK(ST(1)))) { croak("Undefined symbol name"); }
         else {
             symbol = ST(1);
             perl_name = SvPV_nolen(symbol);
@@ -1398,14 +1394,10 @@ XS_INTERNAL(Affix_affix) {
                             }
                             affix->arg_info[arg_pos] = newSVsv(type);
                         }
-                        else {
-                            croak("Unexpected arg type in slot %ld", arg_pos + 1);
-                        }
+                        else { croak("Unexpected arg type in slot %ld", arg_pos + 1); }
                     }
                 }
-                else {
-                    croak("Expected a list of argument types as an array ref");
-                }
+                else { croak("Expected a list of argument types as an array ref"); }
             }
             STMT_END;
         }
@@ -1455,9 +1447,7 @@ XS_INTERNAL(Affix_affix) {
             affix->ret_info = newSVsv(ST(3));
             affix->ret_type = AXT_NUMERIC(ST(3));
         }
-        else {
-            croak("Unknown return type");
-        }
+        else { croak("Unknown return type"); }
     }
 
     if (affix->_cpp_constructor) { ++affix->num_args; } // Expect Class->new(...)
@@ -1662,7 +1652,6 @@ XS_EXTERNAL(boot_Affix) {
     //~ export_function("Affix", "DEFAULT_ALIGNMENT", "vars");
 
     (void)newXSproto_portable("Affix::load_lib", Affix_load_lib, __FILE__, "$");
-
 
     // general purpose flags
     export_constant("Affix", "VOID_FLAG", "flags", VOID_FLAG);

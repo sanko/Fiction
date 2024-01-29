@@ -129,8 +129,8 @@ static const char *dlerror(void) {
 #define LONGLONG_FLAG 'x'
 #define ULONGLONG_FLAG 'y'
 #if Size_t_size == INTSIZE
-#define SSIZE_T_FLAG AFFIX_TYPE_INT
-#define SIZE_T_FLAG AFFIX_TYPE_UINT
+#define SSIZE_T_FLAG INT_FLAG
+#define SIZE_T_FLAG UINT_FLAG
 #elif Size_t_size == LONGSIZE
 #define SSIZE_T_FLAG LONG_FLAG
 #define SIZE_T_FLAG ULONG_FLAG
