@@ -28,10 +28,11 @@ SKIP: {
         skip 'Failed to load libm' unless $libm;
         $libref = Affix::load_lib($libm);
         ok $libref, q[load_lib(...)];
-
-        #~ note $_ for @{ Affix::Lib::list_symbols($libref) };
     }
 };
 #
+if ($libref) {
+    note $_ for @{ Affix::Lib::list_symbols($libref) };
+}
 #
 done_testing;
