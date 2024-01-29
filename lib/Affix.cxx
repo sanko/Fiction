@@ -1334,7 +1334,9 @@ XS_INTERNAL(Affix_affix) {
 #else
                     (DLLib *)dlopen(affix->lib_name, RTLD_LAZY /* RTLD_NOW|RTLD_GLOBAL */);
 #endif
-                if (!affix->lib_handle) { croak("Failed to load lib %s", dlerror()); }
+                if (!affix->lib_handle) {
+                    croak("Failed to load lib %s", dlerror());
+                }
             }
         }
 
@@ -1490,7 +1492,9 @@ XS_INTERNAL(Affix_load_lib) {
 #else
         (DLLib *)dlopen(SvPV_nolen(ST(0)), RTLD_LAZY /* RTLD_NOW|RTLD_GLOBAL */);
 #endif
-    if (!lib_handle) { croak("Failed to load lib %s", dlerror()); }
+    if (!lib_handle) {
+        croak("Failed to load lib %s", dlerror());
+    }
     SV *LIBSV = sv_newmortal();
     sv_setref_pv(LIBSV, NULL, (DCpointer)lib_handle);
     ST(0) = LIBSV;

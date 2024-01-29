@@ -71,3 +71,5 @@ t/src/85_affix_mangle_rust/target/
 t/_*
 
 dyncall/test/*/*
+
+.github/workflows/matrix.yaml
