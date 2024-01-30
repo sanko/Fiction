@@ -27,7 +27,8 @@ subtest load_library => sub {
 SKIP: {
         skip 'Failed to locate libm' unless $libm;
         $libref = load_library($libm);
-        ok $libref, q[load_library(...)];
+        ok $libref,             qq[load_library('$libm')];
+        ok load_library(undef), q[load_library(undef)];
     }
 };
 subtest find_symbol => sub {

@@ -47,9 +47,13 @@ package Affix::Platform::Unix 0.5 {
     }
 
     sub find_library ($name) {
-        _findSoname_ldconfig($name)
+        my @ret = _findSoname_ldconfig($name)
 
-        #~ // _get_soname( _findLib_gcc($name) ) // _get_soname( _findLib_ld($name) );
+            #~ // _get_soname( _findLib_gcc($name) ) // _get_soname( _findLib_ld($name) );
+            ;
+
+        #~ wantarray? @ret:
+        $ret[0] // ();
     }
 
     sub _get_soname ($file) {    # assuming GNU binutils / ELF

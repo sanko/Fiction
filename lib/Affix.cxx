@@ -22,9 +22,10 @@ XS_INTERNAL(Affix_load_library) {
     if (items != 1) croak_xs_usage(cv, "$lib");
     DCpointer lib_handle =
 #if defined(DC__OS_Win64) || defined(DC__OS_MacOSX)
-        dlLoadLibrary(SvPV_nolen(ST(0)));
+        dlLoadLibrary(SvPOK(ST(0)) ? SvPV_nolen(ST(0)) : NULL);
 #else
-        (DLLib *)dlopen(SvPV_nolen(ST(0)), RTLD_LAZY /* RTLD_NOW|RTLD_GLOBAL */);
+        (DLLib *)dlopen(SvPOK(ST(0)) ? SvPV_nolen(ST(0)) : NULL,
+                        RTLD_LAZY /* RTLD_NOW|RTLD_GLOBAL */);
 #endif
     if (!lib_handle) {
         croak("Failed to load lib %s", dlerror());
