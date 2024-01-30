@@ -152,15 +152,17 @@ XS_INTERNAL(Affix_object_test) {
             warn("Object!");
             sv_dump(instance);
             SV **fields = ObjectFIELDS(instance);
-            //~ SSize_t fieldcount = ObjectMAXFIELD(instance);
-            //~ warn("fieldcount: %u", fieldcount);
+            SSize_t fieldcount = ObjectMAXFIELD(instance);
+            warn("fieldcount: %u", fieldcount);
             //~ for (Size_t i = 0; i < fieldcount; i++) {
             //~     sv_dump(fields[i]);
             //~ }
             SV *args = fields[2];
             SV *ret = fields[3];
             SV *entry_point = fields[4];
+            SV *signature = fields[5];
             sv_dump(entry_point);
+            sv_dump(signature);
 
             //~ SV** tmp = av_fetch(MUTABLE_AV(object), 0, 0);
         }
