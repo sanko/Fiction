@@ -136,6 +136,58 @@ XS_INTERNAL(Affix_pow_example) {
     XSRETURN(1);
 }
 
+XS_INTERNAL(Affix_object_test) {
+    dVAR;
+    dXSARGS;
+    //~ if (items != 3) croak_xs_usage(cv, "symbol, x, y");
+    dMY_CXT;
+
+    SV *RETVAL = newSV(0);
+    DCCallVM *cvm = MY_CXT.cvm;
+    dcReset(cvm);
+
+    if (SvROK(ST(0))) {
+        SV *instance = SvRV(ST(0));
+        if (SvTYPE(instance) == SVt_PVOBJ) {
+            warn("Object!");
+            sv_dump(instance);
+            SV **fields = ObjectFIELDS(instance);
+            //~ SSize_t fieldcount = ObjectMAXFIELD(instance);
+            //~ warn("fieldcount: %u", fieldcount);
+            //~ for (Size_t i = 0; i < fieldcount; i++) {
+            //~     sv_dump(fields[i]);
+            //~ }
+            SV *args = fields[2];
+            SV *ret = fields[3];
+            SV *entry_point = fields[4];
+            sv_dump(entry_point);
+
+            //~ SV** tmp = av_fetch(MUTABLE_AV(object), 0, 0);
+        }
+    }
+    else
+        warn("Not an object?");
+
+    //~ DCpointer entry_point;
+    //~ if (SvROK(ST(0))) {
+    //~ IV tmp = SvIV((SV *)SvRV(ST(0)));
+    //~ entry_point = INT2PTR(DCpointer, tmp);
+    //~ }
+    //~ else
+    //~ croak("symbol is not a reference");
+
+    //~ dcArgDouble(cvm, SvNV(ST(1)));
+
+    //~ dcArgDouble(cvm, SvNV(ST(2)));
+
+    //~ RETVAL = newSVnv(dcCallDouble(cvm, entry_point));
+
+    //~ SV *LIBSV = sv_newmortal();
+    //~ sv_setref_pv(LIBSV, NULL, (DCpointer)lib_handle);
+    ST(0) = (RETVAL);
+    XSRETURN(1);
+}
+
 extern "C" void Affix_trigger(pTHX_ CV *cv) {
     dSP;
     dAXMARK;
@@ -1743,10 +1795,12 @@ XS_EXTERNAL(boot_Affix) {
 
     (void)newXSproto_portable("Affix::load_library", Affix_load_library, __FILE__, "$");
     (void)newXSproto_portable("Affix::free_library", Affix_free_library, __FILE__, "$;$");
-
     (void)newXSproto_portable("Affix::list_symbols", Affix_list_symbols, __FILE__, "$");
     (void)newXSproto_portable("Affix::find_symbol", Affix_find_symbol, __FILE__, "$$");
+
+    // XXX: Remove before stable
     (void)newXSproto_portable("Affix::pow_example", Affix_pow_example, __FILE__, "$$$");
+    (void)newXSproto_portable("Affix::object_test", Affix_object_test, __FILE__, "$;@");
 
     // general purpose flags
     export_constant("Affix", "VOID_FLAG", "flags", VOID_FLAG);

@@ -42,5 +42,6 @@ is Affix::pow_example( $symbol, 3, 4 ), 81, 'pow_example';
 #
 my $affix = Affix::Wrap->new( lib => 'm', symbol => 'pow', args => [ Double, Double ], returns => Double );
 isa_ok $affix, ['Affix::Wrap'];
+Affix::object_test($affix);
 #
 done_testing;
