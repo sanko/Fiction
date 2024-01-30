@@ -15,7 +15,7 @@ typedef struct {
 
 START_MY_CXT
 
-XS_INTERNAL(Affix_load_lib) {
+XS_INTERNAL(Affix_load_library) {
     dXSARGS;
     dXSI32;
     PING;
@@ -35,7 +35,7 @@ XS_INTERNAL(Affix_load_lib) {
     XSRETURN(1);
 }
 
-XS_INTERNAL(Affix_free_lib) {
+XS_INTERNAL(Affix_free_library) {
     dVAR;
     dXSARGS;
     if (items != 1) croak_xs_usage(cv, "lib");
@@ -1741,11 +1741,11 @@ XS_EXTERNAL(boot_Affix) {
 
     //~ export_function("Affix", "DEFAULT_ALIGNMENT", "vars");
 
-    (void)newXSproto_portable("Affix::load_lib", Affix_load_lib, __FILE__, "$");
+    (void)newXSproto_portable("Affix::load_library", Affix_load_library, __FILE__, "$");
+    (void)newXSproto_portable("Affix::free_library", Affix_free_library, __FILE__, "$;$");
+
     (void)newXSproto_portable("Affix::list_symbols", Affix_list_symbols, __FILE__, "$");
     (void)newXSproto_portable("Affix::find_symbol", Affix_find_symbol, __FILE__, "$$");
-    (void)newXSproto_portable("Affix::free_lib", Affix_free_lib, __FILE__, "$;$");
-
     (void)newXSproto_portable("Affix::pow_example", Affix_pow_example, __FILE__, "$$$");
 
     // general purpose flags

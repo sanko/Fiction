@@ -5,7 +5,7 @@ BEGIN { chdir '../' if !-d 't'; }
 use t::lib::helper;
 $|++;
 #
-my $affix = affix 'm', 'pow', Struct [], Void;
+my $affix = affix 'm', 'pow', [ Struct [ a => Int ] ], Void;
 #
 pow();
 $affix->call();

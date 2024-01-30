@@ -51,7 +51,7 @@ subtest 'API' => sub {
             SV];
         isa_ok $_, ['Affix::Type']
             for Void, Bool, Char, UChar, SChar, WChar, Short, UShort, Int, UInt, Long, ULong, LongLong, ULongLong, Float, Double, Size_t, SSize_t,
-            String, WString, Struct, SV, Pointer [Void], Array [Int], Callback [ [ Int, Float, Int ] => Void ];
+            String, WString, Struct [], Struct [ a => Int, b => Double ], SV, Pointer [Void], Array [Int], Callback [ [ Int, Float, Int ] => Void ];
     };
     subtest 'core' => sub {
         can_ok __PACKAGE__, $_ for qw[affix wrap pin unpin];
@@ -60,7 +60,7 @@ subtest 'API' => sub {
         can_ok __PACKAGE__, $_ for qw[malloc calloc realloc free memchr memcmp memset memcpy sizeof offsetof raw hexdump];
     };
     subtest 'internals' => sub {
-        can_ok 'Affix', $_ for qw[locate_lib locate_symbol];
+        can_ok 'Affix', $_ for qw[find_library load_library free_library find_symbol];
     }
 };
 #

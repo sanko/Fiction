@@ -18,7 +18,7 @@ use HTTP::Tiny;
 use Path::Tiny;
 use Archive::Tar;
 use IO::File;
-use IO::Uncompress::Unzip qw($UnzipError);
+use IO::Uncompress::Unzip qw[$UnzipError];
 use File::stat;
 use Config;
 #

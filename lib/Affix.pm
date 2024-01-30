@@ -35,6 +35,9 @@ package Affix 0.50 {    # 'FFI' is my middle name!
         malloc calloc realloc free memchr memcmp memset memcpy sizeof offsetof
         raw hexdump
         find_library
+        load_library
+        free_library
+        find_symbol
     ];
     %EXPORT_TAGS = ( all => \@EXPORT_OK );
     #
@@ -109,9 +112,18 @@ package Affix 0.50 {    # 'FFI' is my middle name!
         field $symbol : param;
         field $args : param    //= [];
         field $returns : param //= Affix::Void();
+        field $entry;
         #
-        ADJUST { warn 'adjust' }
-        method DESTROY ( $global = 0 ) { warn 'destroy ', ref $self; }
+        ADJUST {
+            Carp::croak 'args must be Affix::Type objects'      if grep { !$_->isa('Affix::Type') } @$args;
+            Carp::croak 'returns must be an Affix::Type object' if !$returns->isa('Affix::Type');
+            my $libref = Affix::load_library( $lib ? Affix::find_library($lib) : () );
+            $entry = Affix::find_symbol( $libref, $symbol );
+        }
+
+        method DESTROY ( $global = 0 ) {
+            warn 'destroy ', ref $self;
+        }
         #
         method call (@args) { warn 'call' }
     }
@@ -163,18 +175,31 @@ package Affix 0.50 {    # 'FFI' is my middle name!
     sub SSize_t()   { Affix::Type::SSize_t->new() }
     sub String()    { Affix::Type::String->new() }
     sub WString()   { Affix::Type::WString->new() }
-    sub Struct (%fields)               { Affix::Type::Struct->new( fields => \%fields ) }
-    sub Array  ( $type, $size //= () ) { Affix::Type::Array->new( type => $type, size => $size ) }
-
-    sub Callback ( $args, $returns //= Void ) {
-        Affix::Type::Callback->new( args => $args, returns => $returns );
-    }
-    sub SV() { Affix::Type::SV->new() }
+    sub SV()        { Affix::Type::SV->new() }
     {
-        # Perl isn't parsing this as a sub with a single arg when signatures are enabled. So that...
-        # affix( Pointer[Int], Int, Int ) parses as affix( Pointer(Int, Int, Int) ); which is... wrong
         no experimental 'signatures';
-        sub Pointer ( $) { Affix::Type::Pointer->new( type => shift ) }
+
+        # XXX: perl isn't setting prototypes correctly when signatures are enabled?
+        # affix(Pointer[Int], Int, Int ) becomes affix( Pointer([Int], Int, Int) ) which is wrong
+        sub Struct ($) {
+            Carp::croak 'Odd number of elements in struct definition' if scalar( @{ +shift } ) % 2;
+            Affix::Type::Struct->new( fields => \@$_[0] );
+        }
+
+        sub Array ($) {
+            my ( $type, $size ) = @$_[0];
+            Affix::Type::Array->new( type => $type, defined $size ? ( size => $size ) : () );
+        }
+
+        sub Callback($) {
+            my ( $args, $returns ) = @$_[0];
+            Affix::Type::Callback->new( args => $args // [], returns => $returns // Void );
+        }
+
+        sub Pointer ($) {
+            my ($type) = @$_[0];
+            Affix::Type::Pointer->new( type => $type // Void );
+        }
     }
 
     # Core
@@ -189,7 +214,7 @@ package Affix 0.50 {    # 'FFI' is my middle name!
     }
 
     sub wrap ( $lib, $symbol, $args //= [], $returns //= Void ) {
-        Affix::Function->new( lib => $lib, symbol => $symbol, args => $args, returns => $returns );
+        Affix::Wrap->new( lib => $lib, symbol => $symbol, args => $args, returns => $returns );
     }
     sub pin   ( $lib, $symbol, $type, $variable ) {...}
     sub unpin ($variable)                         {...}
@@ -207,11 +232,6 @@ package Affix 0.50 {    # 'FFI' is my middle name!
     sub offsetof ( $type, $field )       {...}
     sub raw      ( $ptr, $size )         {...}
     sub hexdump  ( $ptr, $size )         {...}
-
-    # Internals
-    sub locate_lib    ( $lib, @dirs ) { DynaLoader::dl_findfile($lib); }
-    sub locate_symbol ($name)         {...}
-    sub unload_lib    ($lib)          {...}
 
     # Let's go
     #~ sub dl_load_flags ($modulename) {0}
