@@ -27,9 +27,7 @@ XS_INTERNAL(Affix_load_library) {
         (DLLib *)dlopen(SvPOK(ST(0)) ? SvPV_nolen(ST(0)) : NULL,
                         RTLD_LAZY /* RTLD_NOW|RTLD_GLOBAL */);
 #endif
-    if (!lib_handle) {
-        croak("Failed to load lib %s", dlerror());
-    }
+    if (!lib_handle) { croak("Failed to load lib %s", dlerror()); }
     SV *LIBSV = sv_newmortal();
     sv_setref_pv(LIBSV, NULL, (DCpointer)lib_handle);
     ST(0) = LIBSV;
@@ -125,9 +123,18 @@ XS_INTERNAL(Affix_pow_example) {
     else
         croak("symbol is not a reference");
 
-    dcArgDouble(cvm, SvNV(ST(1)));
+    for (int i = 1; i < items; i++) {
+        warn("i: %d", i);
+        if (SvIOK(ST(i)))
+            dcArgInt(cvm, SvIV(ST(i)));
+        else if (SvUOK(ST(i)))
+            dcArgInt(cvm, SvUV(ST(i)));
+        else if (SvNOK(ST(i)))
+            dcArgDouble(cvm, SvNV(ST(i)));
+    }
 
-    dcArgDouble(cvm, SvNV(ST(2)));
+    //~ dcArgDouble(cvm, SvNV(ST(1)));
+    //~ dcArgDouble(cvm, SvNV(ST(2)));
 
     RETVAL = newSVnv(dcCallDouble(cvm, entry_point));
 
@@ -146,6 +153,7 @@ XS_INTERNAL(Affix_object_test) {
     SV *RETVAL = newSV(0);
     DCCallVM *cvm = MY_CXT.cvm;
     dcReset(cvm);
+    DCpointer entry_point;
 
     if (SvROK(ST(0))) {
         SV *instance = SvRV(ST(0));
@@ -158,12 +166,27 @@ XS_INTERNAL(Affix_object_test) {
             //~ for (Size_t i = 0; i < fieldcount; i++) {
             //~     sv_dump(fields[i]);
             //~ }
+            if (SvROK(fields[4])) {
+                IV tmp = SvIV((SV *)SvRV(fields[4]));
+                entry_point = INT2PTR(DCpointer, tmp);
+            }
+
             SV *args = fields[2];
             SV *ret = fields[3];
             SV *entry_point = fields[4];
             SV *signature = fields[5];
             sv_dump(entry_point);
             sv_dump(signature);
+
+            for (int i = 1; i < items; i++) {
+                warn("i: %d", i);
+                if (SvIOK(ST(i)))
+                    dcArgInt(cvm, SvIV(ST(i)));
+                else if (SvUOK(ST(i)))
+                    dcArgInt(cvm, SvUV(ST(i)));
+                else if (SvNOK(ST(i)))
+                    dcArgDouble(cvm, SvNV(ST(i)));
+            }
 
             //~ SV** tmp = av_fetch(MUTABLE_AV(object), 0, 0);
         }
@@ -183,7 +206,7 @@ XS_INTERNAL(Affix_object_test) {
 
     //~ dcArgDouble(cvm, SvNV(ST(2)));
 
-    //~ RETVAL = newSVnv(dcCallDouble(cvm, entry_point));
+    RETVAL = newSVnv(dcCallDouble(cvm, entry_point));
 
     //~ SV *LIBSV = sv_newmortal();
     //~ sv_setref_pv(LIBSV, NULL, (DCpointer)lib_handle);
@@ -730,7 +753,9 @@ extern "C" void Affix_trigger(pTHX_ CV *cv) {
             RETVAL = newSV(1);
             SV **package = AXT_TYPEDEF(affix->ret_info);
             if (package != NULL) { sv_setref_pv(RETVAL, SvPV_nolen(*package), ptr); }
-            else { sv_setref_pv(RETVAL, "Affix::Pointer::Unmanaged", ptr); }
+            else {
+                sv_setref_pv(RETVAL, "Affix::Pointer::Unmanaged", ptr);
+            }
         }
     } break;
     default:
@@ -1450,7 +1475,9 @@ XS_INTERNAL(Affix_affix) {
             if (!SvPOK(symbol)) { croak("Undefined symbol name"); }
             perl_name = SvPV_nolen(*av_fetch(tmp, 1, false));
         }
-        else if (UNLIKELY(!SvPOK(ST(1)))) { croak("Undefined symbol name"); }
+        else if (UNLIKELY(!SvPOK(ST(1)))) {
+            croak("Undefined symbol name");
+        }
         else {
             symbol = ST(1);
             perl_name = SvPV_nolen(symbol);
@@ -1510,9 +1537,7 @@ XS_INTERNAL(Affix_affix) {
 #else
                     (DLLib *)dlopen(affix->lib_name, RTLD_LAZY /* RTLD_NOW|RTLD_GLOBAL */);
 #endif
-                if (!affix->lib_handle) {
-                    croak("Failed to load lib %s", dlerror());
-                }
+                if (!affix->lib_handle) { croak("Failed to load lib %s", dlerror()); }
             }
         }
 
@@ -1572,10 +1597,14 @@ XS_INTERNAL(Affix_affix) {
                             }
                             affix->arg_info[arg_pos] = newSVsv(type);
                         }
-                        else { croak("Unexpected arg type in slot %ld", arg_pos + 1); }
+                        else {
+                            croak("Unexpected arg type in slot %ld", arg_pos + 1);
+                        }
                     }
                 }
-                else { croak("Expected a list of argument types as an array ref"); }
+                else {
+                    croak("Expected a list of argument types as an array ref");
+                }
             }
             STMT_END;
         }
@@ -1625,7 +1654,9 @@ XS_INTERNAL(Affix_affix) {
             affix->ret_info = newSVsv(ST(3));
             affix->ret_type = AXT_NUMERIC(ST(3));
         }
-        else { croak("Unknown return type"); }
+        else {
+            croak("Unknown return type");
+        }
     }
 
     if (affix->_cpp_constructor) { ++affix->num_args; } // Expect Class->new(...)

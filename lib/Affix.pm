@@ -107,8 +107,8 @@ package Affix 0.50 {    # 'FFI' is my middle name!
     }
 
     class Affix::Type::Callback : isa(Affix::Type) {
-        field $args : param;
-        field $returns : param;
+        field $argtypes : param;
+        field $restype : param;
     }
 
     class Affix::Type::SV : isa(Affix::Type) { }
@@ -116,17 +116,17 @@ package Affix 0.50 {    # 'FFI' is my middle name!
     class Affix::Wrap 1 {
         field $lib : param;
         field $symbol : param;
-        field $args : param    //= [];
-        field $returns : param //= Affix::Void();
+        field $argtypes : param //= [];
+        field $restype : param  //= Affix::Void();
         field $entry;
         field $signature;
         #
         ADJUST {
-            Carp::croak 'args must be Affix::Type objects'      if grep { !$_->isa('Affix::Type') } @$args;
-            Carp::croak 'returns must be an Affix::Type object' if !$returns->isa('Affix::Type');
+            Carp::croak 'args must be Affix::Type objects'      if grep { !$_->isa('Affix::Type') } @$argtypes;
+            Carp::croak 'returns must be an Affix::Type object' if !$restype->isa('Affix::Type');
             my $libref = Affix::load_library( $lib ? Affix::find_library($lib) : () );
             $entry     = Affix::find_symbol( $libref, $symbol );
-            $signature = join '', map { $_->flag } @$args;
+            $signature = join '', map { $_->flag } @$argtypes;
 
             #~ $signature //='';
         }
@@ -203,7 +203,7 @@ package Affix 0.50 {    # 'FFI' is my middle name!
 
         sub Callback($) {
             my ( $args, $returns ) = @$_[0];
-            Affix::Type::Callback->new( args => $args // [], returns => $returns // Void );
+            Affix::Type::Callback->new( argtypes => $args // [], restype => $returns // Void );
         }
 
         sub Pointer ($) {
@@ -214,7 +214,7 @@ package Affix 0.50 {    # 'FFI' is my middle name!
 
     # Core
     sub affix ( $lib, $symbol, $args //= [], $returns //= Void ) {
-        my $affix = Affix::Wrap->new( lib => $lib, symbol => $symbol, args => $args, returns => $returns );
+        my $affix = Affix::Wrap->new( lib => $lib, symbol => $symbol, argtypes => $args, restype => $returns );
         my ($pkg) = caller(0);
         {
             no strict 'refs';
