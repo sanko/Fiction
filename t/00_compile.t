@@ -15,6 +15,7 @@ diag '                 syscall: ' . ( Affix::Platform::Syscall()     ? 'yes' : '
 diag '     compiler: ' . Affix::Platform::Compiler();
 diag ' architecture: ' . Affix::Platform::Architecture();
 diag '           os: ' . Affix::Platform::OS();
+diag '          $^O: ' . $^O;
 
 if ( Affix::Platform::OS() =~ /Win32/ ) {
     diag '               Cygwin: ' . ( Affix::Platform::MS_Cygwin() ? 'yes' : 'no' );
