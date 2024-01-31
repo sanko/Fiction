@@ -100,7 +100,9 @@ jobs:
 
              perl -V
 
-             cpanm --test-only -v .
+             perl Build.PL
+
+             ./Build test -v
 
       - name: "Build perl ${{ matrix.perl }} with perlbrew"
         if: ${{ steps.cache-perl.outputs.cache-hit != 'true' && matrix.os != 'windows-2019' }}
@@ -142,4 +144,6 @@ jobs:
 
              perl -V
 
-             cpanm --test-only -v .
+             perl Build.PL
+
+             ./Build test -v

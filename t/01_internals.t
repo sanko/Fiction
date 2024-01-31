@@ -15,7 +15,7 @@ subtest find_library => sub {
         $libm = $lib if $test eq 'm';
     }
 SKIP: {
-        skip 'Windows tests' unless defined $Affix::Platform::Windows::VERSION;
+        skip 'Windows tests' unless $^O eq 'MSWin32';
         for my $test (qw[ntdll OpenGL32 Glu32]) {
             my ($lib) = find_library($test);
             ok $lib, qq[find_library('$test')];
@@ -23,7 +23,7 @@ SKIP: {
         }
     }
 SKIP: {
-        skip 'Unix tests' unless defined $Affix::Platform::Unix::VERSION;
+        skip 'Unix tests' unless $^O eq 'linux';
         for my $test (qw[m c]) {
             {
                 my $todo = todo 'ld might be missing';
