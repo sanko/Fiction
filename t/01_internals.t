@@ -15,11 +15,34 @@ subtest find_library => sub {
         $libm = $lib if $test eq 'm';
     }
 SKIP: {
-        skip 'Windows tests' unless $^O =~ /MSWin/;
+        skip 'Windows tests' unless defined $Affix::Platform::Windows::VERSION;
         for my $test (qw[ntdll OpenGL32 Glu32]) {
             my ($lib) = find_library($test);
             ok $lib, qq[find_library('$test')];
             diag $lib;
+        }
+    }
+SKIP: {
+        skip 'Unix tests' unless defined $Affix::Platform::Unix::VERSION;
+        for my $test (qw[m c]) {
+            {
+                my $todo = todo 'ld might be missing';
+                my ($lib) = Affix::Platform::Unix::_findLib_ld($test);
+                ok $lib, qq[Affix::Platform::Unix::_findLib_ld('$test')];
+                diag $lib;
+            }
+            {
+                my $todo = todo 'ldconfig might be missing';
+                my ($lib) = Affix::Platform::Unix::_findSoname_ldconfig($test);
+                ok $lib, qq[Affix::Platform::Unix::_findSoname_ldconfig('$test')];
+                diag $lib;
+            }
+            {
+                my $todo = todo 'c compiler might be missing';
+                my ($lib) = Affix::Platform::Unix::_findLib_gcc($test);
+                ok $lib, qq[Affix::Platform::Unix::_findLib_gcc('$test')];
+                diag $lib;
+            }
         }
     }
 };

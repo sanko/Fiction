@@ -74,7 +74,7 @@ jobs:
 
             set PATH=C:\Users\runneradmin\perl5\perlbrew\bin;%PATH%
 
-      - name: "Testing on chached perl ${{ matrix.os }}-${{ matrix.perl }}(${{ matrix.flags }})"
+      - name: "Testing on cached perl ${{ matrix.os }}-${{ matrix.perl }}(${{ matrix.flags }})"
         if: ${{ matrix.os == 'windows-2019' }}
         shell: cmd
         run: |
@@ -96,7 +96,7 @@ jobs:
 
              perlbrew install --switch --verbose --as cache-${{ matrix.os }}${{ matrix.perl }}${{ matrix.flags }} -j 12 --notest --noman ${{ matrix.flags }} perl-${{ matrix.perl }}
 
-      - name: "Testing on chached perl ${{ matrix.os }}-${{ matrix.perl }}(${{ matrix.flags }})"
+      - name: "Testing on cached perl ${{ matrix.os }}-${{ matrix.perl }}(${{ matrix.flags }})"
         if: ${{ matrix.os != 'windows-2019' }}
         shell: bash
         run: |

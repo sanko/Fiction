@@ -84,7 +84,7 @@ jobs:
 
              cpanm --installdeps --notest .
 
-      - name: "Testing on chached perl ${{ matrix.os }}-${{ matrix.perl }}(${{ matrix.flags }})"
+      - name: "Testing on cached perl ${{ matrix.os }}-${{ matrix.perl }}(${{ matrix.flags }})"
         if: ${{ matrix.os == 'windows-2019' }}
         shell: cmd
         run: |
@@ -122,7 +122,7 @@ jobs:
 
              cpanm --installdeps --notest .
 
-      - name: "Testing on chached perl ${{ matrix.os }}-${{ matrix.perl }}(${{ matrix.flags }})"
+      - name: "Testing on cached perl ${{ matrix.os }}-${{ matrix.perl }}(${{ matrix.flags }})"
         if: ${{ matrix.os != 'windows-2019' }}
         shell: bash
         run: |

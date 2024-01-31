@@ -25,35 +25,49 @@ package Affix::Platform::Unix 0.5 {
         # XXX assuming GLIBC's ldconfig (with option -p)
         my $regex = qr[^lib$name\.[^\s]+\s+\($machine.*?\)\s*=>\s*(.+)$];
         grep { is_elf($_) } map { -l $_ ? readlink($_) : $_ } map { $_ =~ $regex; defined $1 ? $1 : () } split /\n\s*/,
-            `export LC_ALL 'C'; export LANG 'C'; /sbin/ldconfig -p`;
+            `export LC_ALL 'C'; export LANG 'C'; /sbin/ldconfig -p 2>&1`;
     }
 
     sub _findLib_ld ($name) {
-        use Data::Dump;
-        my @paths = split ':', $ENV{LD_LIBRARY_PATH};
-        ddx \@paths;
-
-        #ddx \%ENV;
-        `ld -t -o /dev/null -lm`;
-
-        #~ expr = r'[^\(\)\s]*lib%s\.[^\(\)\s]*' % re.escape(name)
-        #~ cmd = ['ld', '-t']
-        #~ libpath = os.environ.get('LD_LIBRARY_PATH')
-        #~ if libpath:
-        #~ for d in libpath.split(':'):
-        #~ cmd.extend(['-L', d])
-        #~ cmd.extend(['-o', os.devnull, '-l%s' % name])
-        #~ print('===>',cmd)
+        `export LC_ALL 'C'; export LANG 'C'; ld -t -o /dev/null -l$name 2>&1`;
     }
 
-    sub find_library ($name) {
-        my @ret = _findSoname_ldconfig($name)
+    sub _findLib_gcc ($name) {
+        $name =~ s[^lib][];
+        CORE::state $compiler;
+        $compiler //= sub {
+            my $ret = `which gcc 2>&1`;
+            chomp($ret);
+            $ret = `which cc 2>&1` unless -x $ret;
+            chomp($ret);
+            return undef unless -x $ret;
+            chomp($ret);
+            $ret;
+            }
+            ->();
+        my $trace;
+        {
+            use File::Temp qw[tempfile];
+            my ( $fh, $temp_file ) = tempfile();
+            $trace = `$compiler -Wl,-t -o $temp_file -l$name 2>&1`;    # Redirect stderr to stdout
+        };
+        grep { is_elf($_) } grep {/^.*?\/lib$name\.[^\s]+$/} split /\n/, $trace;
+    }
 
-            #~ // _get_soname( _findLib_gcc($name) ) // _get_soname( _findLib_ld($name) );
-            ;
-
-        #~ wantarray? @ret:
-        $ret[0] // ();
+    sub find_library ( $name, $version //= '_' ) {
+        CORE::state $cache;
+        unless ( defined $cache->{$name}{$version} ) {
+            my @ret = _findSoname_ldconfig($name);
+            @ret = @ret = _findLib_gcc($name) unless @ret;
+            @ret = _findLib_ld($name)         unless @ret;
+            return unless @ret;
+            for my $lib (@ret) {
+                next unless $lib =~ /^.*?\/lib$name\.\D*([\d\.\-]+)?$/;
+                $version = $1 if $version eq '_';
+                $cache->{$name}{$version} //= $lib;
+            }
+        }
+        $cache->{$name}{$version} // ();
     }
 
     sub _get_soname ($file) {    # assuming GNU binutils / ELF

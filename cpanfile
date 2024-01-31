@@ -4,6 +4,7 @@ requires 'Config';
 requires 'XSLoader';
 requires 'Sub::Util';
 requires 'Attribute::Handlers';
+requires 'File::Temp';    # Used in Affix::Platform::Unix::_findLib_gcc(...)
 
 # TODO: remove this!!!!
 requires 'Data::Dump';
