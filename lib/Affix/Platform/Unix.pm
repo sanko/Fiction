@@ -51,15 +51,19 @@ package Affix::Platform::Unix 0.5 {
             my ( $fh, $temp_file ) = tempfile();
             $trace = `$compiler -Wl,-t -o $temp_file -l$name 2>&1`;    # Redirect stderr to stdout
         };
-        grep { is_elf($_) } grep {/^.*?\/lib$name\.[^\s]+$/} split /\n/, $trace;
+        grep {/^.*?\/lib$name\.[^\s]+$/} split /\n/, $trace;
     }
 
     sub find_library ( $name, $version //= '_' ) {
+        if ( -f $name ) {
+            $name = readlink $name if -l $name;                        # Handle symbolic links
+            return $name           if is_elf($name);
+        }
         CORE::state $cache;
         unless ( defined $cache->{$name}{$version} ) {
-            my @ret = _findSoname_ldconfig($name);
-            @ret = @ret = _findLib_gcc($name) unless @ret;
-            @ret = _findLib_ld($name)         unless @ret;
+            my @ret = grep { is_elf($_) } _findSoname_ldconfig($name);
+            @ret = grep { is_elf($_) } _findLib_gcc($name) unless @ret;
+            @ret = grep { is_elf($_) } _findLib_ld($name)  unless @ret;
             return unless @ret;
             for my $lib (@ret) {
                 next unless $lib =~ /^.*?\/lib$name\.\D*([\d\.\-]+)?$/;
