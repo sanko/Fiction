@@ -122,7 +122,7 @@ package Affix 0.50 {    # 'FFI' is my middle name!
         field $signature;
         #
         ADJUST {
-            #~ Carp::croak 'args must be Affix::Type objects'      if grep { !$_->isa('Affix::Type') } @$argtypes;
+            Carp::croak 'args must be Affix::Type objects'      if grep { !$_->isa('Affix::Type') } @$argtypes;
             Carp::croak 'returns must be an Affix::Type object' if !$restype->isa('Affix::Type');
             my $libref = Affix::load_library( $lib ? Affix::find_library($lib) : () );
             $entry     = Affix::find_symbol( $libref, $symbol );
@@ -134,8 +134,6 @@ package Affix 0.50 {    # 'FFI' is my middle name!
         method DESTROY ( $global = 0 ) {
             warn 'destroy ', ref $self;
         }
-        #
-        method call (@args) { warn 'call' }
     }
 
     # ABI system
@@ -162,32 +160,32 @@ package Affix 0.50 {    # 'FFI' is my middle name!
     class Affix::ABI::Swift {
         method mangle ( $name, $args, $ret ) {...}
     }
-
-    # Functions with signatures must follow classes until https://github.com/Perl/perl5/pull/21159
-    # Type system
-    sub Void()      { Affix::Type::Void->new() }
-    sub Bool()      { Affix::Type::Bool->new() }
-    sub Char()      { Affix::Type::Char->new() }
-    sub UChar()     { Affix::Type::UChar->new() }
-    sub SChar()     { Affix::Type::SChar->new() }
-    sub WChar()     { Affix::Type::WChar->new() }
-    sub Short()     { Affix::Type::Short->new() }
-    sub UShort()    { Affix::Type::UShort->new() }
-    sub Int()       { Affix::Type::Int->new() }
-    sub UInt()      { Affix::Type::UInt->new() }
-    sub Long()      { Affix::Type::Long->new() }
-    sub ULong()     { Affix::Type::ULong->new() }
-    sub LongLong()  { Affix::Type::LongLong->new() }
-    sub ULongLong() { Affix::Type::ULongLong->new() }
-    sub Float()     { Affix::Type::Float->new() }
-    sub Double()    { Affix::Type::Double->new() }
-    sub Size_t()    { Affix::Type::Size_t->new() }
-    sub SSize_t()   { Affix::Type::SSize_t->new() }
-    sub String()    { Affix::Type::String->new() }
-    sub WString()   { Affix::Type::WString->new() }
-    sub SV()        { Affix::Type::SV->new() }
     {
         no experimental 'signatures';
+
+        # Functions with signatures must follow classes until https://github.com/Perl/perl5/pull/21159
+        # Type system
+        sub Void()      { Affix::Type::Void->new() }
+        sub Bool()      { Affix::Type::Bool->new() }
+        sub Char()      { Affix::Type::Char->new() }
+        sub UChar()     { Affix::Type::UChar->new() }
+        sub SChar()     { Affix::Type::SChar->new() }
+        sub WChar()     { Affix::Type::WChar->new() }
+        sub Short()     { Affix::Type::Short->new() }
+        sub UShort()    { Affix::Type::UShort->new() }
+        sub Int()       { Affix::Type::Int->new() }
+        sub UInt()      { Affix::Type::UInt->new() }
+        sub Long()      { Affix::Type::Long->new() }
+        sub ULong()     { Affix::Type::ULong->new() }
+        sub LongLong()  { Affix::Type::LongLong->new() }
+        sub ULongLong() { Affix::Type::ULongLong->new() }
+        sub Float()     { Affix::Type::Float->new() }
+        sub Double(;$)  { Affix::Type::Double->new() }
+        sub Size_t()    { Affix::Type::Size_t->new() }
+        sub SSize_t()   { Affix::Type::SSize_t->new() }
+        sub String()    { Affix::Type::String->new() }
+        sub WString()   { Affix::Type::WString->new() }
+        sub SV()        { Affix::Type::SV->new() }
 
         # XXX: perl isn't setting prototypes correctly when signatures are enabled?
         # affix(Pointer[Int], Int, Int ) becomes affix( Pointer([Int], Int, Int) ) which is wrong
