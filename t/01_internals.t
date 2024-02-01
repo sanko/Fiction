@@ -62,10 +62,15 @@ SKIP: {
     }
 };
 #
-is Affix::pow_example( $symbol, 3.0, 4.0 ), 81, 'pow_example';
-#
-my $affix = Affix::Wrap->new( lib => 'm', symbol => 'pow', argtypes => [ Double, Double ], restype => Double );
-isa_ok $affix, ['Affix::Wrap'];
-is Affix::object_test( $affix, 3.0, 4.0 ), 81, 'object_test';
+subtest 'wrap with known argtypes' => sub {
+    my $affix = Affix::Wrap->new( lib => 'm', symbol => 'pow', argtypes => [ Double, Double ], restype => Double );
+    isa_ok $affix, ['Affix::Wrap'];
+    is Affix::object_test( $affix, 3, 4 ), 81, 'object_test';
+};
+subtest 'wrap with unknown argtypes' => sub {
+    my $affix = Affix::Wrap->new( lib => 'm', symbol => 'pow', restype => Double );
+    isa_ok $affix, ['Affix::Wrap'];
+    is Affix::object_test( $affix, 3.0, 4.0 ), 81, 'object_test';
+};
 #
 done_testing;

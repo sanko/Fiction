@@ -54,9 +54,9 @@ package Affix::Platform::Unix 0.5 {
         grep {/^.*?\/lib$name\.[^\s]+$/} split /\n/, $trace;
     }
 
-    sub find_library ( $name, $version //= '_' ) {
+    sub find_library ( $name, $version //= '' ) {    # TODO: actually feed version to diff methods
         if ( -f $name ) {
-            $name = readlink $name if -l $name;                        # Handle symbolic links
+            $name = readlink $name if -l $name;        # Handle symbolic links
             return $name           if is_elf($name);
         }
         CORE::state $cache;
@@ -67,7 +67,7 @@ package Affix::Platform::Unix 0.5 {
             return unless @ret;
             for my $lib (@ret) {
                 next unless $lib =~ /^.*?\/lib$name\.\D*([\d\.\-]+)?$/;
-                $version = $1 if $version eq '_';
+                $version = $1 if $version eq '';
                 $cache->{$name}{$version} //= $lib;
             }
         }

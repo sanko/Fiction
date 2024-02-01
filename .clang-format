@@ -19,18 +19,18 @@ BreakBeforeBraces: 'Custom'
 
 # Control of individual brace wrapping cases
 BraceWrapping: {
-    AfterClass: 'true'
-    AfterControlStatement: 'false'
-    AfterEnum : 'true'
-    AfterFunction : 'false'
-    AfterNamespace : 'true'
-    AfterStruct : 'false'
-    AfterUnion : 'true'
-    BeforeCatch : 'false'
-    BeforeElse : 'true'
-    SplitEmptyFunction: 'false'
-    SplitEmptyRecord: 'false'
-    SplitEmptyNamespace: 'false'
+    AfterClass: 'true',
+    AfterControlStatement: 'false',
+    AfterEnum : 'true',
+    AfterFunction : 'false',
+    AfterNamespace : 'true',
+    AfterStruct : 'false',
+    AfterUnion : 'true',
+    BeforeCatch : 'false',
+    BeforeElse : 'true',
+    SplitEmptyFunction: 'false',
+    SplitEmptyRecord: 'false',
+    SplitEmptyNamespace: 'false',
 }
 
 # The column limit

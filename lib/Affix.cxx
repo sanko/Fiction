@@ -107,45 +107,6 @@ XS_INTERNAL(Affix_find_symbol) {
     XSRETURN(1);
 }
 
-XS_INTERNAL(Affix_pow_example) {
-    dVAR;
-    dXSARGS;
-    if (items != 3) croak_xs_usage(cv, "symbol, x, y");
-    dMY_CXT;
-
-    SV *RETVAL;
-    DCCallVM *cvm = MY_CXT.cvm;
-    dcReset(cvm);
-
-    DCpointer entry_point;
-    if (SvROK(ST(0))) {
-        IV tmp = SvIV((SV *)SvRV(ST(0)));
-        entry_point = INT2PTR(DCpointer, tmp);
-    }
-    else
-        croak("symbol is not a reference");
-
-    for (int i = 1; i < items; i++) {
-        warn("i: %d", i);
-        if (SvIOK(ST(i)))
-            dcArgInt(cvm, SvIV(ST(i)));
-        else if (SvUOK(ST(i)))
-            dcArgInt(cvm, SvUV(ST(i)));
-        else if (SvNOK(ST(i)))
-            dcArgDouble(cvm, SvNV(ST(i)));
-    }
-
-    //~ dcArgDouble(cvm, SvNV(ST(1)));
-    //~ dcArgDouble(cvm, SvNV(ST(2)));
-
-    RETVAL = newSVnv(dcCallDouble(cvm, entry_point));
-
-    //~ SV *LIBSV = sv_newmortal();
-    //~ sv_setref_pv(LIBSV, NULL, (DCpointer)lib_handle);
-    ST(0) = (RETVAL);
-    XSRETURN(1);
-}
-
 XS_INTERNAL(Affix_object_test) {
     dVAR;
     dXSARGS;
@@ -161,10 +122,10 @@ XS_INTERNAL(Affix_object_test) {
         SV *instance = SvRV(ST(0));
         if (SvTYPE(instance) == SVt_PVOBJ) {
             warn("Object!");
-            sv_dump(instance);
+            //~ sv_dump(instance);
             SV **fields = ObjectFIELDS(instance);
             SSize_t fieldcount = ObjectMAXFIELD(instance);
-            warn("fieldcount: %u", fieldcount);
+            //~ warn("fieldcount: %u", fieldcount);
             //~ for (Size_t i = 0; i < fieldcount; i++) {
             //~     sv_dump(fields[i]);
             //~ }
@@ -173,21 +134,43 @@ XS_INTERNAL(Affix_object_test) {
                 entry_point = INT2PTR(DCpointer, tmp);
             }
 
-            SV *args = fields[2];
+            AV *args = MUTABLE_AV(SvRV(fields[2]));
             SV *ret = fields[3];
             SV *entry_point = fields[4];
             SV *signature = fields[5];
             sv_dump(entry_point);
             sv_dump(signature);
 
-            for (int i = 1; i < items; i++) {
-                warn("i: %d", i);
-                if (SvIOK(ST(i)))
-                    dcArgInt(cvm, SvIV(ST(i)));
-                else if (SvUOK(ST(i)))
-                    dcArgInt(cvm, SvUV(ST(i)));
-                else if (SvNOK(ST(i)))
-                    dcArgDouble(cvm, SvNV(ST(i)));
+            size_t arg_count = av_count(args);
+
+            if (arg_count) {
+                if (arg_count != items - 1)
+                    croak("Too %s arguments for subroutine (got %d; expected %d)",
+                          items - 1 < arg_count ? "few" : "many", items - 1, arg_count);
+                const char *sig = SvPV_nolen(signature);
+                for (size_t i = 1; i <= arg_count; i++) {
+                    char type = sig[i - 1];
+                    //~ warn("[%d of %d] %c", i, arg_count, type);
+                    switch (type) {
+                    case INT_FLAG:
+                        dcArgInt(cvm, SvIV(ST(i)));
+                        break;
+                    case DOUBLE_FLAG:
+                        dcArgDouble(cvm, SvNV(ST(i)));
+                        break;
+                    }
+                }
+            }
+            else { // Try our best...
+                for (int i = 1; i < items; i++) {
+                    warn("i: %d", i);
+                    if (SvIOK(ST(i)))
+                        dcArgInt(cvm, SvIV(ST(i)));
+                    else if (SvUOK(ST(i)))
+                        dcArgInt(cvm, SvUV(ST(i)));
+                    else if (SvNOK(ST(i)))
+                        dcArgDouble(cvm, SvNV(ST(i)));
+                }
             }
 
             //~ SV** tmp = av_fetch(MUTABLE_AV(object), 0, 0);
@@ -1827,7 +1810,6 @@ XS_EXTERNAL(boot_Affix) {
     (void)newXSproto_portable("Affix::find_symbol", Affix_find_symbol, __FILE__, "$$");
 
     // XXX: Remove before stable
-    (void)newXSproto_portable("Affix::pow_example", Affix_pow_example, __FILE__, "$$$");
     (void)newXSproto_portable("Affix::object_test", Affix_object_test, __FILE__, "$;@");
 
     // general purpose flags

@@ -116,13 +116,13 @@ package Affix 0.50 {    # 'FFI' is my middle name!
     class Affix::Wrap 1 {
         field $lib : param;
         field $symbol : param;
-        field $argtypes : param //= [];
+        field $argtypes : param //= ();
         field $restype : param  //= Affix::Void();
         field $entry;
         field $signature;
         #
         ADJUST {
-            Carp::croak 'args must be Affix::Type objects'      if grep { !$_->isa('Affix::Type') } @$argtypes;
+            #~ Carp::croak 'args must be Affix::Type objects'      if grep { !$_->isa('Affix::Type') } @$argtypes;
             Carp::croak 'returns must be an Affix::Type object' if !$restype->isa('Affix::Type');
             my $libref = Affix::load_library( $lib ? Affix::find_library($lib) : () );
             $entry     = Affix::find_symbol( $libref, $symbol );
