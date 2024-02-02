@@ -199,6 +199,11 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
             size_t sig_len = strlen(fic->signature);
             for (size_t sig_pos = 0, st_pos = 0; sig_pos < sig_len; sig_pos++) {
                 switch (fic->signature[sig_pos]) {
+                case VOID_FLAG:
+                    break; // ...okay?
+                case INT_FLAG:
+                    dcArgInt(cvm, SvIV(ST(st_pos++)));
+                    break;
                 case DOUBLE_FLAG:
                     dcArgDouble(cvm, SvNV(ST(st_pos++)));
                     break;

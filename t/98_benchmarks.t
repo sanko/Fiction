@@ -6,8 +6,6 @@ BEGIN { chdir '../' if !-d 't'; }
 $|++;
 #
 use Benchmark qw[:all];
-my $defined  = Affix::Wrap->new( lib => 'm', symbol => 'pow', argtypes => [ Double, Double ], restype => Double );
-my $context  = Affix::Wrap->new( lib => 'm', symbol => 'pow', restype  => Double );
 my $fiction1 = Affix::fiction( Affix::find_library('m'), 'pow', [ Double, Double ], Double );
 my $fiction2 = Affix::fiction( Affix::find_library('m'), 'pow' );
 ok 81 == $fiction1->( 3, 4 ),          'fiction 1';
@@ -18,8 +16,9 @@ sub pow {
     my ( $x, $y ) = @_;
     return $x**$y;
 }
-diag 'running benchmarks...';
-{
+if ( $ENV{AUTOMATED_TESTING} or $ENV{AUTHOR_TESTING} ) {
+    diag 'running benchmarks...';
+
     my $old_fh = select(STDOUT);                 # Temporarily save original STDOUT
     open( my $capture_fh, '>', \my $stdout );    # Open a filehandle to capture output
     select($capture_fh);                         # Redirect STDOUT to the capture filehandle
@@ -27,23 +26,13 @@ diag 'running benchmarks...';
         -10,
         {   'fiction w/ known argtypes' => sub { $fiction1->( 3, 4 ) },
             'fiction using context'     => sub { $fiction2->( 3.0, 4.0 ) },
-
-            #~ 'defined'  => sub { $defined->call( 3,   4 ) },
-            #~ 'context'  => sub { $context->call( 3.0, 4.0 ) },
-            #~ 'definedX' => sub { Affix::Wrap::call( $defined, 3,   4 ) },
-            #~ 'contextX' => sub { Affix::Wrap::call( $context, 3.0, 4.0 ) },
-            'pure perl int' => sub {
-                pow( 3, 4 );
-            },
-            'pure perl dec' => sub {
-                pow( 3.0, 4.0 );
-            }
+            'pure perl int'             => sub { pow( 3,   4 ) },
+            'pure perl dec'             => sub { pow( 3.0, 4.0 ) }
         }
     );
-    select($old_fh);       # Restore original STDOUT
-    close($capture_fh);    # Close the capture filehandle
+    select($old_fh);                             # Restore original STDOUT
+    close($capture_fh);                          # Close the capture filehandle
     diag $stdout;
-};
-pass 'benchmarks';
+}
 #
 done_testing;
