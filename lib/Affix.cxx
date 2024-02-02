@@ -151,8 +151,9 @@ XS_INTERNAL(Affix_fiction) {
 
     fiction *ret = (fiction *)safemalloc(sizeof(fiction));
     ret->entry_point = symbol;
-    ret->argtypes = NULL;
-    ret->restype = NULL;
+    ret->argtypes = SvROK(ST(2))? MUTABLE_AV(ST(2)) :NULL;
+    ret->restype = SvROK(ST(3)) ? newSVsv(ST(3)) : NULL;
+    //~ ret->signature = SvROK(ST(2)) ?
 
     STMT_START {
         cv = newXSproto_portable(NULL, Fiction_trigger, __FILE__, "$;@");
@@ -180,6 +181,11 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
     dMY_CXT;
     DCCallVM *cvm = MY_CXT.cvm;
     dcReset(cvm);
+
+    //~ if(fic->signature != NULL && strlen(fic->signature)!=items) {
+//~ warn("We know the types!");
+
+    //~ }
 
     for (int i = 0; i < items; i++) {
         //~ warn("i: %d, %d", i, SvIV(ST(i)));

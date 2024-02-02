@@ -9,7 +9,7 @@ $|++;
 #
 #~ pow();
 #~ $affix->call();
-isa_ok Pointer [Int], [ 'Affix::Type', 'Affix::Type::Pointer' ];
+isa_ok Pointer [Int], [ 'Fiction::Type', 'Fiction::Type::Pointer' ];
 ok my $lib = compile_test_lib('99_preview'), 'compile_test_lib("99_preview")';
 diag $lib;
 
