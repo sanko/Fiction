@@ -1,41 +1,37 @@
-name: Solaris
-
-on:
-    push:
-        branches: '*'
-    pull_request:
-        branches: '*'
-
+---
 jobs:
   test:
+    name: 'Solaris (${{ matrix.perl }})'
     runs-on: ubuntu-latest
-    name: Solaris (${{ matrix.perl }})
+    steps:
+      - uses: actions/checkout@v4
+      - id: test
+        name: Test in Solaris
+        uses: vmactions/solaris-vm@v1
+        with:
+          prepare: |
+            pkgutil -y -i gcc5core gcc5g++ socat git curl tree
+            git clone --depth 1 --branch v${{matrix.perl}} https://github.com/Perl/perl5.git
+            cd perl5
+            ./Configure -des -Dusethreads -Duseshrplib=false -Dnoextensions=ODBM_File -A
+            make
+            make install
+            cd ..
+          run: |
+            pwd
+            ls -lah
+            /opt/bin/perl -V
+            curl -L https://cpanmin.us | /opt/bin/perl - -v .
+          sync: rsync
+          usesh: true
     strategy:
       fail-fast: false
       matrix:
-        perl: [ '5.38.2' ]
-    #~ env:
-      #~ MYTOKEN : ${{ secrets.MYTOKEN }}
-      #~ MYTOKEN2: "value2"
-    steps:
-    - uses: actions/checkout@v4
-    - name: Test in Solaris
-      id: test
-      uses: vmactions/solaris-vm@v1
-      with:
-        #~ envs: 'MYTOKEN MYTOKEN2'
-        usesh: true
-        sync: rsync
-        prepare: |
-          pkgutil -y -i gcc5core gcc5g++ socat git curl tree
-          git clone --depth 1 --branch v${{matrix.perl}} https://github.com/Perl/perl5.git
-          cd perl5
-          ./Configure -des -Dusethreads -Duseshrplib=false -Dnoextensions=ODBM_File -A
-          make
-          make install
-          cd ..
-        run: |
-          pwd
-          ls -lah
-          /opt/bin/perl -V
-          curl -L https://cpanmin.us | /opt/bin/perl - -v .
+        perl:
+          - 5.38.2
+name: Solaris
+on:
+  pull_request:
+    branches: '*'
+  push:
+    branches: '*'

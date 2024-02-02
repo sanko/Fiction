@@ -1,57 +1,21 @@
-name: "*BSD"
-
-on:
-    push:
-        branches: '*'
-    pull_request:
-        branches: '*'
-
+---
 jobs:
   test:
-    runs-on: ${{ matrix.os.host }}
-    strategy:
-      fail-fast: false
-      matrix:
-        perl: [ '5.38' ]
-        os:
-          - name: freebsd
-            architecture: x86-64
-            version: '13.2'
-            host: macos-12
-            pkg: pkg install -y
-
-          #~ - name: openbsd
-            #~ architecture: x86-64
-            #~ version: '7.4'
-            #~ host: macos-12
-            #~ pkg: pkg_info -Q perl && pkg_add
-
-          #~ - name: openbsd
-            #~ architecture: arm64
-            #~ version: '7.4'
-            #~ host: ubuntu-latest
-
-          #~ - name: netbsd
-            #~ architecture: x86-64
-            #~ version: '9.3'
-            #~ host: ubuntu-latest
-
-    name: "${{ matrix.os.name }}-${{ matrix.os.version }} (${{ matrix.os.architecture }})"
+    name: '${{ matrix.os.name }}-${{ matrix.os.version }} (${{ matrix.os.architecture }})'
+    runs-on: '${{ matrix.os.host }}'
     steps:
       - uses: actions/checkout@v4
-      - name: Test on ${{ matrix.os.name }}
-        uses: cross-platform-actions/action@v0.22.0
-        env:
+      - env:
           MY_ENV1: MY_ENV1
           MY_ENV2: MY_ENV2
+        name: 'Test on ${{ matrix.os.name }}'
+        uses: cross-platform-actions/action@v0.22.0
         with:
-          environment_variables: MY_ENV1 MY_ENV2
-          operating_system: ${{ matrix.os.name }}
-          architecture: ${{ matrix.os.architecture }}
-          version: ${{ matrix.os.version }}
-          shell: bash
-          memory: 5G
+          architecture: '${{ matrix.os.architecture }}'
           cpu_count: 4
+          environment_variables: MY_ENV1 MY_ENV2
+          memory: 5G
+          operating_system: '${{ matrix.os.name }}'
           run: |
             uname -a
             echo $SHELL
@@ -64,3 +28,22 @@ jobs:
             curl -L https://cpanmin.us | sudo /usr/local/bin/perl5.38.2 - App::cpanminus
             sudo cpanm -n -v Module::Build::Tiny
             sudo cpanm -v .
+          shell: bash
+          version: '${{ matrix.os.version }}'
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - architecture: x86-64
+            host: macos-12
+            name: freebsd
+            pkg: pkg install -y
+            version: 13.2
+        perl:
+          - 5.38
+name: '*BSD'
+on:
+  pull_request:
+    branches: '*'
+  push:
+    branches: '*'

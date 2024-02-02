@@ -1,56 +1,18 @@
-name: CI
-
-on:
-    push:
-        branches: '*'
-    pull_request:
-        branches: '*'
-    schedule:
-        - cron: '42 5 * * 0'
-
+---
 jobs:
   install_perl:
-    runs-on: "${{ matrix.os }}"
-    strategy:
-      fail-fast: false
-      matrix:
-        exclude:
-          - os: macos-latest
-            flags: -Dusequadmath
-          - os: macos-latest
-            flags: --thread
-        os:
-          - ubuntu-latest
-          - macos-latest
-          - windows-2019
-        perl:
-          - 5.38.0
-          #~ - 5.36.0
-          #~ - 5.34.1
-          #~ - 5.32.1
-          #~ - 5.30.3
-          #~ - 5.28.3
-          #~ - 5.26.3
-        flags:
-          - --64int
-          - --thread
-          - --ld
-          - --multi
-          - -Dusequadmath
-          - ""
-    name: "${{ matrix.os }}-${{ matrix.perl }}${{ matrix.flags }}"
+    name: '${{ matrix.os }}-${{ matrix.perl }}${{ matrix.flags }}'
+    runs-on: '${{ matrix.os }}'
     steps:
       - uses: actions/checkout@v3
-
-      - name: Cache perl
+      - id: cache-perl
+        name: Cache perl
         uses: actions/cache@v3
-        id: cache-perl
         with:
-          path: ~/perl5/perlbrew/
-          key: ${{ matrix.os }}-perl-v${{ matrix.perl }}${{ matrix.flags }}
-
-      - name: "Init dev env on Windows"
-        if: ${{  steps.cache-perl.outputs.cache-hit != 'true' && matrix.os == 'windows-2019' }}
+          key: '${{ matrix.os }}-perl-v${{ matrix.perl }}${{ matrix.flags }}'
+          path: '~/perl5/perlbrew/'
+      - if: "${{  steps.cache-perl.outputs.cache-hit != 'true' && matrix.os == 'windows-2019' }}"
+        name: Init dev env on Windows
         run: |
           # skip installing perl if it is already installed.
           if (!(Test-Path "C:\strawberry\perl\bin")) {
@@ -62,88 +24,108 @@ jobs:
           C:\strawberry\perl\bin
           "@ |
             Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-      - name: "Build perl ${{ matrix.perl }} directly on Windows"
-        if: ${{ steps.cache-perl.outputs.cache-hit != 'true' && matrix.os == 'windows-2019' }}
+      - if: "${{ steps.cache-perl.outputs.cache-hit != 'true' && matrix.os == 'windows-2019' }}"
+        name: 'Build perl ${{ matrix.perl }} directly on Windows'
+        run: |
+          git clone --depth 1 --branch v${{matrix.perl}} https://github.com/Perl/perl5.git
+          pushd perl5\win32
+          
+          gmake CCHOME=C:\strawberry\c INST_TOP="C:\Users\runneradmin\perl5\perlbrew"  ^
+              ${{ matrix.flags == '--64int'        && 'USE_64_BIT_INT=define'                   || '' }} ^
+              ${{ matrix.flags == '--thread'       && 'USE_ITHREADS=define    USE_MULTI=define' || '' }} ^
+              ${{ matrix.flags == '--ld'           && 'USE_LONG_DOUBLE=define'                  || '' }} ^
+              ${{ matrix.flags == '--multi'        && 'USE_MULTI=define'                        || '' }} ^
+              ${{ matrix.flags == '-Dusequadmath'  && 'USE_QUADMATH=define'                     || '' }} ^
+              -f GNUMakefile -j2 install
+          
+          popd
+          set PATH=C:\Users\runneradmin\perl5\perlbrew\bin;%PATH%
         shell: cmd
-        run: >
-            git clone --depth 1 --branch v${{matrix.perl}} https://github.com/Perl/perl5.git
-
-            pushd perl5\win32
-
-            gmake CCHOME=C:\strawberry\c INST_TOP="C:\Users\runneradmin\perl5\perlbrew"  ^
-                ${{ matrix.flags == '--64int'        && 'USE_64_BIT_INT=define'                   || '' }} ^
-                ${{ matrix.flags == '--thread'       && 'USE_ITHREADS=define    USE_MULTI=define' || '' }} ^
-                ${{ matrix.flags == '--ld'           && 'USE_LONG_DOUBLE=define'                  || '' }} ^
-                ${{ matrix.flags == '--multi'        && 'USE_MULTI=define'                        || '' }} ^
-                ${{ matrix.flags == '-Dusequadmath'  && 'USE_QUADMATH=define'                     || '' }} ^
-                -f GNUMakefile -j2 install
-
-            popd
-
-            set PATH=C:\Users\runneradmin\perl5\perlbrew\bin;%PATH%
-
-      - name: "Install deps"
-        if: ${{ matrix.os == 'windows-2019' }}
+      - if: "${{ matrix.os == 'windows-2019' }}"
+        name: Install deps
+        run: |
+          set PATH=C:\Users\runneradmin\perl5\perlbrew\bin;%PATH%
+          
+          perl -V
+          
+          cpanm --installdeps --notest .
         shell: cmd
+      - if: "${{ matrix.os == 'windows-2019' }}"
+        name: 'Testing on cached perl ${{ matrix.os }}-${{ matrix.perl }}(${{ matrix.flags }})'
         run: |
-             set PATH=C:\Users\runneradmin\perl5\perlbrew\bin;%PATH%
-
-             perl -V
-
-             cpanm --installdeps --notest .
-
-      - name: "Testing on cached perl ${{ matrix.os }}-${{ matrix.perl }}(${{ matrix.flags }})"
-        if: ${{ matrix.os == 'windows-2019' }}
+          set PATH=C:\Users\runneradmin\perl5\perlbrew\bin;%PATH%
+          
+          perl -V
+          
+          perl Build.PL
+          
+          ./Build test -v
         shell: cmd
+      - if: "${{ steps.cache-perl.outputs.cache-hit != 'true' && matrix.os != 'windows-2019' }}"
+        name: 'Build perl ${{ matrix.perl }} with perlbrew'
         run: |
-             set PATH=C:\Users\runneradmin\perl5\perlbrew\bin;%PATH%
-
-             perl -V
-
-             perl Build.PL
-
-             ./Build test -v
-
-      - name: "Build perl ${{ matrix.perl }} with perlbrew"
-        if: ${{ steps.cache-perl.outputs.cache-hit != 'true' && matrix.os != 'windows-2019' }}
+          \curl -L https://install.perlbrew.pl | bash
+          source ~/perl5/perlbrew/etc/bashrc
+          
+          perlbrew available
+          perlbrew install-cpanm
+          
+          perlbrew install --switch --verbose --as cache-${{ matrix.os }}${{ matrix.perl }}${{ matrix.flags }} -j 12 --notest --noman ${{ matrix.flags }} perl-${{ matrix.perl }}
         shell: bash
-        run: >
-             \curl -L https://install.perlbrew.pl | bash
-
-             source ~/perl5/perlbrew/etc/bashrc
-
-             perlbrew available
-
-             perlbrew install-cpanm
-
-             perlbrew install --switch --verbose --as cache-${{ matrix.os }}${{ matrix.perl }}${{ matrix.flags }} -j 12 --notest --noman ${{ matrix.flags }} perl-${{ matrix.perl }}
-
-      - name: "Install deps"
-        if: ${{ matrix.os != 'windows-2019' }}
-        shell: bash
+      - if: "${{ matrix.os != 'windows-2019' }}"
+        name: Install deps
         run: |
-             source ~/perl5/perlbrew/etc/bashrc
-
-             perlbrew list
-
-             perlbrew switch cache-${{ matrix.os }}${{ matrix.perl }}${{ matrix.flags }}
-
-             perl -V
-
-             cpanm --installdeps --notest .
-
-      - name: "Testing on cached perl ${{ matrix.os }}-${{ matrix.perl }}(${{ matrix.flags }})"
-        if: ${{ matrix.os != 'windows-2019' }}
+          source ~/perl5/perlbrew/etc/bashrc
+          
+          perlbrew list
+          
+          perlbrew switch cache-${{ matrix.os }}${{ matrix.perl }}${{ matrix.flags }}
+          
+          perl -V
+          
+          cpanm --installdeps --notest .
         shell: bash
+      - if: "${{ matrix.os != 'windows-2019' }}"
+        name: 'Testing on cached perl ${{ matrix.os }}-${{ matrix.perl }}(${{ matrix.flags }})'
         run: |
-             source ~/perl5/perlbrew/etc/bashrc
-
-             perlbrew list
-
-             perlbrew switch cache-${{ matrix.os }}${{ matrix.perl }}${{ matrix.flags }}
-
-             perl -V
-
-             perl Build.PL
-
-             ./Build test -v
+          source ~/perl5/perlbrew/etc/bashrc
+          
+          perlbrew list
+          
+          perlbrew switch cache-${{ matrix.os }}${{ matrix.perl }}${{ matrix.flags }}
+          
+          perl -V
+          
+          perl Build.PL
+          
+          ./Build test -v
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        exclude:
+          - flags: -Dusequadmath
+            os: macos-latest
+          - flags: --thread
+            os: macos-latest
+        flags:
+          - --64int
+          - --thread
+          - --ld
+          - --multi
+          - -Dusequadmath
+          - ''
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-2019
+        perl:
+          - 5.38.0
+name: CI
+on:
+  pull_request:
+    branches: '*'
+  push:
+    branches: '*'
+  schedule:
+    - cron: 42 5 * * 0

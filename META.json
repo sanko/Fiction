@@ -54,6 +54,7 @@
             "Code::TidyAll" : "0",
             "Code::TidyAll::Plugin::ClangFormat" : "0",
             "Code::TidyAll::Plugin::PodTidy" : "0",
+            "Code::TidyAll::Plugin::YAML" : "0",
             "Minilla" : "0",
             "Perl::Tidy" : "0",
             "Pod::Markdown::Github" : "0",
