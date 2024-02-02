@@ -135,7 +135,7 @@ struct fiction {
     const char *signature;
     AV *argtypes;
     SV *restype;
-    char restype_c;
+    char restype_c; // TODO: Remember to safefree() this on destruction!!!!!!!!!!!!!!!!!!!!!!!!!!
 };
 
 XS_INTERNAL(Affix_fiction) {
@@ -151,10 +151,23 @@ XS_INTERNAL(Affix_fiction) {
 
     fiction *ret = (fiction *)safemalloc(sizeof(fiction));
     ret->entry_point = symbol;
-    ret->argtypes = SvROK(ST(2))? MUTABLE_AV(ST(2)) :NULL;
-    ret->restype = SvROK(ST(3)) ? newSVsv(ST(3)) : NULL;
-    //~ ret->signature = SvROK(ST(2)) ?
+    ret->argtypes = items >= 3 && SvROK(ST(2)) ? MUTABLE_AV(SvRV(ST(2))) : NULL;
+    ret->restype = items == 4 && SvROK(ST(3)) ? newSVsv(ST(3)) : NULL;
 
+    if (ret->argtypes != NULL) {
+        Newxz(ret->signature, 0, char);
+        STRLEN len = 0; // Initialize string length
+        STRLEN bit;
+        for (int i = 0; i <= av_len(ret->argtypes); ++i) {
+            SV *obj = *av_fetch(ret->argtypes, i, 0);
+            const char *scalar_str = SvPV(obj, bit);
+            Renew(ret->signature, len + bit + 1, char);
+            CopyD(scalar_str, ret->signature + len, bit, char);
+            len += bit;
+        }
+    }
+    else
+        ret->signature = NULL;
     STMT_START {
         cv = newXSproto_portable(NULL, Fiction_trigger, __FILE__, "$;@");
         if (UNLIKELY(cv == NULL))
@@ -168,7 +181,6 @@ XS_INTERNAL(Affix_fiction) {
 }
 
 static SV *hold;
-
 extern "C" void Fiction_trigger(pTHX_ CV *cv) {
     dSP;
     dAXMARK;
@@ -182,19 +194,28 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
     DCCallVM *cvm = MY_CXT.cvm;
     dcReset(cvm);
 
-    //~ if(fic->signature != NULL && strlen(fic->signature)!=items) {
-//~ warn("We know the types!");
-
-    //~ }
-
-    for (int i = 0; i < items; i++) {
-        //~ warn("i: %d, %d", i, SvIV(ST(i)));
-        if (SvNOK(ST(i)))
-            dcArgDouble(cvm, SvNV(ST(i)));
-        else if (SvUOK(ST(i)))
-            dcArgInt(cvm, SvUV(ST(i)));
-        else if (SvIOK(ST(i)))
-            dcArgInt(cvm, SvIV(ST(i)));
+    if (items) {
+        if (fic->signature != NULL) {
+            size_t sig_len = strlen(fic->signature);
+            for (size_t sig_pos = 0, st_pos = 0; sig_pos < sig_len; sig_pos++) {
+                switch (fic->signature[sig_pos]) {
+                case DOUBLE_FLAG:
+                    dcArgDouble(cvm, SvNV(ST(st_pos++)));
+                    break;
+                }
+            }
+        }
+        else {
+            for (size_t i = 0; i < items; i++) {
+                //~ warn("i: %d, %d", i, SvIV(ST(i)));
+                if (SvNOK(ST(i)))
+                    dcArgDouble(cvm, SvNV(ST(i)));
+                else if (SvUOK(ST(i)))
+                    dcArgInt(cvm, SvUV(ST(i)));
+                else if (SvIOK(ST(i)))
+                    dcArgInt(cvm, SvIV(ST(i)));
+            }
+        }
     }
 
     sv_setnv(hold, dcCallDouble(cvm, fic->entry_point));

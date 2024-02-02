@@ -41,6 +41,7 @@ package Affix 0.50 {    # 'FFI' is my middle name!
     %EXPORT_TAGS = ( all => \@EXPORT_OK );
     #
     package Fiction::Type {
+        use overload '""' => 'flag';
         sub new   ($class)       { bless \{}, $class }
         sub check ($value)       {...}
         sub cast  ( $vaue, $to ) {...}

@@ -83,5 +83,6 @@ subtest 'wrap with unknown argtypes' => sub {
     isa_ok $affix, ['Affix::Wrap'];
     is $affix->call( 3.0, 4.0 ), 81, 'object_test';
 };
+warn join '', Double, Double, Double;
 #
 done_testing;
