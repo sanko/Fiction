@@ -40,77 +40,165 @@ package Affix 0.50 {    # 'FFI' is my middle name!
     ];
     %EXPORT_TAGS = ( all => \@EXPORT_OK );
     #
-    class Affix::Type {
-        method check ($value)          {...}
-        method cast  ( $from, $value ) {...}
-        method sizeof() {...}
-        method flag()   { warn ref $self; ... }
+    package Fiction::Type {
+        sub new   ($class)       { bless \{}, $class }
+        sub check ($value)       {...}
+        sub cast  ( $vaue, $to ) {...}
+        sub sizeof() {...}
+        sub flag     {...}
     }
 
-    class Affix::Type::Void : isa(Affix::Type) {
-        method flag () {'v'}
+    package Fiction::Type::Void {
+        our @ISA = qw[Fiction::Type];
+        sub flag {'v'}
     }
 
-    class Affix::Type::Bool : isa(Affix::Type) { }
-
-    class Affix::Type::Char : isa(Affix::Type) { }
-
-    class Affix::Type::UChar : isa(Affix::Type) { }
-
-    class Affix::Type::SChar : isa(Affix::Type) { }
-
-    class Affix::Type::WChar : isa(Affix::Type) { }
-
-    class Affix::Type::Short : isa(Affix::Type) { }
-
-    class Affix::Type::UShort : isa(Affix::Type) { }
-
-    class Affix::Type::Int : isa(Affix::Type) { }
-
-    class Affix::Type::UInt : isa(Affix::Type) { }
-
-    class Affix::Type::Long : isa(Affix::Type) { }
-
-    class Affix::Type::ULong : isa(Affix::Type) { }
-
-    class Affix::Type::LongLong : isa(Affix::Type) { }
-
-    class Affix::Type::ULongLong : isa(Affix::Type) { }
-
-    class Affix::Type::Float : isa(Affix::Type) { }
-
-    class Affix::Type::Double : isa(Affix::Type) {
-        method flag () {'d'}
+    package Fiction::Type::Bool {
+        our @ISA = qw[Fiction::Type];
+        sub flag {'b'}
     }
 
-    class Affix::Type::Size_t : isa(Affix::Type) { }
+    package Fiction::Type::Char {
+        our @ISA = qw[Fiction::Type];
 
-    class Affix::Type::SSize_t : isa(Affix::Type) { }
-
-    class Affix::Type::String : isa(Affix::Type) { }
-
-    class Affix::Type::WString : isa(Affix::Type) { }
-
-    class Affix::Type::Struct : isa(Affix::Type) {
-        field $fields : param;
-        method flag () {'S'}
+        #~ sub flag{'v'}
     }
 
-    class Affix::Type::Array : isa(Affix::Type) {
-        field $type : param;
-        field $size : param //= ();
+    package Fiction::Type::UChar {
+        our @ISA = qw[Fiction::Type];
+
+        #~ sub flag{'v'}
     }
 
-    class Affix::Type::Pointer : isa(Affix::Type) {
-        field $type : param;
+    package Fiction::Type::SChar {
+        our @ISA = qw[Fiction::Type];
+
+        #~ sub flag{'v'}
     }
 
-    class Affix::Type::Callback : isa(Affix::Type) {
-        field $argtypes : param;
-        field $restype : param;
+    package Fiction::Type::WChar {
+        our @ISA = qw[Fiction::Type];
+
+        #~ sub flag{'v'}
     }
 
-    class Affix::Type::SV : isa(Affix::Type) { }
+    package Fiction::Type::Short {
+        our @ISA = qw[Fiction::Type];
+
+        #~ sub flag{'v'}
+    }
+
+    package Fiction::Type::UShort {
+        our @ISA = qw[Fiction::Type];
+
+        #~ sub flag{'v'}
+    }
+
+    package Fiction::Type::Int {
+        our @ISA = qw[Fiction::Type];
+        sub flag {'v'}
+    }
+
+    package Fiction::Type::UInt {
+        our @ISA = qw[Fiction::Type];
+
+        #~ sub flag{'v'}
+    }
+
+    package Fiction::Type::Long {
+        our @ISA = qw[Fiction::Type];
+
+        #~ sub flag{'v'}
+    }
+
+    package Fiction::Type::ULong {
+        our @ISA = qw[Fiction::Type];
+
+        #~ sub flag{'v'}
+    }
+
+    package Fiction::Type::LongLong {
+        our @ISA = qw[Fiction::Type];
+
+        #~ sub flag{'v'}
+    }
+
+    package Fiction::Type::ULongLong {
+        our @ISA = qw[Fiction::Type];
+
+        #~ sub flag{'v'}
+    }
+
+    package Fiction::Type::Float {
+        our @ISA = qw[Fiction::Type];
+        sub flag {'f'}
+    }
+
+    package Fiction::Type::Double {
+        our @ISA = qw[Fiction::Type];
+        sub flag {'d'}
+    }
+
+    package Fiction::Type::Size_t {
+        our @ISA = qw[Fiction::Type];
+
+        #~ sub flag{'v'}
+    }
+
+    package Fiction::Type::SSize_t {
+        our @ISA = qw[Fiction::Type];
+
+        #~ sub flag{'v'}
+    }
+
+    package Fiction::Type::String {
+        our @ISA = qw[Fiction::Type];
+
+        #~ sub flag{'v'}
+    }
+
+    package Fiction::Type::WString {
+        our @ISA = qw[Fiction::Type];
+
+        #~ sub flag{'v'}
+    }
+
+    package Fiction::Type::Struct {
+        our @ISA = qw[Fiction::Type];
+        sub new ( $class, $fields ) { bless \{ fields => $fields }, $class }
+
+        #~ sub flag{'v'}
+    }
+
+    package Fiction::Type::Array {
+        our @ISA = qw[Fiction::Type];
+
+        sub new ( $class, $type, $size //= () ) {
+            bless \{ type => $type, defined $size ? ( size => $size ) : () }, $class;
+        }
+
+        #~ sub flag{'v'}
+    }
+
+    package Fiction::Type::Pointer {
+        our @ISA = qw[Fiction::Type];
+        sub new ( $class, $type ) { bless \{ type => $type }, $class }
+
+        #~ sub flag{'v'}
+    }
+
+    package Fiction::Type::Callback {
+        our @ISA = qw[Fiction::Type];
+        sub new ( $class, $argtypes, $restype ) { bless \{ argtypes => $argtypes, restype => $restype }, $class }
+
+        #~ sub flag{'v'}
+    }
+
+    package Fiction::Type::SV {
+        our @ISA = qw[Fiction::Type];
+
+        #~ sub flag{'v'}
+    }
     #
     class Affix::Wrap 1 {
         field $lib : param;
@@ -121,8 +209,8 @@ package Affix 0.50 {    # 'FFI' is my middle name!
         field $signature;
         #
         ADJUST {
-            Carp::croak 'args must be Affix::Type objects'      if grep { !$_->isa('Affix::Type') } @$argtypes;
-            Carp::croak 'returns must be an Affix::Type object' if !$restype->isa('Affix::Type');
+            Carp::croak 'args must be Fiction::Type objects'      if grep { !$_->isa('Fiction::Type') } @$argtypes;
+            Carp::croak 'returns must be an Fiction::Type object' if !$restype->isa('Fiction::Type');
             my $libref = Affix::load_library( $lib ? Affix::find_library($lib) : () );
             $entry     = Affix::find_symbol( $libref, $symbol );
             $signature = join '', map { $_->flag } @$argtypes;
@@ -164,48 +252,48 @@ package Affix 0.50 {    # 'FFI' is my middle name!
 
         # Functions with signatures must follow classes until https://github.com/Perl/perl5/pull/21159
         # Type system
-        sub Void()      { Affix::Type::Void->new() }
-        sub Bool()      { Affix::Type::Bool->new() }
-        sub Char()      { Affix::Type::Char->new() }
-        sub UChar()     { Affix::Type::UChar->new() }
-        sub SChar()     { Affix::Type::SChar->new() }
-        sub WChar()     { Affix::Type::WChar->new() }
-        sub Short()     { Affix::Type::Short->new() }
-        sub UShort()    { Affix::Type::UShort->new() }
-        sub Int()       { Affix::Type::Int->new() }
-        sub UInt()      { Affix::Type::UInt->new() }
-        sub Long()      { Affix::Type::Long->new() }
-        sub ULong()     { Affix::Type::ULong->new() }
-        sub LongLong()  { Affix::Type::LongLong->new() }
-        sub ULongLong() { Affix::Type::ULongLong->new() }
-        sub Float()     { Affix::Type::Float->new() }
-        sub Double(;$)  { Affix::Type::Double->new() }
-        sub Size_t()    { Affix::Type::Size_t->new() }
-        sub SSize_t()   { Affix::Type::SSize_t->new() }
-        sub String()    { Affix::Type::String->new() }
-        sub WString()   { Affix::Type::WString->new() }
-        sub SV()        { Affix::Type::SV->new() }
+        sub Void()      { Fiction::Type::Void->new() }
+        sub Bool()      { Fiction::Type::Bool->new() }
+        sub Char()      { Fiction::Type::Char->new() }
+        sub UChar()     { Fiction::Type::UChar->new() }
+        sub SChar()     { Fiction::Type::SChar->new() }
+        sub WChar()     { Fiction::Type::WChar->new() }
+        sub Short()     { Fiction::Type::Short->new() }
+        sub UShort()    { Fiction::Type::UShort->new() }
+        sub Int()       { Fiction::Type::Int->new() }
+        sub UInt()      { Fiction::Type::UInt->new() }
+        sub Long()      { Fiction::Type::Long->new() }
+        sub ULong()     { Fiction::Type::ULong->new() }
+        sub LongLong()  { Fiction::Type::LongLong->new() }
+        sub ULongLong() { Fiction::Type::ULongLong->new() }
+        sub Float()     { Fiction::Type::Float->new() }
+        sub Double(;$)  { Fiction::Type::Double->new() }
+        sub Size_t()    { Fiction::Type::Size_t->new() }
+        sub SSize_t()   { Fiction::Type::SSize_t->new() }
+        sub String()    { Fiction::Type::String->new() }
+        sub WString()   { Fiction::Type::WString->new() }
+        sub SV()        { Fiction::Type::SV->new() }
 
         # XXX: perl isn't setting prototypes correctly when signatures are enabled?
         # affix(Pointer[Int], Int, Int ) becomes affix( Pointer([Int], Int, Int) ) which is wrong
         sub Struct ($) {
             Carp::croak 'Odd number of elements in struct definition' if scalar( @{ +shift } ) % 2;
-            Affix::Type::Struct->new( fields => \@$_[0] );
+            Fiction::Type::Struct->new( \@$_[0] );
         }
 
         sub Array ($) {
             my ( $type, $size ) = @$_[0];
-            Affix::Type::Array->new( type => $type, defined $size ? ( size => $size ) : () );
+            Fiction::Type::Array->new( $type, defined $size ? ( size => $size ) : () );
         }
 
         sub Callback($) {
             my ( $args, $returns ) = @$_[0];
-            Affix::Type::Callback->new( argtypes => $args // [], restype => $returns // Void );
+            Fiction::Type::Callback->new( $args // [], $returns // Void );
         }
 
         sub Pointer ($) {
             my ($type) = @$_[0];
-            Affix::Type::Pointer->new( type => $type // Void );
+            Fiction::Type::Pointer->new( $type // Void );
         }
     }
 

@@ -166,9 +166,13 @@ XS_INTERNAL(Affix_fiction) {
     XSRETURN(1);
 }
 
+static SV *hold;
+
 extern "C" void Fiction_trigger(pTHX_ CV *cv) {
     dSP;
     dAXMARK;
+
+    if (!hold) hold = newSV(0);
 
     fiction *fic = (fiction *)XSANY.any_ptr;
     size_t items = (SP - MARK);
@@ -177,18 +181,18 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
     DCCallVM *cvm = MY_CXT.cvm;
     dcReset(cvm);
 
-    for (int i = 1; i < items; i++) {
-        //~ warn("i: %d", i);
-        if (SvIOK(ST(i)))
-            dcArgInt(cvm, SvIV(ST(i)));
+    for (int i = 0; i < items; i++) {
+        //~ warn("i: %d, %d", i, SvIV(ST(i)));
+        if (SvNOK(ST(i)))
+            dcArgDouble(cvm, SvNV(ST(i)));
         else if (SvUOK(ST(i)))
             dcArgInt(cvm, SvUV(ST(i)));
-        else if (SvNOK(ST(i)))
-            dcArgDouble(cvm, SvNV(ST(i)));
+        else if (SvIOK(ST(i)))
+            dcArgInt(cvm, SvIV(ST(i)));
     }
 
-    SV *RETVAL = sv_2mortal(newSVnv(dcCallDouble(cvm, fic->entry_point)));
-    ST(0) = RETVAL;
+    sv_setnv(hold, dcCallDouble(cvm, fic->entry_point));
+    ST(0) = hold;
     XSRETURN(1);
 }
 
