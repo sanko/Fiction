@@ -1,13 +1,24 @@
 use v5.38;
 use Test2::V0;
 use lib '../lib', 'lib', '../blib/arch', '../blib/lib', 'blib/arch', 'blib/lib', '../../', '.';
-use Affix qw[Double find_library load_library find_symbol];
+use Affix qw[Double dlerror find_library load_library find_symbol];
 BEGIN { chdir '../' if !-d 't'; }
 use t::lib::helper;
 $|++;
 #
+SKIP: {
+    skip 'Windows tests' if $^O eq 'MSWin32';
+    is Affix::dlerror(), undef, 'dlerror() is undef';
+}
+#
 my ( $libm, $libref, $symbol );
 subtest find_library => sub {
+    ok !load_library('nowaydoesthislibexist'), q[load_library('nowaydoesthislibexist')];
+    {
+        my $dlerror = dlerror();
+        ok $dlerror, 'dlerror() is now defined';
+        diag $dlerror;
+    }
     for my $test (qw[c m]) {
         my ($lib) = find_library($test);
         ok $lib, qq[find_library('$test')];

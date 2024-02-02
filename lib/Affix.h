@@ -367,6 +367,13 @@ void boot_Affix_Lib(pTHX_ CV *);
 void boot_Affix_Aggregate(pTHX_ CV *);
 void boot_Affix_Platform(pTHX_ CV *);
 
+//
+DLLib *load_library(const char *lib);
+void free_library(DLLib *plib);
+DCpointer find_symbol(DLLib *lib, const char *name);
+
+extern "C" void Fiction_trigger(pTHX_ CV *cv);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

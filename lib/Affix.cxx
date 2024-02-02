@@ -15,21 +15,44 @@ typedef struct {
 
 START_MY_CXT
 
+DLLib *load_library(const char *lib) {
+    return
+#if defined(DC__OS_Win64) || defined(DC__OS_MacOSX)
+        dlLoadLibrary(lib);
+#else
+        (DLLib *)dlopen(lib, RTLD_LAZY /* RTLD_NOW|RTLD_GLOBAL */);
+#endif
+}
+
+void free_library(DLLib *lib) {
+    dlFreeLibrary(lib);
+}
+
+DCpointer find_symbol(DLLib *lib, const char *name) {
+    return dlFindSymbol(lib, name);
+}
+
+XS_INTERNAL(Affix_dlerror) {
+    dXSARGS;
+    dXSI32;
+#if defined(DC__OS_Win64)
+    const
+#endif
+        char *ret = dlerror();
+
+    if (!ret) XSRETURN_UNDEF;
+    SV *sv_ret = sv_2mortal(newSVpv(ret, 0));
+    ST(0) = sv_ret;
+    XSRETURN(1);
+}
+
 XS_INTERNAL(Affix_load_library) {
     dXSARGS;
     dXSI32;
     PING;
     if (items != 1) croak_xs_usage(cv, "$lib");
-    DCpointer lib_handle =
-#if defined(DC__OS_Win64) || defined(DC__OS_MacOSX)
-        dlLoadLibrary(SvPOK(ST(0)) ? SvPV_nolen(ST(0)) : NULL);
-#else
-        (DLLib *)dlopen(SvPOK(ST(0)) ? SvPV_nolen(ST(0)) : NULL,
-                        RTLD_LAZY /* RTLD_NOW|RTLD_GLOBAL */);
-#endif
-    if (!lib_handle) {
-        croak("Failed to load lib %s", dlerror());
-    }
+    DCpointer lib_handle = load_library(SvPOK(ST(0)) ? SvPV_nolen(ST(0)) : NULL);
+    if (!lib_handle) XSRETURN_UNDEF;
     SV *LIBSV = sv_newmortal();
     sv_setref_pv(LIBSV, NULL, (DCpointer)lib_handle);
     ST(0) = LIBSV;
@@ -48,7 +71,7 @@ XS_INTERNAL(Affix_free_library) {
     }
     else
         croak("lib is not of type Affix::Lib");
-    if (lib != NULL) dlFreeLibrary(lib);
+    if (lib != NULL) free_library(lib);
     lib = NULL;
     XSRETURN_EMPTY;
 }
@@ -99,11 +122,73 @@ XS_INTERNAL(Affix_find_symbol) {
     char *name;
     Newxz(name, 1024, char);
 
-    DCpointer lib_handle = dlFindSymbol(lib, SvPV_nolen(ST(1)));
+    DCpointer lib_handle = find_symbol(lib, SvPV_nolen(ST(1)));
     if (!lib_handle) { croak("Failed to load lib %s", dlerror()); }
     SV *LIBSV = sv_newmortal();
     sv_setref_pv(LIBSV, NULL, (DCpointer)lib_handle);
     ST(0) = LIBSV;
+    XSRETURN(1);
+}
+
+struct fiction {
+    DCpointer entry_point;
+    const char *signature;
+    AV *argtypes;
+    SV *restype;
+    char restype_c;
+};
+
+XS_INTERNAL(Affix_fiction) {
+    dVAR;
+    dXSARGS;
+    if (items < 2 || items > 4) croak_xs_usage(cv, "lib, symbol, argtypes, rettype");
+
+    DLLib *lib = load_library(SvPOK(ST(0)) ? SvPV_nolen(ST(0)) : NULL);
+    if (!lib) XSRETURN_UNDEF;
+
+    DCpointer symbol = find_symbol(lib, SvPV_nolen(ST(1)));
+    if (!symbol) XSRETURN_UNDEF;
+
+    fiction *ret = (fiction *)safemalloc(sizeof(fiction));
+    ret->entry_point = symbol;
+    ret->argtypes = NULL;
+    ret->restype = NULL;
+
+    STMT_START {
+        cv = newXSproto_portable(NULL, Fiction_trigger, __FILE__, "$;@");
+        if (UNLIKELY(cv == NULL))
+            croak("ARG! Something went really wrong while installing a new XSUB!");
+        XSANY.any_ptr = (DCpointer)ret;
+    }
+    STMT_END;
+    SV *RETVAL = sv_bless(newRV_inc(MUTABLE_SV(cv)), gv_stashpv("Affix", GV_ADD));
+    ST(0) = sv_2mortal(RETVAL);
+    XSRETURN(1);
+}
+
+extern "C" void Fiction_trigger(pTHX_ CV *cv) {
+    dSP;
+    dAXMARK;
+
+    fiction *fic = (fiction *)XSANY.any_ptr;
+    size_t items = (SP - MARK);
+
+    dMY_CXT;
+    DCCallVM *cvm = MY_CXT.cvm;
+    dcReset(cvm);
+
+    for (int i = 1; i < items; i++) {
+        //~ warn("i: %d", i);
+        if (SvIOK(ST(i)))
+            dcArgInt(cvm, SvIV(ST(i)));
+        else if (SvUOK(ST(i)))
+            dcArgInt(cvm, SvUV(ST(i)));
+        else if (SvNOK(ST(i)))
+            dcArgDouble(cvm, SvNV(ST(i)));
+    }
+
+    SV *RETVAL = sv_2mortal(newSVnv(dcCallDouble(cvm, fic->entry_point)));
+    ST(0) = RETVAL;
     XSRETURN(1);
 }
 
@@ -1769,9 +1854,12 @@ XS_EXTERNAL(boot_Affix) {
     (void)newXSproto_portable("Affix::free_library", Affix_free_library, __FILE__, "$;$");
     (void)newXSproto_portable("Affix::list_symbols", Affix_list_symbols, __FILE__, "$");
     (void)newXSproto_portable("Affix::find_symbol", Affix_find_symbol, __FILE__, "$$");
+    (void)newXSproto_portable("Affix::dlerror", Affix_dlerror, __FILE__, "");
 
     // XXX: Remove before stable
     (void)newXSproto_portable("Affix::Wrap::call", Affix_call, __FILE__, "$;@");
+    (void)newXSproto_portable("Affix::fiction", Affix_fiction, __FILE__, "$$;$$");
+    //~ (void)newXSproto_portable("Affix::fiction_call", Affix_fiction_call, __FILE__, "$;@");
 
     // general purpose flags
     export_constant("Affix", "VOID_FLAG", "flags", VOID_FLAG);

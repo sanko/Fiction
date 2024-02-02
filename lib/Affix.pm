@@ -34,9 +34,8 @@ package Affix 0.50 {    # 'FFI' is my middle name!
         affix wrap pin unpin
         malloc calloc realloc free memchr memcmp memset memcpy sizeof offsetof
         raw hexdump
-        find_library
-        load_library
-        free_library
+        dlerror
+        find_library    load_library    free_library
         find_symbol
     ];
     %EXPORT_TAGS = ( all => \@EXPORT_OK );

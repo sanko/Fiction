@@ -8,11 +8,13 @@ $|++;
 use Benchmark qw[:all];
 my $defined = Affix::Wrap->new( lib => 'm', symbol => 'pow', argtypes => [ Double, Double ], restype => Double );
 my $context = Affix::Wrap->new( lib => 'm', symbol => 'pow', restype  => Double );
+my $fiction = Affix::fiction( Affix::find_library('m'), 'pow', [ Double, Double ], Double );
 
 # Use Perl code in strings...
 cmpthese timethese(
     -10,
-    {   'defined'  => sub { $defined->call( 3,   4 ) },
+    {   'fiction'  => sub { $fiction->( 3, 4 ) },
+        'defined'  => sub { $defined->call( 3,   4 ) },
         'context'  => sub { $context->call( 3.0, 4.0 ) },
         'definedX' => sub { Affix::Wrap::call( $defined, 3,   4 ) },
         'contextX' => sub { Affix::Wrap::call( $context, 3.0, 4.0 ) },
