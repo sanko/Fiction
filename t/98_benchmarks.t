@@ -18,25 +18,32 @@ sub pow {
     my ( $x, $y ) = @_;
     return $x**$y;
 }
+diag 'running benchmarks...';
+{
+    my $old_fh = select(STDOUT);                 # Temporarily save original STDOUT
+    open( my $capture_fh, '>', \my $stdout );    # Open a filehandle to capture output
+    select($capture_fh);                         # Redirect STDOUT to the capture filehandle
+    cmpthese timethese(
+        -10,
+        {   'fiction w/ known argtypes' => sub { $fiction1->( 3, 4 ) },
+            'fiction using context'     => sub { $fiction2->( 3.0, 4.0 ) },
 
-# Use Perl code in strings...
-cmpthese timethese(
-    -10,
-    {   'fiction w/ known argtypes' => sub { $fiction1->( 3, 4 ) },
-        'fiction using context'     => sub { $fiction2->( 3.0, 4.0 ) },
-
-        #~ 'defined'  => sub { $defined->call( 3,   4 ) },
-        #~ 'context'  => sub { $context->call( 3.0, 4.0 ) },
-        #~ 'definedX' => sub { Affix::Wrap::call( $defined, 3,   4 ) },
-        #~ 'contextX' => sub { Affix::Wrap::call( $context, 3.0, 4.0 ) },
-        'pure perl int' => sub {
-            pow( 3, 4 );
-        },
-        'pure perl dec' => sub {
-            pow( 3.0, 4.0 );
+            #~ 'defined'  => sub { $defined->call( 3,   4 ) },
+            #~ 'context'  => sub { $context->call( 3.0, 4.0 ) },
+            #~ 'definedX' => sub { Affix::Wrap::call( $defined, 3,   4 ) },
+            #~ 'contextX' => sub { Affix::Wrap::call( $context, 3.0, 4.0 ) },
+            'pure perl int' => sub {
+                pow( 3, 4 );
+            },
+            'pure perl dec' => sub {
+                pow( 3.0, 4.0 );
+            }
         }
-    }
-);
+    );
+    select($old_fh);       # Restore original STDOUT
+    close($capture_fh);    # Close the capture filehandle
+    diag $stdout;
+};
 pass 'benchmarks';
 #
 done_testing;

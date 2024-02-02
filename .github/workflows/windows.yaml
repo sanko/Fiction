@@ -4,10 +4,10 @@ jobs:
     name: '${{ matrix.os }}-${{ matrix.perl }}${{ matrix.flags }}'
     runs-on: '${{ matrix.os }}'
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - id: cache-perl
         name: Cache perl
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           key: '${{ matrix.os }}-perl-v${{ matrix.perl }}${{ matrix.flags }}'
           path: '~/perl5/perlbrew/'
