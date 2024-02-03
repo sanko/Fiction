@@ -73,3 +73,5 @@ t/_*
 dyncall/test/*/*
 
 .github/workflows/matrix.yaml
+
+vgcore.*

@@ -131,10 +131,12 @@ XS_INTERNAL(Affix_find_symbol) {
 }
 
 struct fiction {
-    DCpointer entry_point;
+    DLLib *lib;            // safefree
+    DCpointer entry_point; // not malloc'd
     const char *signature;
     AV *argtypes;
     SV *restype;
+    SV *res;
     char restype_c; // TODO: Remember to safefree() this on destruction!!!!!!!!!!!!!!!!!!!!!!!!!!
 };
 
@@ -143,16 +145,24 @@ XS_INTERNAL(Affix_fiction) {
     dXSARGS;
     if (items < 2 || items > 4) croak_xs_usage(cv, "lib, symbol, argtypes, rettype");
 
-    DLLib *lib = load_library(SvPOK(ST(0)) ? SvPV_nolen(ST(0)) : NULL);
-    if (!lib) XSRETURN_UNDEF;
+    fiction *ret;
+    Newxz(ret, 1, fiction);
 
-    DCpointer symbol = find_symbol(lib, SvPV_nolen(ST(1)));
-    if (!symbol) XSRETURN_UNDEF;
+    ret->lib = load_library(SvPOK(ST(0)) ? SvPV_nolen(ST(0)) : NULL);
+    if (!ret->lib) {
+        safefree(ret);
+        XSRETURN_UNDEF;
+    }
 
-    fiction *ret = (fiction *)safemalloc(sizeof(fiction));
-    ret->entry_point = symbol;
+    ret->entry_point = find_symbol(ret->lib, SvPV_nolen(ST(1)));
+    if (!ret->entry_point) {
+        safefree(ret);
+        XSRETURN_UNDEF;
+    }
+
     ret->argtypes = items >= 3 && SvROK(ST(2)) ? MUTABLE_AV(SvRV(ST(2))) : NULL;
     ret->restype = items == 4 && SvROK(ST(3)) ? newSVsv(ST(3)) : NULL;
+    ret->res = newSV(0);
 
     if (ret->argtypes != NULL) {
         Newxz(ret->signature, 0, char);
@@ -168,6 +178,7 @@ XS_INTERNAL(Affix_fiction) {
     }
     else
         ret->signature = NULL;
+
     STMT_START {
         cv = newXSproto_portable(NULL, Fiction_trigger, __FILE__, "$;@");
         if (UNLIKELY(cv == NULL))
@@ -175,17 +186,52 @@ XS_INTERNAL(Affix_fiction) {
         XSANY.any_ptr = (DCpointer)ret;
     }
     STMT_END;
-    SV *RETVAL = sv_bless(newRV_inc(MUTABLE_SV(cv)), gv_stashpv("Affix", GV_ADD));
-    ST(0) = sv_2mortal(RETVAL);
+
+    ST(0) = sv_2mortal(sv_bless(newRV_noinc(MUTABLE_SV(cv)), gv_stashpv("Affix", GV_ADD)));
     XSRETURN(1);
 }
 
-static SV *hold;
+XS_INTERNAL(Affix_DESTROY) {
+    dXSARGS;
+    PERL_UNUSED_VAR(items);
+    fiction *fiction;
+    STMT_START {
+        HV *st;
+        GV *gvp;
+        SV *const xsub_tmp_sv = ST(0);
+        SvGETMAGIC(xsub_tmp_sv);
+        CV *cv = sv_2cv(xsub_tmp_sv, &st, &gvp, 0);
+        fiction = (struct fiction *)XSANY.any_ptr;
+    }
+    STMT_END;
+    //~ warn("hello: %s", fiction->hello);
+
+    /*struct fiction {
+        DCpointer entry_point;
+        const char *signature;
+        AV *argtypes;
+        SV *restype;
+        SV *res;
+        char restype_c; // TODO: Remember to safefree() this on
+    destruction!!!!!!!!!!!!!!!!!!!!!!!!!!
+    };*/
+    //~
+    if (fiction != NULL) {
+        //~ if (fiction->entry_point) safefree(fiction->entry_point);
+        if (fiction->signature) safefree((DCpointer)fiction->signature);
+        //~ if (fiction->argtypes) sv_2mortal(MUTABLE_SV(fiction->argtypes));
+        //~ if (fiction->restype) sv_2mortal(fiction->restype);
+        //~ if (fiction->res) sv_2mortal(fiction->res);
+        if (fiction->lib) dlFreeLibrary(fiction->lib);
+    }
+    Safefree(fiction);
+    fiction = NULL;
+    XSRETURN_EMPTY;
+}
+
 extern "C" void Fiction_trigger(pTHX_ CV *cv) {
     dSP;
     dAXMARK;
-
-    if (!hold) hold = newSV(0);
 
     fiction *a = (fiction *)XSANY.any_ptr;
     size_t items = (SP - MARK);
@@ -330,8 +376,8 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
         }
     }
 
-    sv_setnv(hold, dcCallDouble(cvm, a->entry_point));
-    ST(0) = hold;
+    sv_setnv(a->res, dcCallDouble(cvm, a->entry_point));
+    ST(0) = a->res;
     XSRETURN(1);
 }
 
@@ -1893,7 +1939,7 @@ XS_INTERNAL(Affix_cpp_struct) {
     XSRETURN(1);
 }
 
-XS_INTERNAL(Affix_DESTROY) {
+XS_INTERNAL(Affix_DESTROYxxxxxxxxxx) {
     AFFIX_METHOD_GUTS
     if (affix->lib_handle != NULL) {
         dlFreeLibrary(affix->lib_handle);
@@ -1982,8 +2028,7 @@ XS_EXTERNAL(boot_Affix) {
     //~ (void)newXSproto_portable("Affix::cpp_const", Affix_cpp_const, __FILE__, "$");
     //~ (void)newXSproto_portable("Affix::cpp_struct", Affix_cpp_struct, __FILE__, "$");
 
-    //~ (void)newXSproto_portable("Affix::DESTROY", Affix_DESTROY, __FILE__, "$");
-
+    (void)newXSproto_portable("Affix::DESTROY", Affix_DESTROY, __FILE__, "$;$");
     (void)newXSproto_portable("Affix::END", Affix_END, __FILE__, "");
 
     //~ (void)newXSproto_portable("Affix::CLONE", XS_Affix_CLONE, __FILE__, ";@");
