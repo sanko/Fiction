@@ -187,26 +187,133 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
 
     if (!hold) hold = newSV(0);
 
-    fiction *fic = (fiction *)XSANY.any_ptr;
+    fiction *a = (fiction *)XSANY.any_ptr;
     size_t items = (SP - MARK);
 
     dMY_CXT;
     DCCallVM *cvm = MY_CXT.cvm;
     dcReset(cvm);
+    /*
+    #define WSTRING_FLAG '<'
 
+    #define STRUCT_FLAG 'A'
+    #define CPPSTRUCT_FLAG 'B'
+    #define UNION_FLAG 'u'
+    #define ARRAY_FLAG '@'
+    #define CODEREF_FLAG '&'
+    #define POINTER_FLAG 'P'
+    #define SV_FLAG '?'
+        */
     if (items) {
-        if (fic->signature != NULL) {
-            size_t sig_len = strlen(fic->signature);
-            for (size_t sig_pos = 0, st_pos = 0; sig_pos < sig_len; sig_pos++) {
-                switch (fic->signature[sig_pos]) {
+        if (a->signature != NULL) {
+            size_t sig_len = strlen(a->signature);
+            for (size_t sig_pos = 0, st_pos = 0; sig_pos < sig_len; sig_pos++, st_pos++) {
+                switch (a->signature[sig_pos]) {
                 case VOID_FLAG:
                     break; // ...okay?
+                case BOOL_FLAG:
+                    dcArgBool(cvm, SvTRUE(ST(st_pos))); // Anything can be a bool
+                    break;
+                case SCHAR_FLAG:
+                case CHAR_FLAG: {
+                    SV *arg = ST(st_pos);
+                    if (SvIOK(arg)) { dcArgChar(cvm, (I8)SvIV(arg)); }
+                    else {
+                        STRLEN len;
+                        char *value = SvPVbyte(arg, len);
+                        if (len > 1) { warn("Expected a single character; found %ld", len); }
+                        dcArgChar(cvm, (I8)value[0]);
+                    }
+                    break;
+                }
+                case UCHAR_FLAG: {
+                    SV *arg = ST(st_pos);
+                    if (SvIOK(arg)) { dcArgChar(cvm, (U8)SvIV(arg)); }
+                    else {
+                        STRLEN len;
+                        char *value = SvPVbyte(arg, len);
+                        if (len > 1) {
+                            warn("Expected a single unsigned character; found %ld", len);
+                        }
+                        dcArgChar(cvm, (U8)value[0]);
+                    }
+                    break;
+                }
+                case WCHAR_FLAG: {
+                    int value = 0;
+                    SV *arg = ST(st_pos);
+                    if (SvOK(arg)) {
+                        char *eh = SvPV_nolen(arg);
+                        PUTBACK;
+                        const char *pat = "W";
+                        SSize_t s = unpackstring(pat, pat + 1, eh, eh + WCHAR_SIZE + 1, SVt_PVAV);
+                        SPAGAIN;
+                        if (UNLIKELY(s != 1)) croak("Failed to unpack wchar_t");
+                        value = POPi;
+                    }
+#if WCHAR_MAX == LONG_MAX
+                    dcArgLong(cvm, value);
+#elif WCHAR_MAX == INT_MAX
+                    dcArgInt(cvm, value);
+#elif WCHAR_MAX == SHORT_MAX
+                    dcArgShort(cvm, value);
+#else
+                    dcArgChar(cvm, value);
+#endif
+                } break;
+                case SHORT_FLAG:
+                    dcArgShort(cvm, SvIV(ST(st_pos)));
+                    break;
+                case USHORT_FLAG:
+                    dcArgShort(cvm, SvUV(ST(st_pos)));
+                    break;
                 case INT_FLAG:
-                    dcArgInt(cvm, SvIV(ST(st_pos++)));
+                    dcArgInt(cvm, SvIV(ST(st_pos)));
+                    break;
+                case UINT_FLAG:
+                    dcArgInt(cvm, SvUV(ST(st_pos)));
+                    break;
+                case LONG_FLAG:
+                    dcArgLong(cvm, SvIV(ST(st_pos)));
+                    break;
+                case ULONG_FLAG:
+                    dcArgLong(cvm, SvUV(ST(st_pos)));
+                    break;
+                case LONGLONG_FLAG:
+                    dcArgLongLong(cvm, SvIV(ST(st_pos)));
+                    break;
+                case ULONGLONG_FLAG:
+                    dcArgLongLong(cvm, SvUV(ST(st_pos)));
+                    break;
+                case FLOAT_FLAG:
+                    dcArgFloat(cvm, SvNV(ST(st_pos)));
                     break;
                 case DOUBLE_FLAG:
-                    dcArgDouble(cvm, SvNV(ST(st_pos++)));
+                    dcArgDouble(cvm, SvNV(ST(st_pos)));
                     break;
+                case STRING_FLAG: {
+                    SV *arg = ST(st_pos);
+                    dcArgPointer(cvm, SvOK(arg) ? SvPV_nolen(arg) : NULL);
+                    break;
+                }
+                case WSTRING_FLAG: { /*
+                     DCpointer ptr = NULL;
+                     SV *arg = ST(st_pos);
+                     if (SvOK(arg)) {
+                         if (a->temp_ptrs == NULL) Newxz(a->temp_ptrs, num_args, DCpointer);
+                         a->temp_ptrs[st_pos] =
+                             sv2ptr(aTHX_ MUTABLE_SV(affix->arg_info[arg_pos]), arg);
+                         ptr = *(DCpointer *)(a->temp_ptrs[st_pos]);
+                     }
+                     dcArgPointer(cvm, ptr);*/
+                    break;
+                }
+                case STDSTRING_FLAG: {
+                    SV *arg = ST(st_pos);
+                    std::string tmp = SvOK(arg) ? SvPV_nolen(arg) : NULL;
+                    dcArgPointer(cvm, static_cast<void *>(&tmp));
+                    break;
+                }
                 }
             }
         }
@@ -223,7 +330,7 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
         }
     }
 
-    sv_setnv(hold, dcCallDouble(cvm, fic->entry_point));
+    sv_setnv(hold, dcCallDouble(cvm, a->entry_point));
     ST(0) = hold;
     XSRETURN(1);
 }
