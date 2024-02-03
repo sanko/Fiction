@@ -1,7 +1,9 @@
 package Affix 0.50 {    # 'FFI' is my middle name!
-    use v5.38;
-    use feature 'class';
-    no warnings 'experimental::class';
+
+    # ABSTRACT: A Foreign Function Interface eXtension
+    use strict;
+    use warnings;
+    use experimental 'signatures';
     use Carp qw[];
     use vars qw[@EXPORT_OK @EXPORT %EXPORT_TAGS];
 
@@ -14,31 +16,51 @@ package Affix 0.50 {    # 'FFI' is my middle name!
         eval qq[require $platform; $platform->import(':all')];
     }
     use XSLoader;
-    my $okay = 0;    # True on load
-    use Exporter 'import';
-    @EXPORT_OK = qw[
-        Void
-        Bool
-        Char UChar SChar WChar
-        Short UShort
-        Int UInt
-        Long ULong
-        LongLong ULongLong
-        Float Double
-        Size_t SSize_t
-        String WString
-        Struct Array
-        Pointer
-        Callback
-        SV
-        affix wrap pin unpin
-        malloc calloc realloc free memchr memcmp memset memcpy sizeof offsetof
-        raw hexdump
-        dlerror
-        find_library    load_library    free_library
-        find_symbol
+    my $okay = XSLoader::load();
+    use parent 'Exporter';
+    $EXPORT_TAGS{types} = [
+        qw[
+            Void
+            Bool
+            Char UChar SChar WChar
+            Short UShort
+            Int UInt
+            Long ULong
+            LongLong ULongLong
+            Float Double
+            Size_t SSize_t
+            String WString
+            Struct Array
+            Pointer
+            Callback
+            SV]
     ];
-    %EXPORT_TAGS = ( all => \@EXPORT_OK );
+    $EXPORT_TAGS{cc} = [    # calling conventions
+        'Reset', 'This', 'Ellipsis', 'Varargs', 'CDecl', 'STDCall', 'MSFastcall', 'GNUFastcall', 'MSThis', 'GNUThis', 'Arm', 'Thumb', 'Syscall'
+    ];
+    $EXPORT_TAGS{memory} = [
+        qw[
+            affix wrap pin unpin
+            malloc calloc realloc free memchr memcmp memset memcpy sizeof offsetof
+            raw hexdump]
+    ];
+    $EXPORT_TAGS{default} = [
+        qw[
+            dlerror
+            find_library    load_library    free_library
+            find_symbol
+        ]
+    ];
+    {
+        my %seen;
+        push @{ $EXPORT_TAGS{default} }, grep { !$seen{$_}++ } @{ $EXPORT_TAGS{$_} } for qw[base types cc];
+    }
+    {
+        my %seen;
+        push @{ $EXPORT_TAGS{all} }, grep { !$seen{$_}++ } @{ $EXPORT_TAGS{$_} } for keys %EXPORT_TAGS;
+    }
+    @EXPORT    = sort @{ $EXPORT_TAGS{default} };
+    @EXPORT_OK = sort @{ $EXPORT_TAGS{all} };
     #
     package Fiction::Type {
         use overload '""' => 'flag';
@@ -51,7 +73,7 @@ package Affix 0.50 {    # 'FFI' is my middle name!
 
     package Fiction::Type::Void {
         our @ISA = qw[Fiction::Type];
-        sub flag {'v'}
+        sub flag { chr Affix::VOID_FLAG() }
     }
 
     package Fiction::Type::Bool {
@@ -137,7 +159,7 @@ package Affix 0.50 {    # 'FFI' is my middle name!
 
     package Fiction::Type::Double {
         our @ISA = qw[Fiction::Type];
-        sub flag {'d'}
+        sub flag { chr Affix::DOUBLE_FLAG() }
     }
 
     package Fiction::Type::Size_t {
@@ -199,54 +221,6 @@ package Affix 0.50 {    # 'FFI' is my middle name!
         our @ISA = qw[Fiction::Type];
 
         #~ sub flag{'v'}
-    }
-    #
-    class Affix::Wrap 1 {
-        field $lib : param;
-        field $symbol : param;
-        field $argtypes : param //= ();
-        field $restype : param  //= Affix::Void();
-        field $entry;
-        field $signature;
-        #
-        ADJUST {
-            Carp::croak 'args must be Fiction::Type objects'      if grep { !$_->isa('Fiction::Type') } @$argtypes;
-            Carp::croak 'returns must be an Fiction::Type object' if !$restype->isa('Fiction::Type');
-            my $libref = Affix::load_library( $lib ? Affix::find_library($lib) : () );
-            $entry     = Affix::find_symbol( $libref, $symbol );
-            $signature = join '', map { $_->flag } @$argtypes;
-
-            #~ $signature //='';
-        }
-
-        method DESTROY ( $global = 0 ) {
-            warn 'destroy ', ref $self;
-        }
-    }
-
-    # ABI system
-    class Affix::ABI::D {
-        method mangle ( $name, $args, $ret ) {...}
-    }
-
-    class Affix::ABI::Fortran {
-        method mangle ( $name, $args, $ret ) {...}
-    }
-
-    class Affix::ABI::Itanium {
-        method mangle ( $name, $args, $ret ) {...}
-    }
-
-    class Affix::ABI::Microsoft {
-        method mangle ( $name, $args, $ret ) {...}
-    }
-
-    class Affix::ABI::Rust : isa(Affix::ABI::Itanium) {
-        method mangle ( $name, $args, $ret ) {...}
-    }
-
-    class Affix::ABI::Swift {
-        method mangle ( $name, $args, $ret ) {...}
     }
     {
         no experimental 'signatures';
@@ -328,10 +302,5 @@ package Affix 0.50 {    # 'FFI' is my middle name!
     sub offsetof ( $type, $field )       {...}
     sub raw      ( $ptr, $size )         {...}
     sub hexdump  ( $ptr, $size )         {...}
-
-    # Let's go
-    #~ sub dl_load_flags ($modulename) {0}
-    $okay =    #DynaLoader::bootstrap(__PACKAGE__);
-        XSLoader::load( __PACKAGE__, $Affix::VERSION );
 }
 1;

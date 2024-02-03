@@ -1,7 +1,7 @@
 use v5.38;
 use Test2::V0;
 use lib '../lib', 'lib', '../blib/arch', '../blib/lib', 'blib/arch', 'blib/lib', '../../', '.';
-use Affix qw[Double dlerror find_library load_library find_symbol];
+use Affix qw[:types dlerror find_library load_library find_symbol];
 BEGIN { chdir '../' if !-d 't'; }
 use t::lib::helper;
 $|++;
@@ -74,15 +74,24 @@ SKIP: {
 };
 #
 subtest 'wrap with known argtypes' => sub {
-    my $affix = Affix::Wrap->new( lib => 'm', symbol => 'pow', argtypes => [ Double, Double ], restype => Double );
-    isa_ok $affix, ['Affix::Wrap'];
-    is $affix->call( 3, 4 ), 81, 'object_test';
+    my $affix = Affix::fiction( find_library('m'), 'pow', [ Double, Double ], Double );
+    isa_ok $affix, ['Affix'];
+    is $affix->( 3, 4 ), 81, 'object_test';
 };
 subtest 'wrap with unknown argtypes' => sub {
-    my $affix = Affix::Wrap->new( lib => 'm', symbol => 'pow', restype => Double );
-    isa_ok $affix, ['Affix::Wrap'];
-    is $affix->call( 3.0, 4.0 ), 81, 'object_test';
+    my $affix = Affix::fiction( find_library('m'), 'pow' );
+    isa_ok $affix, ['Affix'];
+    is $affix->( 3.0, 4.0 ), 81, 'object_test';
 };
-warn join '', Double, Double, Double;
+subtest 'types' => sub {
+    subtest 'Void' => sub {
+        isa_ok my $double = Void, ['Fiction::Type'];
+        is $double, 'v', 'stringify';
+    };
+    subtest 'Double' => sub {
+        isa_ok my $double = Double, ['Fiction::Type'];
+        is $double, 'd', 'stringify';
+    }
+};
 #
 done_testing;
