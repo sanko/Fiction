@@ -9,8 +9,8 @@ Affix - A Foreign Function Interface eXtension
 use Affix;
 
 # bind to exported function
-affix 'm', 'floor', [Double], Double;
-warn floor(3.14159); # 3
+affix 'm', 'pow', [Double, Double], Double;
+warn pow(3, 4); # 81
 
 # wrap an exported function in a code reference
 my $getpid = wrap 'c', 'getpid', [], Int;
@@ -29,55 +29,52 @@ languages (C, C++, Rust, etc.) without having to write or maintain XS.
 
 Affix supports the following features right out of the box:
 
-- Works on Windows, macOS, Linux, BSD, and more
-- Callbacks
-- Pointers
-- Typedefs
-- Global/Exported variables
-- Libraries developed in C, C++, and Rust (and more to come!) even those with mangled symbol names
-- Aggregates such as structs, unions, and arrays
-- Passing aggregates by value
-- Nested aggregates
-- 'Smart' enums
-- Tested to work all the way down to Perl 5.026 (which is ancient in my book)
+- - Works on Windows, macOS, Linux, BSD, and more
+- - Callbacks
+- - Pointers
+- - Typedefs
+- - Global/Exported variables
+- - Libraries developed in C, C++, and Rust (and more to come!) even those with mangled symbol names
+- - Aggregates such as structs, unions, and arrays
+- - Passing aggregates by value
+- - Nested aggregates
+- - 'Smart' enums
+- - Tested to work all the way down to Perl 5.026 (which is ancient in my book)
 
-# Basics
+# The Basics
 
-Affix's basic API is rather simple but not lacking in power. Let's start at the beginning with the eponymous `affix(
+Affix's API is rather simple but not lacking in power. Let's start at the very beginning, with the eponymous `affix(
 ... )` function.
 
 ## `affix( ... )`
 
-Attach a given symbol to a named perl sub.
+Attaches a given symbol to a named perl sub.
 
 ```perl
-affix 'C:\Windows\System32\user32.dll', 'pow', [Double, Double] => Double;
+affix 'm', 'pow', [Double, Double] => Double;
 warn pow( 3, 5 );
 
 affix 'c', 'puts', [Str], Int;
 puts( 'Hello' );
 
-affix 'c', ['puts', 'write'], [Str], Int; # renamed function
+affix './mylib.dll', ['output', 'write'], [Str], Int; # renamed function
 write( 'Hello' );
 
 affix undef, [ 'rint', 'round' ], [Double], Double; # use current process
 warn round(3.14);
 
-affix [ 'xxhash', '0.8.2' ], [ 'XXH_versionNumber', 'xxHash::version' ], [], UInt;
+affix 'xxhash', [ 'XXH_versionNumber', 'xxHash::version' ], [], UInt;
 warn xxHash::version();
 ```
 
 Expected parameters include:
 
-- `lib`
+- `lib` - required
 
     File path or name of the library to load symbols from. Pass an explicit `undef` to pull functions from the main
     executable.
 
-    Optionally, you may provide an array reference with the library and a version number if the library was built with such
-    a value as part of its filename.
-
-- `symbol_name`
+- `symbol_name` - required
 
     Name of the symbol to wrap.
 
@@ -99,21 +96,18 @@ name you provided.
 Creates a wrapper around a given symbol in a given library.
 
 ```perl
-my $pow = wrap( 'C:\Windows\System32\user32.dll', 'pow', [Double, Double] => Double );
+my $pow = wrap( 'm', 'pow', [Double, Double] => Double );
 warn $pow->(5, 10); # 5**10
 ```
 
 Parameters include:
 
-- `lib`
+- `lib` - required
 
     File path or name of the library to load symbols from. Pass an explicit `undef` to pull functions from the main
     executable.
 
-    Optionally, you may provide an array reference with the library and a version number if the library was built with such
-    a value as part of its filename.
-
-- `symbol_name`
+- `symbol_name` - required
 
     Name of the symbol to wrap.
 
@@ -126,7 +120,7 @@ Parameters include:
     A single return type for the function.
 
 `wrap( ... )` behaves exactly like `affix( ... )` but returns an anonymous subroutine and does not pollute the
-namespace.
+namespace with a named function.
 
 ## `pin( ... )`
 
@@ -151,9 +145,6 @@ Expected parameters include:
 
     File path or name of the library to load symbols from. Pass an explicit `undef` to pull functions from the main
     executable.
-
-    Optionally, you may provide an array reference with the library and a version number if the library was built with such
-    a value as part of its filename.
 
 - `symbol_name`
 
@@ -309,7 +300,7 @@ my $promote = report( 'Alex Smithe', [ 90, 82, 70, 76, 98 ] );
 See the subsections entitled [Types](#types) for more on the possible types and ["Calling
 Conventions" in Calling Conventions](https://metacpan.org/pod/Calling%20Conventions#Calling-Conventions) for advanced flags that may also be defined as part of your signature.
 
-## Types
+# Types
 
 Affix supports the fundamental types (void, int, etc.) as well as aggregates (struct, array, union). Please note that
 types given are advisory only! No type checking is done at compile or runtime.
@@ -321,21 +312,21 @@ types given are advisory only! No type checking is done at compile or runtime.
     <th>Raku</th>       </tr> </thead> <tbody>       <tr>         <td>Void</td> <td>void</td> <td>-&gt;()</td>
     <td>void/NULL</td> <td>-</td> <td></td>       </tr>       <tr> <td>Bool</td> <td>_Bool</td> <td>bool</td> <td>bool</td>
     <td>-</td> <td>bool</td>       </tr>       <tr>         <td>Char</td> <td>int8_t</td>    <td>i8</td> <td>sbyte</td>
-    <td>c</td>       <td>int8</td>    </tr>       <tr>   <td>UChar</td> <td>uint8_t</td>         <td>u8</td>        
-    <td>byte</td>     <td>C</td> <td>byte, uint8</td>       </tr>       <tr> <td>Short</td>  <td>int16_t</td> <td>i16</td> 
-    <td>short</td> <td>s</td>         <td>int16</td>       </tr> <tr> <td>UShort</td>  <td>uint16_t</td>        
-    <td>u16</td> <td>ushort</td> <td>S</td>   <td>uint16</td>       </tr> <tr> <td>Int</td> <td>int32_t</td> <td>i32</td>
-    <td>int</td> <td>i</td> <td>int32</td>    </tr>       <tr> <td>UInt</td> <td>uint32_t</td>     <td>u32</td>
-    <td>uint</td> <td>I</td> <td>uint32</td>       </tr>     <tr> <td>Long</td> <td>int64_t</td> <td>i64</td> <td>long</td>
-    <td>l</td> <td>int64, long</td> </tr> <tr> <td>ULong</td> <td>uint64_t</td>     <td>u64</td> <td>ulong</td> <td>L</td>
-    <td>uint64, ulong</td> </tr>       <tr> <td>LongLong</td>     <td>-/long long</td> <td>i128</td>   <td>q</td>
-    <td>longlong</td>         <td></td> </tr> <tr> <td>ULongLong</td> <td>-/unsigned long long</td> <td>u128</td>
-    <td>Q</td> <td>ulonglong</td>       <td></td>       </tr> <tr> <td>Float</td> <td>float</td>         <td>f32</td>
-    <td>f</td> <td>num32</td> <td></td> </tr> <tr>  <td>Double</td> <td>double</td> <td>f64</td> <td>d</td> <td>num64</td>
-    <td></td> </tr>    <tr> <td>SSize_t</td> <td>SSize_t</td> <td>SSize_t</td> <td></td> <td></td>       <td></td>    
-    </tr> <tr> <td>Size_t</td> <td>size_t</td>         <td>size_t</td>      <td></td> <td></td> <td></td> </tr>       <tr>
-    <td>Str</td> <td>char *</td> <td></td> <td></td> <td></td> <td></td> </tr>       <tr> <td>WStr</td> <td>wchar_t</td>
-    <td></td> <td></td> <td></td>      </tr> </tbody> </table>
+    <td>c</td>       <td>int8</td>    </tr>       <tr>   <td>UChar</td> <td>uint8_t</td>         <td>u8</td> <td>byte</td> 
+      <td>C</td> <td>byte, uint8</td>       </tr>       <tr> <td>Short</td>  <td>int16_t</td> <td>i16</td> <td>short</td>
+    <td>s</td>         <td>int16</td>       </tr> <tr> <td>UShort</td>  <td>uint16_t</td> <td>u16</td> <td>ushort</td>
+    <td>S</td>   <td>uint16</td>       </tr> <tr> <td>Int</td> <td>int32_t</td> <td>i32</td> <td>int</td> <td>i</td>
+    <td>int32</td>    </tr>       <tr> <td>UInt</td> <td>uint32_t</td>     <td>u32</td> <td>uint</td> <td>I</td>
+    <td>uint32</td>       </tr>     <tr> <td>Long</td> <td>int64_t</td> <td>i64</td> <td>long</td> <td>l</td> <td>int64,
+    long</td> </tr> <tr> <td>ULong</td> <td>uint64_t</td>     <td>u64</td> <td>ulong</td> <td>L</td> <td>uint64, ulong</td>
+    </tr>       <tr> <td>LongLong</td>     <td>-/long long</td> <td>i128</td>   <td>q</td> <td>longlong</td> <td></td>
+    </tr> <tr> <td>ULongLong</td> <td>-/unsigned long long</td> <td>u128</td> <td>Q</td> <td>ulonglong</td> <td></td>      
+    </tr> <tr> <td>Float</td> <td>float</td>         <td>f32</td> <td>f</td> <td>num32</td> <td></td> </tr> <tr> 
+    <td>Double</td> <td>double</td> <td>f64</td> <td>d</td> <td>num64</td> <td></td> </tr>    <tr> <td>SSize_t</td>
+    <td>SSize_t</td> <td>SSize_t</td> <td></td> <td></td>       <td></td> </tr> <tr> <td>Size_t</td> <td>size_t</td> 
+    <td>size_t</td>      <td></td> <td></td> <td></td> </tr>       <tr> <td>Str</td> <td>char *</td> <td></td> <td></td>
+    <td></td> <td></td> </tr>       <tr> <td>WStr</td> <td>wchar_t</td> <td></td> <td></td> <td></td>      </tr> </tbody>
+    </table>
 </div>
 
 Given sizes are minimums measured in bits

@@ -73,124 +73,108 @@ package Affix 0.50 {    # 'FFI' is my middle name!
 
     package Fiction::Type::Void {
         our @ISA = qw[Fiction::Type];
-        sub flag { chr Affix::VOID_FLAG() }
+        sub flag { CORE::state $chr //= chr Affix::VOID_FLAG(); $chr; }
     }
 
     package Fiction::Type::Bool {
         our @ISA = qw[Fiction::Type];
-        sub flag {'b'}
+        sub flag { CORE::state $chr //= chr Affix::BOOL_FLAG(); $chr; }
     }
 
     package Fiction::Type::Char {
         our @ISA = qw[Fiction::Type];
-
-        #~ sub flag{'v'}
+        sub flag { CORE::state $chr //= chr Affix::CHAR_FLAG(); $chr; }
     }
 
     package Fiction::Type::UChar {
         our @ISA = qw[Fiction::Type];
-
-        #~ sub flag{'v'}
+        sub flag { CORE::state $chr //= chr Affix::UCHAR_FLAG(); $chr; }
     }
 
     package Fiction::Type::SChar {
         our @ISA = qw[Fiction::Type];
-
-        #~ sub flag{'v'}
+        sub flag { CORE::state $chr //= chr Affix::SCHAR_FLAG(); $chr; }
     }
 
     package Fiction::Type::WChar {
         our @ISA = qw[Fiction::Type];
-
-        #~ sub flag{'v'}
+        sub flag { CORE::state $chr //= chr Affix::WCHAR_FLAG(); $chr; }
     }
 
     package Fiction::Type::Short {
         our @ISA = qw[Fiction::Type];
-
-        #~ sub flag{'v'}
+        sub flag { CORE::state $chr //= chr Affix::SHORT_FLAG(); $chr; }
     }
 
     package Fiction::Type::UShort {
         our @ISA = qw[Fiction::Type];
-
-        #~ sub flag{'v'}
+        sub flag { CORE::state $chr //= chr Affix::USHORT_FLAG(); $chr; }
     }
 
     package Fiction::Type::Int {
         our @ISA = qw[Fiction::Type];
-        sub flag {'v'}
+        sub flag { CORE::state $chr //= chr Affix::INT_FLAG(); $chr; }
     }
 
     package Fiction::Type::UInt {
         our @ISA = qw[Fiction::Type];
-
-        #~ sub flag{'v'}
+        sub flag { CORE::state $chr //= chr Affix::UINT_FLAG(); $chr; }
     }
 
     package Fiction::Type::Long {
         our @ISA = qw[Fiction::Type];
-
-        #~ sub flag{'v'}
+        sub flag { CORE::state $chr //= chr Affix::LONG_FLAG(); $chr; }
     }
 
     package Fiction::Type::ULong {
         our @ISA = qw[Fiction::Type];
-
-        #~ sub flag{'v'}
+        sub flag { CORE::state $chr //= chr Affix::ULONG_FLAG(); $chr; }
     }
 
     package Fiction::Type::LongLong {
         our @ISA = qw[Fiction::Type];
-
-        #~ sub flag{'v'}
+        sub flag { CORE::state $chr //= chr Affix::LONGLONG_FLAG(); $chr; }
     }
 
     package Fiction::Type::ULongLong {
         our @ISA = qw[Fiction::Type];
-
-        #~ sub flag{'v'}
+        sub flag { CORE::state $chr //= chr Affix::ULONGLONG_FLAG(); $chr; }
     }
 
     package Fiction::Type::Float {
         our @ISA = qw[Fiction::Type];
-        sub flag {'f'}
+        sub flag { CORE::state $chr //= chr Affix::FLOAT_FLAG(); $chr; }
     }
 
     package Fiction::Type::Double {
         our @ISA = qw[Fiction::Type];
-        sub flag { chr Affix::DOUBLE_FLAG() }
+        sub flag { CORE::state $chr //= chr Affix::DOUBLE_FLAG(); $chr; }
     }
 
     package Fiction::Type::Size_t {
         our @ISA = qw[Fiction::Type];
-
-        #~ sub flag{'v'}
+        sub flag { CORE::state $chr //= chr Affix::SIZE_T_FLAG(); $chr; }
     }
 
     package Fiction::Type::SSize_t {
         our @ISA = qw[Fiction::Type];
-
-        #~ sub flag{'v'}
+        sub flag { CORE::state $chr //= chr Affix::SSIZE_T_FLAG(); $chr; }
     }
 
     package Fiction::Type::String {
         our @ISA = qw[Fiction::Type];
-
-        #~ sub flag{'v'}
+        sub flag { CORE::state $chr //= chr Affix::STRING_FLAG(); $chr; }
     }
 
     package Fiction::Type::WString {
         our @ISA = qw[Fiction::Type];
-
-        #~ sub flag{'v'}
+        sub flag { CORE::state $chr //= chr Affix::WSTRING_FLAG(); $chr; }
     }
 
     package Fiction::Type::Struct {
         our @ISA = qw[Fiction::Type];
         sub new ( $class, $fields ) { bless \{ fields => $fields }, $class }
-
-        #~ sub flag{'v'}
+        sub flag                    { CORE::state $chr //= chr Affix::STRUCT_FLAG(); $chr; }
     }
 
     package Fiction::Type::Array {
@@ -199,28 +183,24 @@ package Affix 0.50 {    # 'FFI' is my middle name!
         sub new ( $class, $type, $size //= () ) {
             bless \{ type => $type, defined $size ? ( size => $size ) : () }, $class;
         }
-
-        #~ sub flag{'v'}
+        sub flag { CORE::state $chr //= chr Affix::ARRAY_FLAG(); $chr; }
     }
 
     package Fiction::Type::Pointer {
         our @ISA = qw[Fiction::Type];
         sub new ( $class, $type ) { bless \{ type => $type }, $class }
-
-        #~ sub flag{'v'}
+        sub flag                  { CORE::state $chr //= chr Affix::POINTER_FLAG(); $chr; }
     }
 
     package Fiction::Type::Callback {
         our @ISA = qw[Fiction::Type];
         sub new ( $class, $argtypes, $restype ) { bless \{ argtypes => $argtypes, restype => $restype }, $class }
-
-        #~ sub flag{'v'}
+        sub flag                                { CORE::state $chr //= chr Affix::CALLBACK_FLAG(); $chr; }
     }
 
     package Fiction::Type::SV {
         our @ISA = qw[Fiction::Type];
-
-        #~ sub flag{'v'}
+        sub flag { CORE::state $chr //= chr Affix::SV_FLAG(); $chr; }
     }
     {
         no experimental 'signatures';
@@ -273,19 +253,6 @@ package Affix 0.50 {    # 'FFI' is my middle name!
     }
 
     # Core
-    sub affix ( $lib, $symbol, $args //= [], $returns //= Void ) {
-        my $affix = Affix::Wrap->new( lib => $lib, symbol => $symbol, argtypes => $args, restype => $returns );
-        my ($pkg) = caller(0);
-        {
-            no strict 'refs';
-            *{ $pkg . '::' . $symbol } = sub { $affix->call(@_) };
-        }
-        $affix;
-    }
-
-    sub wrap ( $lib, $symbol, $args //= [], $returns //= Void ) {
-        Affix::Wrap->new( lib => $lib, symbol => $symbol, args => $args, returns => $returns );
-    }
     sub pin   ( $lib, $symbol, $type, $variable ) {...}
     sub unpin ($variable)                         {...}
 

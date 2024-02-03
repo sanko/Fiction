@@ -141,23 +141,41 @@ struct fiction {
 };
 
 XS_INTERNAL(Affix_fiction) {
-    dVAR;
     dXSARGS;
+    dXSI32;
     if (items < 2 || items > 4) croak_xs_usage(cv, "lib, symbol, argtypes, rettype");
-
     fiction *ret;
     Newxz(ret, 1, fiction);
 
-    ret->lib = load_library(SvPOK(ST(0)) ? SvPV_nolen(ST(0)) : NULL);
-    if (!ret->lib) {
-        safefree(ret);
-        XSRETURN_UNDEF;
+    const char *perl_name = NULL;
+    {
+        ret->lib = load_library(SvPOK(ST(0)) ? SvPV_nolen(ST(0)) : NULL);
+        if (!ret->lib) {
+            safefree(ret);
+            XSRETURN_UNDEF;
+        }
     }
+    {
+        SV *symbol;
+        if (SvROK(ST(1)) && SvTYPE(SvRV(ST(1))) == SVt_PVAV) {
+            AV *tmp = MUTABLE_AV(SvRV(ST(1)));
+            size_t tmp_len = av_count(tmp);
+            if (tmp_len != 2) { croak("Expected a symbol and name"); }
+            if (ix == 1 && tmp_len > 1) {
+                warn("wrap( ... ) isn't expecting a name and has ignored it");
+            }
+            symbol = *av_fetch(tmp, 0, false);
+            if (!SvPOK(symbol)) { croak("Undefined symbol name"); }
+            perl_name = SvPV_nolen(*av_fetch(tmp, 1, false));
+        }
+        else
+            symbol = ST(1);
 
-    ret->entry_point = find_symbol(ret->lib, SvPV_nolen(ST(1)));
-    if (!ret->entry_point) {
-        safefree(ret);
-        XSRETURN_UNDEF;
+        ret->entry_point = find_symbol(ret->lib, SvPV_nolen(symbol));
+        if (!ret->entry_point) {
+            safefree(ret);
+            XSRETURN_UNDEF;
+        }
     }
 
     ret->argtypes = items >= 3 && SvROK(ST(2)) ? MUTABLE_AV(SvRV(ST(2))) : NULL;
@@ -179,15 +197,18 @@ XS_INTERNAL(Affix_fiction) {
     else
         ret->signature = NULL;
 
-    STMT_START {
-        cv = newXSproto_portable(NULL, Fiction_trigger, __FILE__, "$;@");
+    STMT_START { // TODO: generate prototype if we have argtypes
+        const char *prototype = NULL;
+        cv = newXSproto_portable(ix == 0 ? perl_name : NULL, Fiction_trigger, __FILE__, prototype);
         if (UNLIKELY(cv == NULL))
             croak("ARG! Something went really wrong while installing a new XSUB!");
         XSANY.any_ptr = (DCpointer)ret;
     }
     STMT_END;
 
-    ST(0) = sv_2mortal(sv_bless(newRV_noinc(MUTABLE_SV(cv)), gv_stashpv("Affix", GV_ADD)));
+    ST(0) = sv_2mortal(
+        sv_bless((UNLIKELY(ix == 1) ? newRV_noinc(MUTABLE_SV(cv)) : newRV_inc(MUTABLE_SV(cv))),
+                 gv_stashpv("Affix", GV_ADD)));
     XSRETURN(1);
 }
 
@@ -195,7 +216,7 @@ XS_INTERNAL(Affix_DESTROY) {
     dXSARGS;
     PERL_UNUSED_VAR(items);
     fiction *fiction;
-    STMT_START {
+    STMT_START { // peel this grape
         HV *st;
         GV *gvp;
         SV *const xsub_tmp_sv = ST(0);
@@ -204,18 +225,6 @@ XS_INTERNAL(Affix_DESTROY) {
         fiction = (struct fiction *)XSANY.any_ptr;
     }
     STMT_END;
-    //~ warn("hello: %s", fiction->hello);
-
-    /*struct fiction {
-        DCpointer entry_point;
-        const char *signature;
-        AV *argtypes;
-        SV *restype;
-        SV *res;
-        char restype_c; // TODO: Remember to safefree() this on
-    destruction!!!!!!!!!!!!!!!!!!!!!!!!!!
-    };*/
-    //~
     if (fiction != NULL) {
         //~ if (fiction->entry_point) safefree(fiction->entry_point);
         if (fiction->signature) safefree((DCpointer)fiction->signature);
@@ -256,7 +265,7 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
             for (size_t sig_pos = 0, st_pos = 0; sig_pos < sig_len; sig_pos++, st_pos++) {
                 switch (a->signature[sig_pos]) {
                 case VOID_FLAG:
-                    break; // ...okay?
+                    break; // ...skip?
                 case BOOL_FLAG:
                     dcArgBool(cvm, SvTRUE(ST(st_pos))); // Anything can be a bool
                     break;
@@ -2046,8 +2055,15 @@ XS_EXTERNAL(boot_Affix) {
 
     // XXX: Remove before stable
     (void)newXSproto_portable("Affix::Wrap::call", Affix_call, __FILE__, "$;@");
-    (void)newXSproto_portable("Affix::fiction", Affix_fiction, __FILE__, "$$;$$");
     //~ (void)newXSproto_portable("Affix::fiction_call", Affix_fiction_call, __FILE__, "$;@");
+
+    //
+    cv = newXSproto_portable("Affix::affix", Affix_fiction, __FILE__, "$$;$$");
+    XSANY.any_i32 = 0;
+    export_function("Affix", "affix", "base");
+    cv = newXSproto_portable("Affix::wrap", Affix_fiction, __FILE__, "$$;$$");
+    XSANY.any_i32 = 1;
+    export_function("Affix", "wrap", "base");
 
     // general purpose flags
     export_constant("Affix", "VOID_FLAG", "flags", VOID_FLAG);

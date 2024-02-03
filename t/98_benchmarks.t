@@ -8,8 +8,8 @@ BEGIN { chdir '../' if !-d 't'; }
 $|++;
 #
 use Benchmark qw[:all];
-my $fiction1 = Affix::fiction( Affix::find_library('m'), 'pow', [ Double, Double ], Double );
-my $fiction2 = Affix::fiction( Affix::find_library('m'), 'pow' );
+my $fiction1 = Affix::affix( Affix::find_library('m'), 'pow', [ Double, Double ], Double );
+my $fiction2 = Affix::affix( Affix::find_library('m'), 'pow' );
 ok 81 == $fiction1->( 3, 4 ),          'fiction 1';
 ok 81 == $fiction2->( 3.0, 4.0 ),      'fiction 2';
 ok 22876792454961 == pow( 9.0, 14.0 ), 'pow 1';
