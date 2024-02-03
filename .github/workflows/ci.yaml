@@ -120,7 +120,7 @@ jobs:
           - macos-latest
           - windows-2019
         perl:
-          - 5.38.0
+          - 5.38.2
 name: CI
 on:
   pull_request:

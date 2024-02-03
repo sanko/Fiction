@@ -76,7 +76,8 @@
             "File::Spec" : "0",
             "File::Temp" : "0",
             "Sub::Util" : "0",
-            "XSLoader" : "0"
+            "XSLoader" : "0",
+            "perl" : "5.038000"
          }
       },
       "test" : {

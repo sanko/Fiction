@@ -1,10 +1,10 @@
-#requires 'perl', '5.026000';
+requires 'perl', '5.038000';    # For //= in signatures
 requires 'File::Spec';
 requires 'Config';
 requires 'XSLoader';
 requires 'Sub::Util';
 requires 'Attribute::Handlers';
-requires 'File::Temp';    # Used in Affix::Platform::Unix::_findLib_gcc(...)
+requires 'File::Temp';          # Used in Affix::Platform::Unix::_findLib_gcc(...)
 
 # TODO: remove this!!!!
 requires 'Data::Dump';

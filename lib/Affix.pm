@@ -1,8 +1,7 @@
 package Affix 0.50 {    # 'FFI' is my middle name!
 
     # ABSTRACT: A Foreign Function Interface eXtension
-    use strict;
-    use warnings;
+    use v5.26;
     use experimental 'signatures';
     use Carp qw[];
     use vars qw[@EXPORT_OK @EXPORT %EXPORT_TAGS];
@@ -180,6 +179,7 @@ package Affix 0.50 {    # 'FFI' is my middle name!
     package Fiction::Type::Array {
         our @ISA = qw[Fiction::Type];
 
+        # //= requires v5.38
         sub new ( $class, $type, $size //= () ) {
             bless \{ type => $type, defined $size ? ( size => $size ) : () }, $class;
         }

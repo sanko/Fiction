@@ -392,59 +392,6 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
     XSRETURN(1);
 }
 
-XS_INTERNAL(Affix_call) { // This could be faster without the XS stuff. See Affix_trigger
-    dVAR;
-    dXSARGS;
-    dMY_CXT;
-    SV *RETVAL;
-    DCCallVM *cvm = MY_CXT.cvm;
-    dcReset(cvm);
-    DCpointer entry_point;
-
-    if (SvROK(ST(0))) {
-        SV *instance = SvRV(ST(0));
-        //~ if (SvTYPE(instance) == SVt_PVOBJ) {
-        SV **fields = ObjectFIELDS(instance);
-        entry_point = INT2PTR(DCpointer, SvIV((SV *)SvRV(fields[4])));
-        STRLEN sig_len;
-        const char *sig = SvPV(fields[5], sig_len);
-        if (sig_len) {
-            if (sig_len != items - 1)
-                croak("Too %s arguments for subroutine (got %d; expected %d)",
-                      items - 1 < sig_len ? "few" : "many", items - 1, sig_len);
-            for (size_t i = 1; i <= sig_len; ++i) {
-                //~ warn("[%d of %d] %c", i, arg_count, sig[i - 1]);
-                switch (sig[i - 1]) {
-                case INT_FLAG:
-                case UINT_FLAG:
-                    dcArgInt(cvm, SvIV(ST(i)));
-                    break;
-                case DOUBLE_FLAG:
-                    dcArgDouble(cvm, SvNV(ST(i)));
-                    break;
-                }
-            }
-        }
-        else { // Try our best...
-            for (int i = 1; i < items; i++) {
-                //~ warn("i: %d", i);
-                if (SvIOK(ST(i)))
-                    dcArgInt(cvm, SvIV(ST(i)));
-                else if (SvUOK(ST(i)))
-                    dcArgInt(cvm, SvUV(ST(i)));
-                else if (SvNOK(ST(i)))
-                    dcArgDouble(cvm, SvNV(ST(i)));
-            }
-        }
-        //~ }
-    }
-    else
-        warn("Not an object?");
-    RETVAL = sv_2mortal(newSVnv(dcCallDouble(cvm, entry_point)));
-    ST(0) = RETVAL;
-    XSRETURN(1);
-}
-
 extern "C" void Affix_trigger(pTHX_ CV *cv) {
     dSP;
     dAXMARK;
@@ -2056,7 +2003,6 @@ XS_EXTERNAL(boot_Affix) {
     (void)newXSproto_portable("Affix::dlerror", Affix_dlerror, __FILE__, "");
 
     // XXX: Remove before stable
-    (void)newXSproto_portable("Affix::Wrap::call", Affix_call, __FILE__, "$;@");
     //~ (void)newXSproto_portable("Affix::fiction_call", Affix_fiction_call, __FILE__, "$;@");
 
     //

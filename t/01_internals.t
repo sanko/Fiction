@@ -1,4 +1,3 @@
-use v5.38;
 use Test2::V0;
 use lib '../lib', 'lib', '../blib/arch', '../blib/lib', 'blib/arch', 'blib/lib', '../../', '.';
 use Affix qw[:types dlerror find_library load_library find_symbol];
