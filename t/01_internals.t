@@ -73,7 +73,7 @@ SKIP: {
     }
 };
 #
-subtest 'rename symbol' => sub {
+subtest 'affix with renamed symbol' => sub {
     like(
         warning {
             ok Affix::wrap( find_library('m'), [ 'pow' => 'power' ], [ Double, Double ], Double ), 'wrap libm::pow as power';
@@ -86,12 +86,12 @@ subtest 'rename symbol' => sub {
     can_ok __PACKAGE__, 'power';
     is power( 3, 4 ), 81, 'power( 3, 4 )';
 };
-subtest 'wrap with known argtypes' => sub {
+subtest 'affix with known argtypes' => sub {
     my $affix = Affix::affix( find_library('m'), 'pow', [ Double, Double ], Double );
     isa_ok $affix, ['Affix'];
     is $affix->( 3, 4 ), 81, 'object_test';
 };
-subtest 'wrap with unknown argtypes' => sub {
+subtest 'affix with unknown argtypes' => sub {
     my $affix = Affix::affix( find_library('m'), 'pow' );
     isa_ok $affix, ['Affix'];
     is $affix->( 3.0, 4.0 ), 81, 'object_test';

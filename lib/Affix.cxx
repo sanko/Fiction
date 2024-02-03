@@ -168,8 +168,10 @@ XS_INTERNAL(Affix_fiction) {
             if (!SvPOK(symbol)) { croak("Undefined symbol name"); }
             perl_name = SvPV_nolen(*av_fetch(tmp, 1, false));
         }
-        else
+        else {
             symbol = ST(1);
+            perl_name = SvPV_nolen(symbol);
+        }
 
         ret->entry_point = find_symbol(ret->lib, SvPV_nolen(symbol));
         if (!ret->entry_point) {
