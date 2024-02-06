@@ -3,8 +3,9 @@ package Affix 0.50 {    # 'FFI' is my middle name!
     # ABSTRACT: A Foreign Function Interface eXtension
     use v5.26;
     use experimental 'signatures';
-    use Carp qw[];
-    use vars qw[@EXPORT_OK @EXPORT %EXPORT_TAGS];
+    use Carp        qw[];
+    use vars        qw[@EXPORT_OK @EXPORT %EXPORT_TAGS];
+    use Affix::Enum qw[Enum];
 
     BEGIN {
         $DynaLoad::dl_debug = 1;
@@ -32,7 +33,9 @@ package Affix 0.50 {    # 'FFI' is my middle name!
             Struct Array
             Pointer
             Callback
-            SV]
+            SV
+            Enum
+        ]
     ];
     $EXPORT_TAGS{cc} = [    # calling conventions
         'Reset', 'This', 'Ellipsis', 'Varargs', 'CDecl', 'STDCall', 'MSFastcall', 'GNUFastcall', 'MSThis', 'GNUThis', 'Arm', 'Thumb', 'Syscall'
@@ -45,6 +48,7 @@ package Affix 0.50 {    # 'FFI' is my middle name!
     ];
     $EXPORT_TAGS{default} = [
         qw[
+            typedef
             dlerror
             find_library    load_library    free_library
             find_symbol
@@ -255,6 +259,16 @@ package Affix 0.50 {    # 'FFI' is my middle name!
     # Core
     sub pin   ( $lib, $symbol, $type, $variable ) {...}
     sub unpin ($variable)                         {...}
+
+    # Type system
+    use Affix::Enum;
+    {
+        no experimental 'signatures';
+
+        sub typedef($$) {
+            pop->typedef(pop);
+        }
+    }
 
     # Memory functions
     sub malloc   ($size)                 {...}
