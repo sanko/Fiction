@@ -1,6 +1,6 @@
 use Test2::V0;
 use lib '../lib', 'lib', '../blib/arch', '../blib/lib', 'blib/arch', 'blib/lib', '../../', '.';
-use Affix qw[:types dlerror find_library load_library find_symbol];
+use Affix qw[:types dlerror find_library load_library find_symbol affix wrap];
 BEGIN { chdir '../' if !-d 't'; }
 use t::lib::helper;
 $|++;
@@ -75,23 +75,23 @@ SKIP: {
 subtest 'affix with renamed symbol' => sub {
     like(
         warning {
-            ok Affix::wrap( find_library('m'), [ 'pow' => 'power' ], [ Double, Double ], Double ), 'wrap libm::pow as power';
+            ok wrap( find_library('m'), [ 'pow' => 'power' ], [ Double, Double ], Double ), 'wrap libm::pow as power';
         },
         qr/a name/,
         'renaming a symbol is meaningless inside Affix::wrap(...)'
     );
-    ok !__PACKAGE__->can('power'),                                                          'power() is still undefined';
-    ok Affix::affix( find_library('m'), [ 'pow' => 'power' ], [ Double, Double ], Double ), 'affix libm::pow as power';
+    ok !__PACKAGE__->can('power'),                                                   'power() is still undefined';
+    ok affix( find_library('m'), [ 'pow' => 'power' ], [ Double, Double ], Double ), 'affix libm::pow as power';
     can_ok __PACKAGE__, 'power';
     is power( 3, 4 ), 81, 'power( 3, 4 )';
 };
 subtest 'affix with known argtypes' => sub {
-    my $affix = Affix::affix( find_library('m'), 'pow', [ Double, Double ], Double );
+    my $affix = affix( find_library('m'), 'pow', [ Double, Double ], Double );
     isa_ok $affix, ['Affix'];
     is $affix->( 3, 4 ), 81, 'object_test';
 };
 subtest 'affix with unknown argtypes' => sub {
-    my $affix = Affix::affix( find_library('m'), 'pow' );
+    my $affix = affix( find_library('m'), 'pow', undef, Double );
     isa_ok $affix, ['Affix'];
     is $affix->( 3.0, 4.0 ), 81, 'object_test';
 };
@@ -104,6 +104,27 @@ subtest 'types' => sub {
         isa_ok my $double = Double, ['Fiction::Type'];
         is $double, 'd', 'stringify';
     }
+};
+subtest 'compiled lib' => sub {
+    my $lib = compile_test_lib(<<'END');
+#include "std.h"
+// ext: .c
+
+DLLEXPORT double Nothing() {
+    return 99;
+}
+
+DLLEXPORT int Nothing_I(int i) {
+    return 100 + i;
+}
+END
+    ok my $_lib = load_library($lib), 'lib is loaded [debugging]';
+    #
+    ok Affix::affix( $lib, 'Nothing', [], Double ), 'double Nothing()';
+    is Nothing(), 99, 'Nothing()';
+    #
+    ok affix( $_lib, 'Nothing_I', [Int] => Int ), 'int Nothing_I(int i)';
+    is Nothing_I(3), 103, 'Nothing_I(3)';
 };
 #
 done_testing;

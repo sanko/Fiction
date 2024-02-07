@@ -288,10 +288,14 @@ following address will be aligned to `alignment`. */
 #define AXT_AGGREGATE(t) av_fetch(MUTABLE_AV(SvRV(t)), SLOT_AGGREGATE, 0)
 #define AXT_TYPEDEF(t) av_fetch(MUTABLE_AV(SvRV(t)), SLOT_TYPEDEF, 0)
 #define AXT_CAST(t) av_fetch(MUTABLE_AV(SvRV(t)), SLOT_CAST, 0)
+
 // marshal.cxx
 size_t padding_needed_for(size_t offset, size_t alignment);
 SV *ptr2sv(pTHX_ DCpointer ptr, SV *type_sv);
 DCpointer sv2ptr(pTHX_ SV *type_sv, SV *data);
+size_t _alignof(pTHX_ SV *type);
+size_t _sizeof(pTHX_ SV *type);
+size_t _offsetof(pTHX_ SV *type);
 
 // wchar_t.cxx
 SV *wchar2utf(pTHX_ wchar_t *src, int len);

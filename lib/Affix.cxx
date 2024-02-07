@@ -48,13 +48,15 @@ XS_INTERNAL(Affix_dlerror) {
 
 XS_INTERNAL(Affix_load_library) {
     dXSARGS;
-    dXSI32;
-    PING;
     if (items != 1) croak_xs_usage(cv, "$lib");
-    DCpointer lib_handle = load_library(SvPOK(ST(0)) ? SvPV_nolen(ST(0)) : NULL);
-    if (!lib_handle) XSRETURN_UNDEF;
+    DCpointer lib;
+    if (!SvOK(ST(0)) && SvREADONLY(ST(0))) // explicit undef
+        lib = load_library(NULL);
+    else
+        lib = load_library(SvPV_nolen(ST(0)));
+    if (!lib) XSRETURN_UNDEF;
     SV *LIBSV = sv_newmortal();
-    sv_setref_pv(LIBSV, NULL, (DCpointer)lib_handle);
+    sv_setref_pv(LIBSV, "Affix::Lib", lib);
     ST(0) = LIBSV;
     XSRETURN(1);
 }
@@ -95,7 +97,7 @@ XS_INTERNAL(Affix_list_symbols) {
     int len = dlGetLibraryPath(lib, name, 1024);
     if (len == 0) croak("Failed to get library name");
     DLSyms *syms = dlSymsInit(name);
-    PING int count = dlSymsCount(syms);
+    int count = dlSymsCount(syms);
     for (int i = 0; i < count; ++i) {
         const char *symbolName = dlSymsName(syms, i);
         if (strlen(symbolName)) av_push(RETVAL, newSVpv(symbolName, 0));
@@ -109,15 +111,20 @@ XS_INTERNAL(Affix_list_symbols) {
 XS_INTERNAL(Affix_find_symbol) {
     dVAR;
     dXSARGS;
-    if (items != 2) croak_xs_usage(cv, "lib, symbol");
+    if (items != 2) croak_xs_usage(cv, "$lib, $symbol");
     AV *RETVAL;
     DLLib *lib;
-    if (SvROK(ST(0))) {
-        IV tmp = SvIV((SV *)SvRV(ST(0)));
-        lib = INT2PTR(DLLib *, tmp);
+    {
+        if (!SvOK(ST(0)) && SvREADONLY(ST(0))) // explicit undef
+            lib = load_library(NULL);
+        else if (sv_isobject(ST(0)) && sv_derived_from(ST(0), "Affix::Lib")) {
+            IV tmp = SvIV((SV *)SvRV(ST(0)));
+            lib = INT2PTR(DLLib *, tmp);
+        }
+        else if (SvPOK(ST(0)) || (sv_isobject(ST(0)) && sv_derived_from(ST(0), "Path::Tiny")))
+            lib = load_library(SvPV_nolen(ST(0)));
+        if (!lib) XSRETURN_UNDEF;
     }
-    else
-        croak("lib is not of type Affix::Lib");
     RETVAL = newAV_mortal();
     char *name;
     Newxz(name, 1024, char);
@@ -143,14 +150,21 @@ struct fiction {
 XS_INTERNAL(Affix_fiction) {
     dXSARGS;
     dXSI32;
-    if (items < 2 || items > 4) croak_xs_usage(cv, "lib, symbol, argtypes, rettype");
+    if (items < 2 || items > 4) croak_xs_usage(cv, "$lib, $symbol, [$argtypes, $rettype]");
     fiction *ret;
     Newxz(ret, 1, fiction);
-
     const char *perl_name = NULL;
     {
-        ret->lib = load_library(SvPOK(ST(0)) ? SvPV_nolen(ST(0)) : NULL);
+        if (!SvOK(ST(0)) && SvREADONLY(ST(0))) // explicit undef
+            ret->lib = load_library(NULL);
+        else if (sv_isobject(ST(0)) && sv_derived_from(ST(0), "Affix::Lib")) {
+            IV tmp = SvIV((SV *)SvRV(ST(0)));
+            ret->lib = INT2PTR(DLLib *, tmp);
+        }
+        else if (SvPOK(ST(0)) || (sv_isobject(ST(0)) && sv_derived_from(ST(0), "Path::Tiny")))
+            ret->lib = load_library(SvPV_nolen(ST(0)));
         if (!ret->lib) {
+            // TODO: Throw an error
             safefree(ret);
             XSRETURN_UNDEF;
         }
@@ -168,11 +182,10 @@ XS_INTERNAL(Affix_fiction) {
             if (!SvPOK(symbol)) { croak("Undefined symbol name"); }
             perl_name = SvPV_nolen(*av_fetch(tmp, 1, false));
         }
-        else {
+        else if (SvPOK(ST(1))) {
             symbol = ST(1);
             perl_name = SvPV_nolen(symbol);
         }
-
         ret->entry_point = find_symbol(ret->lib, SvPV_nolen(symbol));
         if (!ret->entry_point) {
             safefree(ret);
@@ -182,6 +195,7 @@ XS_INTERNAL(Affix_fiction) {
 
     ret->argtypes = items >= 3 && SvROK(ST(2)) ? MUTABLE_AV(SvRV(ST(2))) : NULL;
     ret->restype = items == 4 && SvROK(ST(3)) ? newSVsv(ST(3)) : NULL;
+    ret->restype_c = ret->restype ? SvPV_nolen(ret->restype)[0] : VOID_FLAG;
     ret->res = newSV(0);
 
     if (ret->argtypes != NULL) {
@@ -387,7 +401,23 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
         }
     }
 
-    sv_setnv(a->res, dcCallDouble(cvm, a->entry_point));
+    switch (a->restype_c) {
+    case VOID_FLAG:
+        dcCallVoid(cvm, a->entry_point);
+        sv_set_undef(a->res);
+        break;
+    case INT_FLAG:
+        sv_setiv(a->res, dcCallInt(cvm, a->entry_point));
+        break;
+    case UINT_FLAG:
+        sv_setuv(a->res, dcCallInt(cvm, a->entry_point));
+        break;
+    case DOUBLE_FLAG:
+        sv_setnv(a->res, dcCallDouble(cvm, a->entry_point));
+        break;
+    };
+
+    //~ sv_setnv(a->res, dcCallDouble(cvm, a->entry_point));
     ST(0) = a->res;
     XSRETURN(1);
 }

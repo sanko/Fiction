@@ -3,32 +3,41 @@ package t::lib::helper {
     use warnings;
     use Test2::V0;
     use experimental 'signatures';
-    use Path::Tiny;
+    use Path::Tiny qw[path tempfile];
     use Exporter 'import';
     our @EXPORT = qw[compile_test_lib compile_cpp_test_lib is_approx];
     use Config;
     use Affix qw[];
     #
-    my $OS = $^O;
+    my $OS  = $^O;
+    my $Inc = path(__FILE__)->parent->parent->child('src')->absolute;
 
     #~ Affix::Platform::OS();
     my @cleanup;
     #
-    #~ diag $Config{cc};
-    #~ diag $Config{cccdlflags};
-    #~ diag $Config{ccdlflags};
-    #~ diag $Config{ccflags};
-    #~ diag $Config{ccname};
-    #~ diag $Config{ccsymbols};
-    sub compile_test_lib ( $name, $aggs = '', $keep = 0 ) {
-        my $opt = path( grep { -f $_ } "t/src/$name.cxx", "t/src/$name.c" );
+    #~ note $Config{cc};
+    #~ note $Config{cccdlflags};
+    #~ note $Config{ccdlflags};
+    #~ note $Config{ccflags};
+    #~ note $Config{ccname};
+    #~ note $Config{ccsymbols};
+    sub compile_test_lib ( $name, $aggs = '', $keep = 1 ) {
+        my ($opt) = grep { -f $_ } "t/src/$name.cxx", "t/src/$name.c";
+        if ($opt) {
+            $opt = path($opt)->absolute;
+        }
+        else {
+            $opt = tempfile( UNLINK => !$keep, SUFFIX => $name =~ m[^\s*//\s*ext:\s*\.c$]ms ? '.c' : '.cxx' )->absolute;
+            push @cleanup, $opt unless $keep;
+            $opt->spew($name);
+        }
         return plan skip_all => 'Failed to build test lib' if !$opt;
         my $c_file = $opt->canonpath;
-        my $o_file = path( "t/src/$name" . $Config{_o} )->canonpath;
-        my $l_file = path( "t/src/$name." . $Config{so} )->canonpath;
-        diag sprintf 'Building %s into %s', $c_file, $l_file;
+        my $o_file = path( $opt->basename(qr/\.cx*/) . '.' . $Config{_o} )->absolute;
+        my $l_file = path( $opt->basename(qr/\.cx*/) . '.' . $Config{so} )->absolute;
+        note sprintf 'Building %s into %s', $opt, $l_file;
         my $compiler = $Config{cc};
-        if ( $c_file =~ /\.cxx$/ ) {
+        if ( $opt =~ /\.cxx$/ ) {
             if ( Affix::Platform::Compiler() eq 'Clang' ) {
                 $compiler = 'c++';
             }
@@ -37,7 +46,7 @@ package t::lib::helper {
             }
         }
         my @cmds = (
-            "$compiler -Wall --shared -fPIC -DBUILD_LIB $aggs -o $l_file $c_file",
+            "$compiler -Wall --shared -fPIC -I$Inc -DBUILD_LIB $aggs -o $l_file $c_file",
 
             #~ (
             #~ $OS eq 'MSWin32' ? "cl /LD /EHsc /Fe$l_file $c_file" :
@@ -47,16 +56,16 @@ package t::lib::helper {
         my ( @fails, $succeeded );
         my $ok;
         for my $cmd (@cmds) {
-            diag $cmd;
+            note $cmd;
             system $cmd;
             if ( $? == -1 ) {
-                diag 'failed to execute: ' . $!;
+                note 'failed to execute: ' . $!;
             }
             elsif ( $? & 127 ) {
-                diag sprintf "child died with signal %d, %s coredump\n", ( $? & 127 ), ( $? & 128 ) ? 'with' : 'without';
+                note sprintf "child died with signal %d, %s coredump\n", ( $? & 127 ), ( $? & 128 ) ? 'with' : 'without';
             }
             else {
-                # diag 'child exited with value ' . ( $? >> 8 );
+                note 'child exited with value ' . ( $? >> 8 );
                 $ok++;
                 last;
             }
@@ -68,7 +77,7 @@ package t::lib::helper {
 
     END {
         for my $file ( grep {-f} @cleanup ) {
-            diag 'Removing ' . $file;
+            note 'Removing ' . $file;
             unlink $file;
         }
     }
