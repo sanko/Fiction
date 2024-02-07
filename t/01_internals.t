@@ -86,14 +86,17 @@ subtest 'affix with renamed symbol' => sub {
     is power( 3, 4 ), 81, 'power( 3, 4 )';
 };
 subtest 'affix with known argtypes' => sub {
-    my $affix = affix( find_library('m'), 'pow', [ Double, Double ], Double );
-    isa_ok $affix, ['Affix'];
-    is $affix->( 3, 4 ), 81, 'object_test';
+    isa_ok my $affix = wrap( find_library('m'), 'pow', [ Double, Double ], Double ), ['Affix'];
+    is $affix->( 3, 4 ), 81, '$affix->( 3, 4 )';
 };
 subtest 'affix with unknown argtypes' => sub {
-    my $affix = affix( find_library('m'), 'pow', undef, Double );
-    isa_ok $affix, ['Affix'];
-    is $affix->( 3.0, 4.0 ), 81, 'object_test';
+    isa_ok my $affix = wrap( find_library('m'), 'pow', undef, Double ), ['Affix'];
+    is $affix->( 3.0, 4.0 ), 81, '$affix->( 3.0, 4.0 )';
+};
+subtest 'affix with known argtypes and bad param lists' => sub {
+    isa_ok my $affix = wrap( find_library('m'), 'pow', [ Double, Double ], Double ), ['Affix'];
+    like( dies { $affix->( 3, 4, 5 ) }, qr/Too many/,   '$affix->( 3, 4, 5 ): too many parameters' );
+    like( dies { $affix->(3) },         qr/Not enough/, 'pow( 3 ): not enough parameters' );
 };
 subtest 'types' => sub {
     subtest 'Void' => sub {

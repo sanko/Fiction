@@ -140,6 +140,7 @@ XS_INTERNAL(Affix_find_symbol) {
 struct fiction {
     DLLib *lib;            // safefree
     DCpointer entry_point; // not malloc'd
+    const char *symbol;
     const char *signature;
     AV *argtypes;
     SV *restype;
@@ -153,7 +154,6 @@ XS_INTERNAL(Affix_fiction) {
     if (items < 2 || items > 4) croak_xs_usage(cv, "$lib, $symbol, [$argtypes, $rettype]");
     fiction *ret;
     Newxz(ret, 1, fiction);
-    const char *perl_name = NULL;
     {
         if (!SvOK(ST(0)) && SvREADONLY(ST(0))) // explicit undef
             ret->lib = load_library(NULL);
@@ -180,11 +180,11 @@ XS_INTERNAL(Affix_fiction) {
             }
             symbol = *av_fetch(tmp, 0, false);
             if (!SvPOK(symbol)) { croak("Undefined symbol name"); }
-            perl_name = SvPV_nolen(*av_fetch(tmp, 1, false));
+            ret->symbol = SvPV_nolen(*av_fetch(tmp, 1, false));
         }
         else if (SvPOK(ST(1))) {
             symbol = ST(1);
-            perl_name = SvPV_nolen(symbol);
+            ret->symbol = SvPV_nolen(symbol);
         }
         ret->entry_point = find_symbol(ret->lib, SvPV_nolen(symbol));
         if (!ret->entry_point) {
@@ -199,14 +199,14 @@ XS_INTERNAL(Affix_fiction) {
     ret->res = newSV(0);
 
     if (ret->argtypes != NULL) {
-        Newxz(ret->signature, 0, char);
+        Newxz(ret->signature, 1, char);
         STRLEN len = 0; // Initialize string length
         STRLEN bit;
         for (int i = 0; i <= av_len(ret->argtypes); ++i) {
             SV *obj = *av_fetch(ret->argtypes, i, 0);
             const char *scalar_str = SvPV(obj, bit);
             Renew(ret->signature, len + bit + 1, char);
-            CopyD(scalar_str, ret->signature + len, bit, char);
+            CopyD(scalar_str, ret->signature + len, bit + 1, char);
             len += bit;
         }
     }
@@ -215,7 +215,9 @@ XS_INTERNAL(Affix_fiction) {
 
     STMT_START { // TODO: generate prototype if we have argtypes
         const char *prototype = NULL;
-        cv = newXSproto_portable(ix == 0 ? perl_name : NULL, Fiction_trigger, __FILE__, prototype);
+        cv =
+            newXSproto_portable(ix == 0 ? ret->symbol : NULL, Fiction_trigger, __FILE__, prototype);
+        if (ret->symbol == NULL) ret->symbol = "anonymous subroutine";
         if (UNLIKELY(cv == NULL))
             croak("ARG! Something went really wrong while installing a new XSUB!");
         XSANY.any_ptr = (DCpointer)ret;
@@ -275,129 +277,129 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
     #define POINTER_FLAG 'P'
     #define SV_FLAG '?'
         */
-    if (items) {
-        if (a->signature != NULL) {
-            size_t sig_len = strlen(a->signature);
-            for (size_t sig_pos = 0, st_pos = 0; sig_pos < sig_len; sig_pos++, st_pos++) {
-                switch (a->signature[sig_pos]) {
-                case VOID_FLAG:
-                    break; // ...skip?
-                case BOOL_FLAG:
-                    dcArgBool(cvm, SvTRUE(ST(st_pos))); // Anything can be a bool
-                    break;
-                case SCHAR_FLAG:
-                case CHAR_FLAG: {
-                    SV *arg = ST(st_pos);
-                    if (SvIOK(arg)) { dcArgChar(cvm, (I8)SvIV(arg)); }
-                    else {
-                        STRLEN len;
-                        char *value = SvPVbyte(arg, len);
-                        if (len > 1) { warn("Expected a single character; found %ld", len); }
-                        dcArgChar(cvm, (I8)value[0]);
-                    }
-                    break;
+    if (a->signature != NULL) {
+        size_t sig_len = strlen(a->signature);
+        if (items != sig_len)
+            croak("%s arguments for %s; expected %d, found %d)",
+                  items > sig_len ? "Too many" : "Not enough", a->symbol, sig_len, items);
+
+        for (size_t sig_pos = 0, st_pos = 0; sig_pos < sig_len; sig_pos++, st_pos++) {
+            switch (a->signature[sig_pos]) {
+            case VOID_FLAG:
+                break; // ...skip?
+            case BOOL_FLAG:
+                dcArgBool(cvm, SvTRUE(ST(st_pos))); // Anything can be a bool
+                break;
+            case SCHAR_FLAG:
+            case CHAR_FLAG: {
+                SV *arg = ST(st_pos);
+                if (SvIOK(arg)) { dcArgChar(cvm, (I8)SvIV(arg)); }
+                else {
+                    STRLEN len;
+                    char *value = SvPVbyte(arg, len);
+                    if (len > 1) { warn("Expected a single character; found %ld", len); }
+                    dcArgChar(cvm, (I8)value[0]);
                 }
-                case UCHAR_FLAG: {
-                    SV *arg = ST(st_pos);
-                    if (SvIOK(arg)) { dcArgChar(cvm, (U8)SvIV(arg)); }
-                    else {
-                        STRLEN len;
-                        char *value = SvPVbyte(arg, len);
-                        if (len > 1) {
-                            warn("Expected a single unsigned character; found %ld", len);
-                        }
-                        dcArgChar(cvm, (U8)value[0]);
-                    }
-                    break;
+                break;
+            }
+            case UCHAR_FLAG: {
+                SV *arg = ST(st_pos);
+                if (SvIOK(arg)) { dcArgChar(cvm, (U8)SvIV(arg)); }
+                else {
+                    STRLEN len;
+                    char *value = SvPVbyte(arg, len);
+                    if (len > 1) { warn("Expected a single unsigned character; found %ld", len); }
+                    dcArgChar(cvm, (U8)value[0]);
                 }
-                case WCHAR_FLAG: {
-                    int value = 0;
-                    SV *arg = ST(st_pos);
-                    if (SvOK(arg)) {
-                        char *eh = SvPV_nolen(arg);
-                        PUTBACK;
-                        const char *pat = "W";
-                        SSize_t s = unpackstring(pat, pat + 1, eh, eh + WCHAR_SIZE + 1, SVt_PVAV);
-                        SPAGAIN;
-                        if (UNLIKELY(s != 1)) croak("Failed to unpack wchar_t");
-                        value = POPi;
-                    }
+                break;
+            }
+            case WCHAR_FLAG: {
+                int value = 0;
+                SV *arg = ST(st_pos);
+                if (SvOK(arg)) {
+                    char *eh = SvPV_nolen(arg);
+                    PUTBACK;
+                    const char *pat = "W";
+                    SSize_t s = unpackstring(pat, pat + 1, eh, eh + WCHAR_SIZE + 1, SVt_PVAV);
+                    SPAGAIN;
+                    if (UNLIKELY(s != 1)) croak("Failed to unpack wchar_t");
+                    value = POPi;
+                }
 #if WCHAR_MAX == LONG_MAX
-                    dcArgLong(cvm, value);
+                dcArgLong(cvm, value);
 #elif WCHAR_MAX == INT_MAX
-                    dcArgInt(cvm, value);
+                dcArgInt(cvm, value);
 #elif WCHAR_MAX == SHORT_MAX
-                    dcArgShort(cvm, value);
+                dcArgShort(cvm, value);
 #else
-                    dcArgChar(cvm, value);
+                dcArgChar(cvm, value);
 #endif
-                } break;
-                case SHORT_FLAG:
-                    dcArgShort(cvm, SvIV(ST(st_pos)));
-                    break;
-                case USHORT_FLAG:
-                    dcArgShort(cvm, SvUV(ST(st_pos)));
-                    break;
-                case INT_FLAG:
-                    dcArgInt(cvm, SvIV(ST(st_pos)));
-                    break;
-                case UINT_FLAG:
-                    dcArgInt(cvm, SvUV(ST(st_pos)));
-                    break;
-                case LONG_FLAG:
-                    dcArgLong(cvm, SvIV(ST(st_pos)));
-                    break;
-                case ULONG_FLAG:
-                    dcArgLong(cvm, SvUV(ST(st_pos)));
-                    break;
-                case LONGLONG_FLAG:
-                    dcArgLongLong(cvm, SvIV(ST(st_pos)));
-                    break;
-                case ULONGLONG_FLAG:
-                    dcArgLongLong(cvm, SvUV(ST(st_pos)));
-                    break;
-                case FLOAT_FLAG:
-                    dcArgFloat(cvm, SvNV(ST(st_pos)));
-                    break;
-                case DOUBLE_FLAG:
-                    dcArgDouble(cvm, SvNV(ST(st_pos)));
-                    break;
-                case STRING_FLAG: {
-                    SV *arg = ST(st_pos);
-                    dcArgPointer(cvm, SvOK(arg) ? SvPV_nolen(arg) : NULL);
-                    break;
-                }
-                case WSTRING_FLAG: { /*
-                     DCpointer ptr = NULL;
-                     SV *arg = ST(st_pos);
-                     if (SvOK(arg)) {
-                         if (a->temp_ptrs == NULL) Newxz(a->temp_ptrs, num_args, DCpointer);
-                         a->temp_ptrs[st_pos] =
-                             sv2ptr(aTHX_ MUTABLE_SV(affix->arg_info[arg_pos]), arg);
-                         ptr = *(DCpointer *)(a->temp_ptrs[st_pos]);
-                     }
-                     dcArgPointer(cvm, ptr);*/
-                    break;
-                }
-                case STDSTRING_FLAG: {
-                    SV *arg = ST(st_pos);
-                    std::string tmp = SvOK(arg) ? SvPV_nolen(arg) : NULL;
-                    dcArgPointer(cvm, static_cast<void *>(&tmp));
-                    break;
-                }
-                }
+            } break;
+            case SHORT_FLAG:
+                dcArgShort(cvm, SvIV(ST(st_pos)));
+                break;
+            case USHORT_FLAG:
+                dcArgShort(cvm, SvUV(ST(st_pos)));
+                break;
+            case INT_FLAG:
+                dcArgInt(cvm, SvIV(ST(st_pos)));
+                break;
+            case UINT_FLAG:
+                dcArgInt(cvm, SvUV(ST(st_pos)));
+                break;
+            case LONG_FLAG:
+                dcArgLong(cvm, SvIV(ST(st_pos)));
+                break;
+            case ULONG_FLAG:
+                dcArgLong(cvm, SvUV(ST(st_pos)));
+                break;
+            case LONGLONG_FLAG:
+                dcArgLongLong(cvm, SvIV(ST(st_pos)));
+                break;
+            case ULONGLONG_FLAG:
+                dcArgLongLong(cvm, SvUV(ST(st_pos)));
+                break;
+            case FLOAT_FLAG:
+                dcArgFloat(cvm, SvNV(ST(st_pos)));
+                break;
+            case DOUBLE_FLAG:
+                dcArgDouble(cvm, SvNV(ST(st_pos)));
+                break;
+            case STRING_FLAG: {
+                SV *arg = ST(st_pos);
+                dcArgPointer(cvm, SvOK(arg) ? SvPV_nolen(arg) : NULL);
+                break;
+            }
+            case WSTRING_FLAG: { /*
+                 DCpointer ptr = NULL;
+                 SV *arg = ST(st_pos);
+                 if (SvOK(arg)) {
+                     if (a->temp_ptrs == NULL) Newxz(a->temp_ptrs, num_args, DCpointer);
+                     a->temp_ptrs[st_pos] =
+                         sv2ptr(aTHX_ MUTABLE_SV(affix->arg_info[arg_pos]), arg);
+                     ptr = *(DCpointer *)(a->temp_ptrs[st_pos]);
+                 }
+                 dcArgPointer(cvm, ptr);*/
+                break;
+            }
+            case STDSTRING_FLAG: {
+                SV *arg = ST(st_pos);
+                std::string tmp = SvOK(arg) ? SvPV_nolen(arg) : NULL;
+                dcArgPointer(cvm, static_cast<void *>(&tmp));
+                break;
+            }
             }
         }
-        else {
-            for (size_t i = 0; i < items; i++) {
-                //~ warn("i: %d, %d", i, SvIV(ST(i)));
-                if (SvNOK(ST(i)))
-                    dcArgDouble(cvm, SvNV(ST(i)));
-                else if (SvUOK(ST(i)))
-                    dcArgInt(cvm, SvUV(ST(i)));
-                else if (SvIOK(ST(i)))
-                    dcArgInt(cvm, SvIV(ST(i)));
-            }
+    }
+    else {
+        for (size_t i = 0; i < items; i++) {
+            //~ warn("i: %d, %d", i, SvIV(ST(i)));
+            if (SvNOK(ST(i)))
+                dcArgDouble(cvm, SvNV(ST(i)));
+            else if (SvUOK(ST(i)))
+                dcArgInt(cvm, SvUV(ST(i)));
+            else if (SvIOK(ST(i)))
+                dcArgInt(cvm, SvIV(ST(i)));
         }
     }
 

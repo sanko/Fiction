@@ -21,7 +21,7 @@ package t::lib::helper {
     #~ note $Config{ccflags};
     #~ note $Config{ccname};
     #~ note $Config{ccsymbols};
-    sub compile_test_lib ( $name, $aggs = '', $keep = 1 ) {
+    sub compile_test_lib ( $name, $aggs = '', $keep = 0 ) {
         my ($opt) = grep { -f $_ } "t/src/$name.cxx", "t/src/$name.c";
         if ($opt) {
             $opt = path($opt)->absolute;
