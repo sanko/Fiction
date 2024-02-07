@@ -51,8 +51,11 @@ jobs:
           perlbrew install --switch --verbose --as cache-${{ inputs.os }}${{ inputs.perl }}${{ inputs.flags }} -j 12 --notest --noman ${{ inputs.flags }} perl-${{ inputs.perl }}
       - name: Checkout source
         uses: actions/checkout@v4
+      - name: Install prereqs
+        run: "curl -L https://cpanmin.us | ~/perl5/perlbrew/perls/cache-${{ inputs.os }}${{ inputs.perl }}${{ inputs.flags }}/bin/perl - --installdeps --notest .\n"
+        shell: bash
       - id: version
-        name: Report Perl Version
+        name: Run test suite
         run: |
           if [[ '${{ runner.os }}' == 'Windows' ]]; then
             echo Windows

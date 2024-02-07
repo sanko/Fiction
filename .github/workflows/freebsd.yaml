@@ -25,9 +25,9 @@ jobs:
             env | sort
             sudo ${{matrix.os.pkg}} perl${{matrix.perl}}
             /usr/local/bin/perl5.38.2 -v
-            curl -L https://cpanmin.us | sudo /usr/local/bin/perl5.38.2 - App::cpanminus
-            sudo cpanm -n -v Module::Build::Tiny
-            sudo cpanm -v .
+            curl -L https://cpanmin.us | sudo /usr/local/bin/perl5.38.2 - --notest App::cpanminus Module::Build::Tiny
+            sudo cpanm --installdeps --notest .
+            sudo cpanm -v --test-only .
           shell: bash
           version: '${{ matrix.os.version }}'
     strategy:
