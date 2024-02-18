@@ -1,5 +1,5 @@
 name = "Affix"
-badges = ["github-actions/linux.yaml", "github-actions/windows.yaml", "github-actions/osx.yaml", "github-actions/freebsd.yaml", "metacpan"]
+badges = ["github-actions/ci.yml", "metacpan"]
 module_maker = "ModuleBuildTiny"
 authority = "cpan:SANKO"
 static_install = "auto"

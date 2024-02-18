@@ -1,5 +1,29 @@
 ---
 jobs:
+  freebsd:
+    name: '*BSD/v${{matrix.perl}}'
+    needs:
+      - setup
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - architecture: x86-64
+            host: macos-12
+            name: freebsd
+            pkg: pkg install -y
+            version: 13.2
+        perl:
+          - 5.38
+      max-parallel: 25
+    uses: sanko/Fiction/.github/workflows/bsd.yml@main
+    with:
+      arch: '${{ matrix.os.architecture }}'
+      host: '${{ matrix.os.host }}'
+      os: '${{ matrix.os.name }}'
+      perl: '${{ matrix.perl }}'
+      pkg: '${{ matrix.os.pkg }}'
+      version: '${{ matrix.os.version }}'
   linux:
     name: 'Linux/v${{matrix.perl}}'
     needs:
@@ -12,7 +36,7 @@ jobs:
           - ubuntu-latest
         perl: '${{ fromJSON(needs.setup.outputs.matrix).perl }}'
       max-parallel: 25
-    uses: sanko/Fiction/.github/workflows/matrix.yml@main
+    uses: sanko/Fiction/.github/workflows/core.yml@main
     with:
       flags: '${{ matrix.flags }}'
       os: '${{ matrix.os }}'
@@ -34,7 +58,7 @@ jobs:
           - macos-latest
         perl: '${{ fromJSON(needs.setup.outputs.matrix).perl }}'
       max-parallel: 25
-    uses: sanko/Fiction/.github/workflows/matrix.yml@main
+    uses: sanko/Fiction/.github/workflows/core.yml@main
     with:
       flags: '${{ matrix.flags }}'
       os: '${{ matrix.os }}'
@@ -81,7 +105,7 @@ jobs:
           - windows-2019
         perl: '${{ fromJSON(needs.setup.outputs.matrix).perl }}'
       max-parallel: 25
-    uses: sanko/Fiction/.github/workflows/matrix.yml@main
+    uses: sanko/Fiction/.github/workflows/core.yml@main
     with:
       flags: '${{ matrix.flags }}'
       os: '${{ matrix.os }}'

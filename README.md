@@ -1,4 +1,4 @@
-[![Actions Status](https://github.com/sanko/Fiction/actions/workflows/linux.yaml/badge.svg)](https://github.com/sanko/Fiction/actions) [![Actions Status](https://github.com/sanko/Fiction/actions/workflows/windows.yaml/badge.svg)](https://github.com/sanko/Fiction/actions) [![Actions Status](https://github.com/sanko/Fiction/actions/workflows/osx.yaml/badge.svg)](https://github.com/sanko/Fiction/actions) [![Actions Status](https://github.com/sanko/Fiction/actions/workflows/freebsd.yaml/badge.svg)](https://github.com/sanko/Fiction/actions) [![MetaCPAN Release](https://badge.fury.io/pl/Affix.svg)](https://metacpan.org/release/Affix)
+[![Actions Status](https://github.com/sanko/Fiction/actions/workflows/ci.yml/badge.svg)](https://github.com/sanko/Fiction/actions) [![MetaCPAN Release](https://badge.fury.io/pl/Affix.svg)](https://metacpan.org/release/Affix)
 # NAME
 
 Affix - A Foreign Function Interface eXtension

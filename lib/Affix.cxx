@@ -176,8 +176,6 @@ XS_INTERNAL(Affix_fiction) {
         SV *symbol;
         SV *const xsub_tmp_sv = ST(1);
         SvGETMAGIC(xsub_tmp_sv);
-        sv_dump(xsub_tmp_sv);
-
         if (SvROK(xsub_tmp_sv) && SvTYPE(SvRV(xsub_tmp_sv)) == SVt_PVAV) {
             AV *tmp = MUTABLE_AV(SvRV(xsub_tmp_sv));
             size_t tmp_len = av_count(tmp);

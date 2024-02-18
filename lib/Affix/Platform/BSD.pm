@@ -8,7 +8,7 @@ package Affix::Platform::BSD 0.5 {
     sub find_library ( $name, $version //= '' ) {    # TODO: actually feed version to diff methods
         if ( -f $name ) {
             $name = readlink $name if -l $name;      # Handle symbolic links
-            return $name # if is_elf($name);
+            return $name                             # if is_elf($name);
         }
         CORE::state $cache;
         my $regex = qr[-l$name\.[^\s]+.+\s*=>\s*(.+)$];
