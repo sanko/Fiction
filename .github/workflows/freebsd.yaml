@@ -47,3 +47,4 @@ on:
     branches: '*'
   push:
     branches: '*'
+  workflow_dispatch: ~

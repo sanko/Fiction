@@ -155,14 +155,17 @@ XS_INTERNAL(Affix_fiction) {
     fiction *ret;
     Newxz(ret, 1, fiction);
     {
-        if (!SvOK(ST(0)) && SvREADONLY(ST(0))) // explicit undef
+        SV *const xsub_tmp_sv = ST(0);
+        SvGETMAGIC(xsub_tmp_sv);
+        if (!SvOK(xsub_tmp_sv) && SvREADONLY(xsub_tmp_sv)) // explicit undef
             ret->lib = load_library(NULL);
-        else if (sv_isobject(ST(0)) && sv_derived_from(ST(0), "Affix::Lib")) {
-            IV tmp = SvIV((SV *)SvRV(ST(0)));
+        else if (sv_isobject(xsub_tmp_sv) && sv_derived_from(xsub_tmp_sv, "Affix::Lib")) {
+            IV tmp = SvIV((SV *)SvRV(xsub_tmp_sv));
             ret->lib = INT2PTR(DLLib *, tmp);
         }
-        else if (SvPOK(ST(0)) || (sv_isobject(ST(0)) && sv_derived_from(ST(0), "Path::Tiny")))
-            ret->lib = load_library(SvPV_nolen(ST(0)));
+        else if (SvPOK(xsub_tmp_sv) ||
+                 (sv_isobject(xsub_tmp_sv) && sv_derived_from(xsub_tmp_sv, "Path::Tiny")))
+            ret->lib = load_library(SvPV_nolen(xsub_tmp_sv));
         if (!ret->lib) {
             // TODO: Throw an error
             safefree(ret);
@@ -171,8 +174,12 @@ XS_INTERNAL(Affix_fiction) {
     }
     {
         SV *symbol;
-        if (SvROK(ST(1)) && SvTYPE(SvRV(ST(1))) == SVt_PVAV) {
-            AV *tmp = MUTABLE_AV(SvRV(ST(1)));
+        SV *const xsub_tmp_sv = ST(1);
+        SvGETMAGIC(xsub_tmp_sv);
+        sv_dump(xsub_tmp_sv);
+
+        if (SvROK(xsub_tmp_sv) && SvTYPE(SvRV(xsub_tmp_sv)) == SVt_PVAV) {
+            AV *tmp = MUTABLE_AV(SvRV(xsub_tmp_sv));
             size_t tmp_len = av_count(tmp);
             if (tmp_len != 2) { croak("Expected a symbol and name"); }
             if (ix == 1 && tmp_len > 1) {
@@ -182,8 +189,8 @@ XS_INTERNAL(Affix_fiction) {
             if (!SvPOK(symbol)) { croak("Undefined symbol name"); }
             ret->symbol = SvPV_nolen(*av_fetch(tmp, 1, false));
         }
-        else if (SvPOK(ST(1))) {
-            symbol = ST(1);
+        else if (SvPOK(xsub_tmp_sv)) {
+            symbol = xsub_tmp_sv;
             ret->symbol = SvPV_nolen(symbol);
         }
         ret->entry_point = find_symbol(ret->lib, SvPV_nolen(symbol));
