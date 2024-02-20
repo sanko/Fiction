@@ -4,6 +4,7 @@ Revision history for Perl extension Affix.pm
 
     - Cookbook with a few examples to start:
         - streaming and local playback with libVLC
+    - Pulling upstream changes to dyncall rev 6a8aac9b2bcf (unstable)
 
 0.11 2023-03-30T02:50:47Z
 
