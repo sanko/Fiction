@@ -277,9 +277,11 @@ following address will be aligned to `alignment`. */
 #define SLOT_TYPEDEF 8
 #define SLOT_CAST 9
 #define SLOT_CODEREF_ARGS 10
+#define SLOT_CODEREF_RET 11
+#define SLOT_CODEREF_SIG 12
 
 #define AXT_STRINGIFY(t) SvPV_nolen(*av_fetch(MUTABLE_AV(SvRV(t)), SLOT_STRINGIFY, 0))
-#define AXT_NUMERIC(t) (char)SvIV(*av_fetch(MUTABLE_AV(SvRV(t)), SLOT_NUMERIC, 0))
+#define AXT_NUMERIC(t) SvIV(*av_fetch(MUTABLE_AV(SvRV(t)), SLOT_NUMERIC, 0))
 #define AXT_SIZEOF(t) SvIV(*av_fetch(MUTABLE_AV(SvRV(t)), SLOT_SIZEOF, 0))
 #define AXT_ALIGN(t) SvIV(*av_fetch(MUTABLE_AV(SvRV(t)), SLOT_ALIGNMENT, 0))
 #define AXT_OFFSET(t) SvIV(*av_fetch(MUTABLE_AV(SvRV(t)), SLOT_OFFSET, 0))
@@ -288,6 +290,9 @@ following address will be aligned to `alignment`. */
 #define AXT_AGGREGATE(t) av_fetch(MUTABLE_AV(SvRV(t)), SLOT_AGGREGATE, 0)
 #define AXT_TYPEDEF(t) av_fetch(MUTABLE_AV(SvRV(t)), SLOT_TYPEDEF, 0)
 #define AXT_CAST(t) av_fetch(MUTABLE_AV(SvRV(t)), SLOT_CAST, 0)
+#define AXT_CODEREF_ARGS(t) MUTABLE_AV(SvRV(*av_fetch(MUTABLE_AV(SvRV(t)), SLOT_CODEREF_ARGS, 0)))
+#define AXT_CODEREF_RET(t) *av_fetch(MUTABLE_AV(SvRV(t)), SLOT_CODEREF_RET, 0)
+#define AXT_CODEREF_SIG(t) *av_fetch(MUTABLE_AV(SvRV(t)), SLOT_CODEREF_SIG, 0)
 
 // marshal.cxx
 size_t padding_needed_for(size_t offset, size_t alignment);

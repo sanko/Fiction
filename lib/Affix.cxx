@@ -169,6 +169,7 @@ XS_INTERNAL(Affix_fiction) {
         if (!ret->lib) {
             // TODO: Throw an error
             safefree(ret);
+            croak("Failed to load library");
             XSRETURN_UNDEF;
         }
     }
@@ -194,10 +195,12 @@ XS_INTERNAL(Affix_fiction) {
         ret->entry_point = find_symbol(ret->lib, SvPV_nolen(symbol));
         if (!ret->entry_point) {
             safefree(ret);
+            croak("Failed to locate entry point");
             XSRETURN_UNDEF;
         }
     }
 
+    // TODO: croak if SVOK but not an AV
     ret->argtypes = items >= 3 && SvROK(ST(2)) ? MUTABLE_AV(SvRV(ST(2))) : NULL;
     ret->restype = items == 4 && SvROK(ST(3)) ? newSVsv(ST(3)) : NULL;
     ret->restype_c = ret->restype ? SvPV_nolen(ret->restype)[0] : VOID_FLAG;
@@ -207,19 +210,22 @@ XS_INTERNAL(Affix_fiction) {
         Newxz(ret->signature, 1, char);
         STRLEN len = 0; // Initialize string length
         STRLEN bit;
-        for (int i = 0; i <= av_len(ret->argtypes); ++i) {
+        size_t sig_len = av_len(ret->argtypes);
+        for (int i = 0; i <= sig_len; ++i) {
+            warn("i:%d of %d", i, sig_len);
             SV *obj = *av_fetch(ret->argtypes, i, 0);
+            sv_dump(obj);
             const char *scalar_str = SvPV(obj, bit);
             Renew(ret->signature, len + bit + 1, char);
             CopyD(scalar_str, ret->signature + len, bit + 1, char);
             len += bit;
         }
+        SvREFCNT_inc(ret->argtypes);
     }
     else
         ret->signature = NULL;
-
     STMT_START { // TODO: generate prototype if we have argtypes
-        const char *prototype = NULL;
+        const char *prototype = "";
         cv =
             newXSproto_portable(ix == 0 ? ret->symbol : NULL, Fiction_trigger, __FILE__, prototype);
         if (ret->symbol == NULL) ret->symbol = "anonymous subroutine";
@@ -393,6 +399,24 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
                 dcArgPointer(cvm, static_cast<void *>(&tmp));
                 break;
             }
+            case CODEREF_FLAG: {
+                warn("alpha");
+                DD(MUTABLE_SV(a->argtypes));
+                warn("beta");
+                DD(*av_fetch(a->argtypes, sig_pos, 0));
+                warn("send");
+
+					CallbackWrapper *hold = (CallbackWrapper *)sv2ptr(
+									aTHX_ *av_fetch(a->argtypes, sig_pos, 0), ST(st_pos));
+                            warn("affix.cxx line %d", __LINE__);
+
+                dcArgPointer(cvm, hold);
+                            warn("affix.cxx line %d", __LINE__);
+
+                break;
+            }
+            default:
+                croak("Unhandled type! %c", a->signature[sig_pos]);
             }
         }
     }

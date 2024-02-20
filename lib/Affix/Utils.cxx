@@ -50,6 +50,7 @@ size_t padding_needed_for(size_t offset, size_t alignment) {
 }
 
 int type_as_dc(int type) {
+    warn("int type_as_dc(int type = %d) {", type);
     switch (type) {
     case VOID_FLAG:
         return DC_SIGCHAR_VOID;

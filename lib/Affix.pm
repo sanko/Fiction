@@ -66,7 +66,7 @@ package Affix 0.50 {    # 'FFI' is my middle name!
     @EXPORT_OK = sort @{ $EXPORT_TAGS{all} };
     #
     package Fiction::Type {
-        use overload '""' => 'flag';
+        use overload '""' => 'flag', int => 'sizeof';
         sub new   ($class)       { bless \{}, $class }
         sub check ($value)       {...}
         sub cast  ( $vaue, $to ) {...}
@@ -198,8 +198,25 @@ package Affix 0.50 {    # 'FFI' is my middle name!
 
     package Fiction::Type::Callback {
         our @ISA = qw[Fiction::Type];
-        sub new ( $class, $argtypes, $restype ) { bless \{ argtypes => $argtypes, restype => $restype }, $class }
-        sub flag                                { CORE::state $chr //= chr Affix::CALLBACK_FLAG(); $chr; }
+        sub new ( $class, $argtypes, $restype ) { bless [
+            undef, Affix::CODEREF_FLAG(),
+100, # sizeof
+undef,
+undef,
+undef,
+undef,
+undef,
+undef,
+           undef,
+ $argtypes, # arg types
+ $restype, # ret type
+
+ 'dd)d' # signature
+
+
+ ], $class }
+        sub flag                                { CORE::state $chr //= chr Affix::CODEREF_FLAG(); $chr; }
+        sub sizeof{...}
     }
 
     package Fiction::Type::SV {
@@ -241,17 +258,22 @@ package Affix 0.50 {    # 'FFI' is my middle name!
         }
 
         sub Array ($) {
-            my ( $type, $size ) = @$_[0];
+            my ( $type, $size ) = @{$_[0]};
             Fiction::Type::Array->new( $type, defined $size ? ( size => $size ) : () );
         }
 
         sub Callback($) {
-            my ( $args, $returns ) = @$_[0];
+            my ( $args, $returns ) = @{$_[0]};
+            use Data::Dump;
+            ddx $args;
+            ddx $returns;
+ddx \@_;
+
             Fiction::Type::Callback->new( $args // [], $returns // Void );
         }
 
         sub Pointer ($) {
-            my ($type) = @$_[0];
+            my ($type) = @{$_[0]};
             Fiction::Type::Pointer->new( $type // Void );
         }
     }

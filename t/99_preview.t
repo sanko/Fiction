@@ -13,6 +13,31 @@ isa_ok Pointer [Int], [ 'Fiction::Type', 'Fiction::Type::Pointer' ];
 ok my $lib = compile_test_lib('99_preview'), 'compile_test_lib("99_preview")';
 diag $lib;
 
+
+diag `nm $lib`;
+
+
+warn Callback[[] , Int];
+use Data::Dump;
+ddx [
+Callback [ [ Int, Int ] => Int ]];
+
+#
+my $xxx = affix $lib, ['_Z11do_callbackPFiiiE', 'do_callback'],
+[
+Callback [ [ Int, Int ] => Int ]] => Int
+;
+
+
+use Data::Dump;
+ddx $xxx;
+
+diag $xxx->(sub {...});
+
+#~ typedef int cb(int, int);
+warn do_callback( sub { ... });
+
+
 #~ Affix::args( Pointer [Int] );
 #
 done_testing;

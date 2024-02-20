@@ -362,16 +362,23 @@ void *av2ptr(pTHX_ SV *type, AV *av_data) {
 void *sv2ptr(pTHX_ SV *type, SV *data) {
     warn("sv2ptr");
 
-    //~ DD(data);
-    //~ DD(type);
+    DD(data);
+    sv_dump(type);
+    sv_dump(SvRV(type));
+    DD(type);
+    DD(SvRV(type));
     PING;
     DCpointer ret = NULL;
     PING;
+
+    SV * fdsa = (*av_fetch(MUTABLE_AV(SvRV((type))), 3, 0));
+    DD(fdsa);
+
     int type_c = AXT_NUMERIC(type);
-    //~ warn("type: %d/%c", type_c, type_c);
+    warn("type: %d/%c", type_c, type_c);
     PING;
     size_t size = AXT_SIZEOF(type);
-
+    warn("after size: %d", size);
     PING;
 #if DEBUG
     warn("sv2ptr(%s, ...) at %s line %d", AXT_STRINGIFY(type), __FILE__, __LINE__);
@@ -381,6 +388,7 @@ void *sv2ptr(pTHX_ SV *type, SV *data) {
 #endif
 #endif
     PING;
+    warn("jjjjj");
     switch (type_c) {
     case VOID_FLAG: {
         PING;
@@ -664,29 +672,45 @@ void *sv2ptr(pTHX_ SV *type, SV *data) {
 
     } break;
     case CODEREF_FLAG: {
+        warn("coderef");
         PING;
         if (SvOK(data)) {
             PING;
             HV *field = MUTABLE_HV(SvRV(type)); // Make broad assumptions
             //~ SV **ret = hv_fetchs(field, "ret", 0);
-            SV **args = hv_fetchs(field, "args", 0);
-            SV **sig = hv_fetchs(field, "sig", 0);
+
+            DD(MUTABLE_SV(AXT_CODEREF_ARGS(type)));
+
+DD(AXT_CODEREF_RET(type));
+
+            //TODO: This should not be a hash!!!! Args are in slot SLOT_CODEREF_ARGS
+            warn("line %d", __LINE__);
             Callback *callback;
+                        warn("line %d", __LINE__);
+
             Newxz(callback, 1, Callback);
-            callback->arg_info = MUTABLE_AV(SvRV(*args));
+            warn("line %d", __LINE__);
+            callback->arg_info = AXT_CODEREF_ARGS(type);
+            warn("line %d", __LINE__);
             size_t arg_count = av_count(callback->arg_info);
-            Newxz(callback->sig, arg_count, char);
-            for (size_t i = 0; i < arg_count; ++i) {
-                callback->sig[i] = type_as_dc(SvIV(*av_fetch(callback->arg_info, i, 0)));
-            }
-            callback->sig = SvPV_nolen(*sig);
+            warn("line %d [%d]", __LINE__, arg_count);
+
+            callback->sig = SvPV_nolen(AXT_CODEREF_SIG(type));
+            warn("line %d", __LINE__);
             callback->sig_len = strchr(callback->sig, ')') - callback->sig;
+            warn("line %d", __LINE__);
             callback->ret = callback->sig[callback->sig_len + 1];
+            warn("line %d", __LINE__);
             callback->cv = SvREFCNT_inc(data);
+            warn("line %d", __LINE__);
             storeTHX(callback->perl);
+            warn("line %d", __LINE__);
             PING;
+            warn("line %d", __LINE__);
             Newxz(ret, 1, CallbackWrapper);
+            warn("line %d", __LINE__);
             ((CallbackWrapper *)ret)->cb = dcbNewCallback(callback->sig, cbHandler, callback);
+                        warn("line %d", __LINE__);
         }
         else { Newxz(ret, 1, intptr_t); }
     } break;

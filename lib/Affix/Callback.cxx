@@ -2,6 +2,8 @@
 
 char cbHandler(DCCallback *cb, DCArgs *args, DCValue *result, DCpointer userdata) {
     PERL_UNUSED_VAR(cb);
+                                warn("Callback.cxx line %d", __LINE__);
+
     Callback *cbx = (Callback *)userdata;
     dTHXa(cbx->perl);
     dSP;
