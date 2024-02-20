@@ -371,7 +371,7 @@ void *sv2ptr(pTHX_ SV *type, SV *data) {
     DCpointer ret = NULL;
     PING;
 
-    SV * fdsa = (*av_fetch(MUTABLE_AV(SvRV((type))), 3, 0));
+    SV *fdsa = (*av_fetch(MUTABLE_AV(SvRV((type))), 3, 0));
     DD(fdsa);
 
     int type_c = AXT_NUMERIC(type);
@@ -681,12 +681,12 @@ void *sv2ptr(pTHX_ SV *type, SV *data) {
 
             DD(MUTABLE_SV(AXT_CODEREF_ARGS(type)));
 
-DD(AXT_CODEREF_RET(type));
+            DD(AXT_CODEREF_RET(type));
 
-            //TODO: This should not be a hash!!!! Args are in slot SLOT_CODEREF_ARGS
+            // TODO: This should not be a hash!!!! Args are in slot SLOT_CODEREF_ARGS
             warn("line %d", __LINE__);
             Callback *callback;
-                        warn("line %d", __LINE__);
+            warn("line %d", __LINE__);
 
             Newxz(callback, 1, Callback);
             warn("line %d", __LINE__);
@@ -708,9 +708,9 @@ DD(AXT_CODEREF_RET(type));
             PING;
             warn("line %d", __LINE__);
             Newxz(ret, 1, CallbackWrapper);
-            warn("line %d", __LINE__);
+            warn("line %d; sig: %s", __LINE__, callback->sig);
             ((CallbackWrapper *)ret)->cb = dcbNewCallback(callback->sig, cbHandler, callback);
-                        warn("line %d", __LINE__);
+            warn("line %d", __LINE__);
         }
         else { Newxz(ret, 1, intptr_t); }
     } break;

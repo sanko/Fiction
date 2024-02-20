@@ -35,6 +35,6 @@ Person getobj(const char *name, int age) {
 
 typedef int cb(int, int);
 
-int do_callback(cb callback){
+int do_callback(cb *callback) {
     return callback(100, 200);
 }

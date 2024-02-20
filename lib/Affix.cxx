@@ -406,12 +406,21 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
                 DD(*av_fetch(a->argtypes, sig_pos, 0));
                 warn("send");
 
-					CallbackWrapper *hold = (CallbackWrapper *)sv2ptr(
-									aTHX_ *av_fetch(a->argtypes, sig_pos, 0), ST(st_pos));
-                            warn("affix.cxx line %d", __LINE__);
+                CallbackWrapper *hold = (CallbackWrapper *)sv2ptr(
+                    aTHX_ * av_fetch(a->argtypes, sig_pos, 0), ST(st_pos));
+                warn("affix.cxx line %d", __LINE__);
 
-                dcArgPointer(cvm, hold);
-                            warn("affix.cxx line %d", __LINE__);
+                //~ dcArgPointer(cvm, hold);
+                warn("affix.cxx line %d", __LINE__);
+
+                {
+
+                    DCCallback *cb;
+                    short result = 0;
+                    int userdata = 1337;
+                    cb = dcbNewCallback("ifsdl)s", &cbHandlerXXXXX, &userdata);
+                    dcArgPointer(cvm, (DCpointer)cb);
+                }
 
                 break;
             }

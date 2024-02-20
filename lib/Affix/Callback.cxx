@@ -1,8 +1,23 @@
 #include "../Affix.h"
 
+DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointer userdata) {
+    int *ud = (int *)userdata;
+    //~ int       arg1 = dcbArgInt     (args);
+    //~ float     arg2 = dcbArgFloat   (args);
+    //~ short     arg3 = dcbArgShort   (args);
+    double arg4 = dcbArgDouble(args);
+    double arg5 = dcbArgDouble(args);
+    //~ long long arg5 = dcbArgLongLong(args);
+
+    /* .. do something .. */
+    warn("AH!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    result->d = 1244.0;
+    return 'd';
+}
+
 char cbHandler(DCCallback *cb, DCArgs *args, DCValue *result, DCpointer userdata) {
     PERL_UNUSED_VAR(cb);
-                                warn("Callback.cxx line %d", __LINE__);
+    warn("Callback.cxx line %d", __LINE__);
 
     Callback *cbx = (Callback *)userdata;
     dTHXa(cbx->perl);

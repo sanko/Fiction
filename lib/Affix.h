@@ -368,6 +368,7 @@ typedef struct {
 } Callback;
 
 char cbHandler(DCCallback *cb, DCArgs *args, DCValue *result, DCpointer userdata);
+DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointer userdata);
 
 // XS Boot
 void boot_Affix_pin(pTHX_ CV *);
