@@ -198,6 +198,51 @@ Returns a true value if dyncall was built on MIPS with N32 (native 32bit) callin
 Returns a true value if dyncall was built on MIPS with L<EABI calling conventions
 support|https://sourceware.org/legacy-ml/binutils/2003-06/msg00436.html>.
 
+=head2 C<Affix::Platform::OBJ_PE()>
+
+Returns true if the platform's executable/object type is in Microsoft's
+L<PE|https://en.wikipedia.org/wiki/Portable_Executable> format.
+
+=head2 C<Affix::Platform::OBJ_Mach()>
+
+Returns true if the platform's executable/object type is in Apple's L<Mach-O|https://en.wikipedia.org/wiki/Mach-O>
+format.
+
+=head2 C<Affix::Platform::OBJ_ELF()>
+
+Returns true if the platform's executable/object type is in the generic
+L<ELF|https://en.wikipedia.org/wiki/Executable_and_Linkable_Format> format.
+
+=head2 C<Affix::Platform::OBJ_ELF64()>
+
+Returns true if the platform's executable/object type is in a 64-bit flavor of the
+L<ELF|https://en.wikipedia.org/wiki/Executable_and_Linkable_Format> format.
+
+=head2 C<Affix::Platform::OBJ_ELF32()>
+
+Returns true if the platform's executable/object type is in a 32-bit flavor of the
+L<ELF|https://en.wikipedia.org/wiki/Executable_and_Linkable_Format> format.
+
+=head2 C<Affix::Platform::OBJ()>
+
+Returns one of the following:
+
+=over
+
+=item "PE"
+
+=item "Mach-O"
+
+=item "64-bit ELF"
+
+=item "32-bit ELF"
+
+=item "ELF"
+
+=item "Unknown"
+
+=back
+
 =head2 C<Affix::Platform::HardFloat()>
 
 Returns a true value if 1) the system is running on an ARM or MIPS platform and 2) floating point math is done on

@@ -202,6 +202,63 @@ void boot_Affix_Platform(pTHX_ CV *cv) {
 #endif
         ;
 
+    bool obj_pe =
+#ifdef DC__Obj_PE
+        1
+#else
+        0
+#endif
+        ;
+
+    bool obj_mach =
+#ifdef DC__Obj_Mach
+        1
+#else
+        0
+#endif
+        ;
+
+    bool obj_elf =
+#ifdef DC__Obj_ELF
+        1
+#else
+        0
+#endif
+        ;
+
+    bool obj_elf64 =
+#ifdef DC__Obj_ELF64
+        1
+#else
+        0
+#endif
+        ;
+
+    bool obj_elf32 =
+#ifdef DC__Obj_ELF32
+        1
+#else
+        0
+#endif
+        ;
+
+    const char *obj =
+#ifdef DC__Obj_PE
+        "PE"
+#elif defined DC__Obj_Mach
+        "Mach-O"
+#elif defined DC__Obj_ELF64
+        "64-bit ELF"
+#elif defined DC__Obj_ELF32
+        "32-bit ELF"
+#elif defined DC__Obj_ELF
+        "ELF"
+#else
+        "Unknown"
+#endif
+        ;
+
+    // Basics
     register_constant("Affix::Platform", "OS", newSVpv(os, 0));
     register_constant("Affix::Platform", "Cygwin", boolSV(cygwin));
     register_constant("Affix::Platform", "MinGW", boolSV(mingw));
@@ -220,7 +277,14 @@ void boot_Affix_Platform(pTHX_ CV *cv) {
     register_constant("Affix::Platform", "Syscall", boolSV(syscall));
     register_constant("Affix::Platform", "AggrByValue", boolSV(aggr_by_value));
 
-    //
+    // OBJ types
+    register_constant("Affix::Platform", "OBJ_PE", boolSV(obj_pe));
+    register_constant("Affix::Platform", "OBJ_Mach", boolSV(obj_mach));
+    register_constant("Affix::Platform", "OBJ_ELF", boolSV(obj_elf));
+    register_constant("Affix::Platform", "OBJ_ELF64", boolSV(obj_elf64));
+    register_constant("Affix::Platform", "OBJ_ELF32", boolSV(obj_elf32));
+    register_constant("Affix::Platform", "OBJ", newSVpv(obj, 0));
+
     // sizeof
     export_constant("Affix::Platform", "BOOL_SIZE", "all", BOOL_SIZE);
     export_constant("Affix::Platform", "CHAR_SIZE", "all", CHAR_SIZE);
@@ -239,6 +303,7 @@ void boot_Affix_Platform(pTHX_ CV *cv) {
     export_constant("Affix::Platform", "SIZE_T_SIZE", "all", SIZE_T_SIZE);
     export_constant("Affix::Platform", "SSIZE_T_SIZE", "all", SSIZE_T_SIZE);
     export_constant("Affix::Platform", "INTPTR_T_SIZE", "all", INTPTR_T_SIZE);
+
     // to calculate offsetof and padding inside structs
     export_constant("Affix::Platform", "BYTE_ALIGN", "all", AFFIX_ALIGNBYTES); // platform
     export_constant("Affix::Platform", "BOOL_ALIGN", "all", BOOL_ALIGN);

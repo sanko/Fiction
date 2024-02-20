@@ -14,6 +14,7 @@ diag '     features: aggrbyval: ' . ( Affix::Platform::AggrByValue() ? 'yes' : '
 diag '                 syscall: ' . ( Affix::Platform::Syscall()     ? 'yes' : 'no' );
 diag '     compiler: ' . Affix::Platform::Compiler();
 diag ' architecture: ' . Affix::Platform::Architecture();
+diag '  object type: ' . Affix::Platform::OBJ();
 diag '           os: ' . Affix::Platform::OS();
 diag '          $^O: ' . $^O;
 
