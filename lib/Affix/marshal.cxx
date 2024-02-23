@@ -364,15 +364,10 @@ void *sv2ptr(pTHX_ SV *type, SV *data) {
 
     DD(data);
     sv_dump(type);
-    sv_dump(SvRV(type));
     DD(type);
-    DD(SvRV(type));
     PING;
     DCpointer ret = NULL;
     PING;
-
-    SV *fdsa = (*av_fetch(MUTABLE_AV(SvRV((type))), 3, 0));
-    DD(fdsa);
 
     int type_c = AXT_NUMERIC(type);
     warn("type: %d/%c", type_c, type_c);
@@ -412,26 +407,26 @@ void *sv2ptr(pTHX_ SV *type, SV *data) {
     } break;
     case BOOL_FLAG: {
         PING;
-        ret = safemalloc(BOOL_SIZE);
+        ret = safemalloc(SIZEOF_BOOL);
         bool value = SvOK(data) ? SvTRUE(data) : false; // default to false
         Copy(&value, ret, 1, bool);
     } break;
     case CHAR_FLAG: {
         PING;
-        if (!SvOK(data)) { ret = safecalloc(CHAR_SIZE, 1); }
+        if (!SvOK(data)) { ret = safecalloc(SIZEOF_CHAR, 1); }
         else if (SvPOK(data)) {
             STRLEN len;
             DCpointer value = (DCpointer)SvPV(data, len);
             if (len) {
-                ret = safecalloc(CHAR_SIZE, len + 1);
+                ret = safecalloc(SIZEOF_CHAR, len + 1);
                 Copy(value, ret, len + 1, char);
             }
             else
-                ret = safecalloc(CHAR_SIZE, 1);
+                ret = safecalloc(SIZEOF_CHAR, 1);
         }
         else {
             char value = SvIOK(data) ? SvIV(data) : 0;
-            ret = safemalloc(CHAR_SIZE);
+            ret = safemalloc(SIZEOF_CHAR);
             Copy(&value, ret, 1, char);
         }
     } break;
@@ -440,12 +435,12 @@ void *sv2ptr(pTHX_ SV *type, SV *data) {
         if (SvPOK(data)) {
             STRLEN len;
             DCpointer value = (DCpointer)SvPV(data, len);
-            ret = safemalloc(UCHAR_SIZE * (len + 1));
+            ret = safemalloc(SIZEOF_UCHAR * (len + 1));
             Copy(value, ret, len + 1, unsigned char);
         }
         else {
             unsigned char value = SvIOK(data) ? SvIV(data) : 0;
-            ret = safemalloc(UCHAR_SIZE);
+            ret = safemalloc(SIZEOF_UCHAR);
             Copy(&value, ret, 1, unsigned char);
         }
     } break;
@@ -535,7 +530,7 @@ void *sv2ptr(pTHX_ SV *type, SV *data) {
         }
         else {
             DCpointer block = sv2ptr(aTHX_ subtype, data);
-            ret = safemalloc(INTPTR_T_SIZE);
+            ret = safemalloc(SIZEOF_INTPTR_T);
             Copy(block, ret, 1, intptr_t);
             safefree(block);
         }
@@ -545,7 +540,7 @@ void *sv2ptr(pTHX_ SV *type, SV *data) {
         if (SvPOK(data)) {
             STRLEN len;
             const char *str = SvPV(data, len);
-            ret = safemalloc(INTPTR_T_SIZE);
+            ret = safemalloc(SIZEOF_INTPTR_T);
             DCpointer value;
             Newxz(value, len + 1, char);
             Copy(str, value, len, char);
@@ -554,7 +549,7 @@ void *sv2ptr(pTHX_ SV *type, SV *data) {
         else {
             const char *str = "";
             DCpointer value;
-            ret = safemalloc(CHAR_SIZE);
+            ret = safemalloc(SIZEOF_CHAR);
             Newxz(value, 1, char);
             Copy(str, value, 1, char);
             Copy(&value, ret, 1, intptr_t);
@@ -562,7 +557,7 @@ void *sv2ptr(pTHX_ SV *type, SV *data) {
     } break;
     case WSTRING_FLAG: {
         PING;
-        ret = safemalloc(INTPTR_T_SIZE);
+        ret = safemalloc(SIZEOF_INTPTR_T);
         if (SvPOK(data)) {
             STRLEN len;
             (void)SvPVutf8(data, len);
@@ -609,7 +604,7 @@ void *sv2ptr(pTHX_ SV *type, SV *data) {
     } break;
     case UNION_FLAG: {
         PING;
-        ret = safemalloc(INTPTR_T_SIZE);
+        ret = safemalloc(SIZEOF_INTPTR_T);
         if (SvOK(data)) {
             if (SvTYPE(SvRV(data)) != SVt_PVHV) croak("Expected a hash reference");
             HV *hv_type = MUTABLE_HV(SvRV(type));
@@ -717,7 +712,7 @@ void *sv2ptr(pTHX_ SV *type, SV *data) {
     case SV_FLAG: {
         PING;
         if (SvOK(data)) {
-            ret = safemalloc(INTPTR_T_SIZE);
+            ret = safemalloc(SIZEOF_INTPTR_T);
             SvREFCNT_inc(data); // TODO: This might leak; I'm just being lazy
             DCpointer value = (DCpointer)data;
             Renew(ret, 1, intptr_t);
@@ -726,7 +721,7 @@ void *sv2ptr(pTHX_ SV *type, SV *data) {
         }
     } break;
     default: {
-        croak("%s is not a known type in sv2ptr(...)", AXT_STRINGIFY(type));
+        croak("%c is not a known type in sv2ptr(...)", type_c);
     }
     }
 #if DEBUG

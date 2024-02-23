@@ -199,31 +199,33 @@ XS_INTERNAL(Affix_fiction) {
             XSRETURN_UNDEF;
         }
     }
-
-    // TODO: croak if SVOK but not an AV
-    ret->argtypes = items >= 3 && SvROK(ST(2)) ? MUTABLE_AV(SvRV(ST(2))) : NULL;
-    ret->restype = items == 4 && SvROK(ST(3)) ? newSVsv(ST(3)) : NULL;
-    ret->restype_c = ret->restype ? SvPV_nolen(ret->restype)[0] : VOID_FLAG;
-    ret->res = newSV(0);
-
-    if (ret->argtypes != NULL) {
-        Newxz(ret->signature, 1, char);
-        STRLEN len = 0; // Initialize string length
-        STRLEN bit;
-        size_t sig_len = av_len(ret->argtypes);
-        for (int i = 0; i <= sig_len; ++i) {
-            warn("i:%d of %d", i, sig_len);
-            SV *obj = *av_fetch(ret->argtypes, i, 0);
-            sv_dump(obj);
-            const char *scalar_str = SvPV(obj, bit);
-            Renew(ret->signature, len + bit + 1, char);
-            CopyD(scalar_str, ret->signature + len, bit + 1, char);
-            len += bit;
-        }
-        SvREFCNT_inc(ret->argtypes);
-    }
-    else
+    {
         ret->signature = NULL;
+
+        if (items >= 3) {
+            SV *const xsub_tmp_sv = ST(2);
+            SvGETMAGIC(xsub_tmp_sv);
+            // TODO: croak if SVOK but not an AV
+            if (SvROK(xsub_tmp_sv) && SvTYPE(SvRV(xsub_tmp_sv)) == SVt_PVAV) {
+                ret->argtypes = MUTABLE_AV(SvRV(xsub_tmp_sv));
+                if (ret->argtypes != NULL) {
+                    size_t sig_len = av_len(ret->argtypes);
+                    Newxz(ret->signature, sig_len + 1, char);
+                    for (size_t i = 0; i <= sig_len; i++) {
+                        char *c_type = AXT_STRINGIFY(*av_fetch(ret->argtypes, i, 0));
+                        Copy(c_type, ret->signature + i, 1, char);
+                    }
+                    warn("ret->signature: [%s], sig_len: %d", ret->signature, sig_len);
+                    SvREFCNT_inc(ret->argtypes);
+                }
+            }
+        }
+
+        //
+        ret->restype = items == 4 && SvROK(ST(3)) ? newSVsv(ST(3)) : NULL;
+        ret->restype_c = ret->restype ? SvPV_nolen(ret->restype)[0] : VOID_FLAG;
+        ret->res = newSV(0);
+    }
     STMT_START { // TODO: generate prototype if we have argtypes
         const char *prototype = "";
         cv =
@@ -331,7 +333,7 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
                     char *eh = SvPV_nolen(arg);
                     PUTBACK;
                     const char *pat = "W";
-                    SSize_t s = unpackstring(pat, pat + 1, eh, eh + WCHAR_SIZE + 1, SVt_PVAV);
+                    SSize_t s = unpackstring(pat, pat + 1, eh, eh + SIZEOF_WCHAR + 1, SVt_PVAV);
                     SPAGAIN;
                     if (UNLIKELY(s != 1)) croak("Failed to unpack wchar_t");
                     value = POPi;
@@ -628,7 +630,7 @@ extern "C" void Affix_trigger(pTHX_ CV *cv) {
                 char *eh = SvPV_nolen(arg);
                 PUTBACK;
                 const char *pat = "W";
-                SSize_t s = unpackstring(pat, pat + 1, eh, eh + WCHAR_SIZE + 1, SVt_PVAV);
+                SSize_t s = unpackstring(pat, pat + 1, eh, eh + SIZEOF_WCHAR + 1, SVt_PVAV);
                 SPAGAIN;
                 if (UNLIKELY(s != 1)) croak("Failed to unpack wchar_t");
                 value = POPi;
@@ -1187,10 +1189,10 @@ extern "C" void Affix_trigger2(pTHX_ CV *cv) {
 					char *eh = SvPV_nolen(ST(arg_pos));
 					PUTBACK;
 					const char *pat = "W";
-					SSize_t s = unpackstring(pat, pat + 1, eh, eh + WCHAR_SIZE + 1, SVt_PVAV);
+					SSize_t s = unpackstring(pat, pat + 1, eh, eh + SIZEOF_WCHAR + 1, SVt_PVAV);
 					SPAGAIN;
 					if (UNLIKELY(s != 1)) croak("Failed to unpack wchar_t");
-					switch (WCHAR_SIZE) {
+					switch (SIZEOF_WCHAR) {
 					case I8SIZE:
 						dcArgChar(MY_CXT.cvm, (char)POPi);
 						break;
@@ -1448,7 +1450,7 @@ extern "C" void Affix_trigger2(pTHX_ CV *cv) {
 				SV *container;
 				RETVAL = newSVpvs("");
 				const char *pat = "W";
-				switch (WCHAR_SIZE) {
+				switch (SIZEOF_WCHAR) {
 				case I8SIZE:
 					container = newSViv((char)dcCallChar(MY_CXT.cvm, affix->entry_point));
 					break;

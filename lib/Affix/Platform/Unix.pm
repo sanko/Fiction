@@ -20,7 +20,7 @@ package Affix::Platform::Unix 0.5 {
             'SPARC64-64' => 'libc6,64bit',
             'Itanium-64' => 'libc6,IA-64',
             'ARM64-64'   => 'libc6,AArch64'
-        }->{ Affix::Platform::Architecture() . ( Affix::Platform::LONG_SIZE() == 4 ? '-32' : '-64' ) };
+        }->{ Affix::Platform::Architecture() . ( Affix::Platform::SIZEOF_LONG() == 4 ? '-32' : '-64' ) };
 
         # XXX assuming GLIBC's ldconfig (with option -p)
         my $regex = qr[^lib$name\.[^\s]+\s+\($machine.*?\)\s*=>\s*(.+)$];

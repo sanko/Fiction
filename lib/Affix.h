@@ -128,13 +128,13 @@ static const char *dlerror(void) {
 #define ULONG_FLAG 'm'
 #define LONGLONG_FLAG 'x'
 #define ULONGLONG_FLAG 'y'
-#if Size_t_size == INTSIZE
+#if SIZEOF_SIZE_T == INTSIZE
 #define SSIZE_T_FLAG INT_FLAG
 #define SIZE_T_FLAG UINT_FLAG
-#elif Size_t_size == LONGSIZE
+#elif SIZEOF_SIZE_T == LONGSIZE
 #define SSIZE_T_FLAG LONG_FLAG
 #define SIZE_T_FLAG ULONG_FLAG
-#elif Size_t_size == LONGLONGSIZE
+#elif SIZEOF_SIZE_T == LONGLONGSIZE
 #define SSIZE_T_FLAG LONGLONG_FLAG
 #define SIZE_T_FLAG ULONGLONG_FLAG
 #else // quadmath is broken
@@ -218,52 +218,54 @@ following address will be aligned to `alignment`. */
 #define AFFIX_ALIGNBYTES 8
 
 /* Some are undefined in perlapi */
-#define BOOL_SIZE sizeof(bool) // ha!
-#define CHAR_SIZE sizeof(char)
-#define UCHAR_SIZE sizeof(unsigned char)
-#define WCHAR_SIZE sizeof(wchar_t)
-#define SHORT_SIZE sizeof(short)
-#define USHORT_SIZE sizeof(unsigned short)
-#define INT_SIZE INTSIZE
-#define UINT_SIZE sizeof(unsigned int)
-#define LONG_SIZE sizeof(long)
-#define ULONG_SIZE sizeof(unsigned long)
-#define LONGLONG_SIZE sizeof(long long)
-#define ULONGLONG_SIZE sizeof(unsigned long long)
-#define FLOAT_SIZE sizeof(float)
-#define DOUBLE_SIZE sizeof(double) // ugh...
-#if Size_t_size == INTSIZE
-#define SIZE_T_SIZE INT_SIZE
-#define SSIZE_T_SIZE UINT_SIZE
-#elif Size_t_size == LONGSIZE
-#define SIZE_T_SIZE LONGLONG_SIZE
-#define SSIZE_T_SIZE ULONG_SIZE
-#elif Size_t_size == LONGLONGSIZE
-#define SIZE_T_SIZE ULONGLONG_SIZE
-#define SSIZE_T_SIZE LONGLONG_SIZE
+#define SIZEOF_BOOL sizeof(bool) // ha!
+#define SIZEOF_CHAR sizeof(char)
+#define SIZEOF_SCHAR sizeof(signed char)
+#define SIZEOF_UCHAR sizeof(unsigned char)
+#define SIZEOF_WCHAR sizeof(wchar_t)
+#define SIZEOF_SHORT sizeof(short)
+#define SIZEOF_USHORT sizeof(unsigned short)
+#define SIZEOF_INT INTSIZE
+#define SIZEOF_UINT sizeof(unsigned int)
+#define SIZEOF_LONG sizeof(long)
+#define SIZEOF_ULONG sizeof(unsigned long)
+#define SIZEOF_LONGLONG sizeof(long long)
+#define SIZEOF_ULONGLONG sizeof(unsigned long long)
+#define SIZEOF_FLOAT sizeof(float)
+#define SIZEOF_DOUBLE sizeof(double) // ugh...
+#if SIZEOF_SIZE_T == INTSIZE
+#define SIZEOF_SIZE_T SIZEOF_INT
+#define SIZEOF_SSIZE_T SIZEOF_UINT
+#elif SIZEOF_SIZE_T == LONGSIZE
+#define SIZEOF_SIZE_T SIZEOF_LONGLONG
+#define SIZEOF_SSIZE_T SIZEOF_ULONG
+#elif SIZEOF_SIZE_T == LONGLONGSIZE
+#define SIZEOF_SIZE_T SIZEOF_ULONGLONG
+#define SIZEOF_SSIZE_T SIZEOF_LONGLONG
 #else // quadmath is broken
-#define SIZE_T_SIZE ULONGLONG_SIZE
-#define SSIZE_T_SIZE LONGLONG_SIZE
+#define SIZEOF_SIZE_T SIZEOF_ULONGLONG
+#define SIZEOF_SSIZE_T SIZEOF_LONGLONG
 #endif
-#define INTPTR_T_SIZE sizeof(intptr_t) // ugh...
+#define SIZEOF_INTPTR_T sizeof(intptr_t) // ugh...
 
-#define BOOL_ALIGN ALIGNOF(bool)
-#define CHAR_ALIGN ALIGNOF(char)
-#define UCHAR_ALIGN ALIGNOF(unsigned char)
-#define WCHAR_ALIGN ALIGNOF(wchar_t)
-#define SHORT_ALIGN ALIGNOF(short)
-#define USHORT_ALIGN ALIGNOF(unsigned short)
-#define INT_ALIGN ALIGNOF(int)
-#define UINT_ALIGN ALIGNOF(unsigned int)
-#define LONG_ALIGN ALIGNOF(long)
-#define ULONG_ALIGN ALIGNOF(unsigned long)
-#define LONGLONG_ALIGN ALIGNOF(long long)
-#define ULONGLONG_ALIGN ALIGNOF(unsigned long long)
-#define FLOAT_ALIGN ALIGNOF(float)
-#define DOUBLE_ALIGN ALIGNOF(double)
-#define INTPTR_T_ALIGN ALIGNOF(intptr_t)
-#define SIZE_T_ALIGN ALIGNOF(size_t)
-#define SSIZE_T_ALIGN ALIGNOF(ssize_t)
+#define ALIGNOF_BOOL ALIGNOF(bool)
+#define ALIGNOF_CHAR ALIGNOF(char)
+#define ALIGNOF_SCHAR ALIGNOF(signed char)
+#define ALIGNOF_UCHAR ALIGNOF(unsigned char)
+#define ALIGNOF_WCHAR ALIGNOF(wchar_t)
+#define ALIGNOF_SHORT ALIGNOF(short)
+#define ALIGNOF_USHORT ALIGNOF(unsigned short)
+#define ALIGNOF_INT ALIGNOF(int)
+#define ALIGNOF_UINT ALIGNOF(unsigned int)
+#define ALIGNOF_LONG ALIGNOF(long)
+#define ALIGNOF_ULONG ALIGNOF(unsigned long)
+#define ALIGNOF_LONGLONG ALIGNOF(long long)
+#define ALIGNOF_ULONGLONG ALIGNOF(unsigned long long)
+#define ALIGNOF_FLOAT ALIGNOF(float)
+#define ALIGNOF_DOUBLE ALIGNOF(double)
+#define ALIGNOF_INTPTR_T ALIGNOF(intptr_t)
+#define ALIGNOF_SIZE_T ALIGNOF(size_t)
+#define ALIGNOF_SSIZE_T ALIGNOF(ssize_t)
 
 // [ text, id, size, align, offset, subtype, length, aggregate, typedef ]
 #define SLOT_STRINGIFY 0

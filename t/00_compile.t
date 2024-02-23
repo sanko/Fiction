@@ -51,7 +51,7 @@ subtest 'API' => sub {
             Pointer
             Callback
             SV];
-        isa_ok $_, ['Fiction::Type']
+        isa_ok $_, ['Affix::Type']
             for Void, Bool, Char, UChar, SChar, WChar, Short, UShort, Int, UInt, Long, ULong, LongLong, ULongLong, Float, Double, Size_t, SSize_t,
             String, WString, Struct [], Struct [ a => Int, b => Double ], SV, Pointer [Void], Array [Int], Callback [ [ Int, Float, Int ] => Void ];
     };
