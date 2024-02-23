@@ -77,12 +77,13 @@ subtest 'affix with renamed symbol' => sub {
         warning {
             ok wrap( find_library('m'), [ 'pow' => 'power' ], [ Double, Double ], Double ), 'wrap libm::pow as power';
         },
-        qr/a name/,
+        qr/expecting a name/,
         'renaming a symbol is meaningless inside Affix::wrap(...)'
     );
     ok !__PACKAGE__->can('power'),                                                   'power() is still undefined';
     ok affix( find_library('m'), [ 'pow' => 'power' ], [ Double, Double ], Double ), 'affix libm::pow as power';
     can_ok __PACKAGE__, 'power';
+    diag Double;
     is power( 3, 4 ), 81, 'power( 3, 4 )';
 };
 subtest 'affix with known argtypes' => sub {
@@ -100,11 +101,11 @@ subtest 'affix with known argtypes and bad param lists' => sub {
 };
 subtest 'types' => sub {
     subtest 'Void' => sub {
-        isa_ok my $double = Void, ['Fiction::Type'];
+        isa_ok my $double = Void, ['Affix::Type'];
         is $double, 'v', 'stringify';
     };
     subtest 'Double' => sub {
-        isa_ok my $double = Double, ['Fiction::Type'];
+        isa_ok my $double = Double, ['Affix::Type'];
         is $double, 'd', 'stringify';
     }
 };
@@ -121,11 +122,14 @@ DLLEXPORT int Nothing_I(int i) {
     return 100 + i;
 }
 END
+    diag '$lib: ' . $lib;
     ok my $_lib = load_library($lib), 'lib is loaded [debugging]';
-    #
+    diag $_lib;
     ok Affix::affix( $lib, 'Nothing', [], Double ), 'double Nothing()';
+    diag 'here';
     is Nothing(), 99, 'Nothing()';
-    #
+
+    #~ #
     ok affix( $_lib, 'Nothing_I', [Int] => Int ), 'int Nothing_I(int i)';
     is Nothing_I(3), 103, 'Nothing_I(3)';
 };

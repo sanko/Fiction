@@ -154,17 +154,19 @@ XS_INTERNAL(Affix_fiction) {
     if (items < 2 || items > 4) croak_xs_usage(cv, "$lib, $symbol, [$argtypes, $rettype]");
     fiction *ret;
     Newxz(ret, 1, fiction);
+    char *prototype = NULL;
+    char *name;
     {
         SV *const xsub_tmp_sv = ST(0);
         SvGETMAGIC(xsub_tmp_sv);
+
         if (!SvOK(xsub_tmp_sv) && SvREADONLY(xsub_tmp_sv)) // explicit undef
             ret->lib = load_library(NULL);
         else if (sv_isobject(xsub_tmp_sv) && sv_derived_from(xsub_tmp_sv, "Affix::Lib")) {
             IV tmp = SvIV((SV *)SvRV(xsub_tmp_sv));
             ret->lib = INT2PTR(DLLib *, tmp);
         }
-        else if (SvPOK(xsub_tmp_sv) ||
-                 (sv_isobject(xsub_tmp_sv) && sv_derived_from(xsub_tmp_sv, "Path::Tiny")))
+        else
             ret->lib = load_library(SvPV_nolen(xsub_tmp_sv));
         if (!ret->lib) {
             // TODO: Throw an error
@@ -186,54 +188,68 @@ XS_INTERNAL(Affix_fiction) {
             }
             symbol = *av_fetch(tmp, 0, false);
             if (!SvPOK(symbol)) { croak("Undefined symbol name"); }
-            ret->symbol = SvPV_nolen(*av_fetch(tmp, 1, false));
+            ret->symbol = SvPV_nolen(*av_fetch(tmp, 0, false));
+            name = SvPV_nolen(*av_fetch(tmp, 1, false));
         }
         else if (SvPOK(xsub_tmp_sv)) {
             symbol = xsub_tmp_sv;
-            ret->symbol = SvPV_nolen(symbol);
+            ret->symbol = name = SvPV_nolen(symbol);
         }
-        ret->entry_point = find_symbol(ret->lib, SvPV_nolen(symbol));
+        ret->entry_point = find_symbol(ret->lib, ret->symbol);
+
         if (!ret->entry_point) {
             safefree(ret);
-            croak("Failed to locate entry point");
+            croak("Failed to locate entry point named %s", ret->symbol);
             XSRETURN_UNDEF;
         }
     }
     {
         ret->signature = NULL;
+        ret->restype = NULL;
+        ret->restype_c = VOID_FLAG;
 
-        if (items >= 3) {
+        switch (items) {
+        case 4:
+            ret->restype = newSVsv(ST(3));
+            ret->restype_c = AXT_NUMERIC(ret->restype);
+            ret->res = newSV(0);
+        // fallthrough
+        case 3: {
             SV *const xsub_tmp_sv = ST(2);
             SvGETMAGIC(xsub_tmp_sv);
-            // TODO: croak if SVOK but not an AV
-            if (SvROK(xsub_tmp_sv) && SvTYPE(SvRV(xsub_tmp_sv)) == SVt_PVAV) {
+            if (!SvOK(xsub_tmp_sv) && SvREADONLY(xsub_tmp_sv)) { // explicit undef
+                ret->signature = NULL;
+                ret->argtypes = NULL;
+            }
+            else if (SvROK(xsub_tmp_sv) && SvTYPE(SvRV(xsub_tmp_sv)) == SVt_PVAV) {
                 ret->argtypes = MUTABLE_AV(SvRV(xsub_tmp_sv));
-                if (ret->argtypes != NULL) {
-                    size_t sig_len = av_len(ret->argtypes);
-                    Newxz(ret->signature, sig_len + 1, char);
-                    for (size_t i = 0; i <= sig_len; i++) {
-                        char *c_type = AXT_STRINGIFY(*av_fetch(ret->argtypes, i, 0));
-                        Copy(c_type, ret->signature + i, 1, char);
-                    }
-                    warn("ret->signature: [%s], sig_len: %d", ret->signature, sig_len);
-                    SvREFCNT_inc(ret->argtypes);
+                size_t sig_len = av_count(ret->argtypes);
+                Newxz(ret->signature, sig_len + 1, char);
+                Newxz(prototype, sig_len + 1, char);
+                char c_type;
+                char scalar = '$';
+                char array = '@';
+                char code = '&';
+                for (size_t i = 0; i < sig_len; i++) {
+                    c_type = AXT_NUMERIC(*av_fetch(ret->argtypes, i, 0));
+                    Copy(&c_type, ret->signature + i, 1, char);
+                    // TODO: Generate a valid prototype w/ Array, Callbacks, etc.
+                    Copy(&scalar, prototype + i, 1, char);
                 }
             }
-        }
 
-        //
-        ret->restype = items == 4 && SvROK(ST(3)) ? newSVsv(ST(3)) : NULL;
-        ret->restype_c = ret->restype ? SvPV_nolen(ret->restype)[0] : VOID_FLAG;
-        ret->res = newSV(0);
+        } break;
+        default:
+            croak("Something's wrong!");
+        }
     }
-    STMT_START { // TODO: generate prototype if we have argtypes
-        const char *prototype = "";
-        cv =
-            newXSproto_portable(ix == 0 ? ret->symbol : NULL, Fiction_trigger, __FILE__, prototype);
+    STMT_START {
+        cv = newXSproto_portable(ix == 0 ? name : NULL, Fiction_trigger, __FILE__, prototype);
         if (ret->symbol == NULL) ret->symbol = "anonymous subroutine";
         if (UNLIKELY(cv == NULL))
             croak("ARG! Something went really wrong while installing a new XSUB!");
         XSANY.any_ptr = (DCpointer)ret;
+        if (prototype != NULL) safefree(prototype);
     }
     STMT_END;
 
