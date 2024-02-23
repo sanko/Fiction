@@ -256,6 +256,104 @@ Returns a true value if syscall calling convention is supported.
 
 Returns true if aggregates (structs, arrays, etc.) can be passed by value.
 
+=head1 Memory flags
+
+If you're doing something really neat, you'll need these.
+
+=head2 Sizeof
+
+These return the size of various data types according to the C L<sizeof()|https://en.wikipedia.org/wiki/Sizeof>
+operator.
+
+=over
+
+=item C<SIZEOF_BOOL>
+
+=item C<SIZEOF_CHAR>
+
+=item C<SIZEOF_SCHAR>
+
+=item C<SIZEOF_UCHAR>
+
+=item C<SIZEOF_WCHAR>
+
+=item C<SIZEOF_SHORT>
+
+=item C<SIZEOF_USHORT>
+
+=item C<SIZEOF_INT>
+
+=item C<SIZEOF_UINT>
+
+=item C<SIZEOF_LONG>
+
+=item C<SIZEOF_ULONG>
+
+=item C<SIZEOF_LONGLONG>
+
+=item C<SIZEOF_ULONGLONG>
+
+=item C<SIZEOF_FLOAT>
+
+=item C<SIZEOF_DOUBLE>
+
+=item C<SIZEOF_SIZE_T>
+
+=item C<SIZEOF_SSIZE_T>
+
+=item C<SIZEOF_INTPTR_T>
+
+=back
+
+=head2 Memory alignment
+
+These can be used to calculate the layout of aggregates such as L<C
+structs|https://en.wikipedia.org/wiki/Struct_(C_programming_language)>.
+
+=over
+
+=item C<BYTE_ALIGN>
+
+Platform-dependant memory alignment size. Use this to calculate offsets and padding inside structs.
+
+=item C<ALIGNOF_BOOL>
+
+=item C<ALIGNOF_CHAR>
+
+=item C<ALIGNOF_UCHAR>
+
+=item C<ALIGNOF_SCHAR>
+
+=item C<ALIGNOF_WCHAR>
+
+=item C<ALIGNOF_SHORT>
+
+=item C<ALIGNOF_USHORT>
+
+=item C<ALIGNOF_INT>
+
+=item C<ALIGNOF_UINT>
+
+=item C<ALIGNOF_LONG>
+
+=item C<ALIGNOF_ULONG>
+
+=item C<ALIGNOF_LONGLONG>
+
+=item C<ALIGNOF_ULONGLONG>
+
+=item C<ALIGNOF_FLOAT>
+
+=item C<ALIGNOF_DOUBLE>
+
+=item C<ALIGNOF_SIZE_T>
+
+=item C<ALIGNOF_SSIZE_T>
+
+=item C<ALIGNOF_INTPTR_T>
+
+=back
+
 =head1 LICENSE
 
 Copyright (C) Sanko Robinson.

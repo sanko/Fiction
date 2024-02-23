@@ -363,7 +363,6 @@ void *sv2ptr(pTHX_ SV *type, SV *data) {
     warn("sv2ptr");
 
     DD(data);
-    sv_dump(type);
     DD(type);
     PING;
     DCpointer ret = NULL;
@@ -670,42 +669,17 @@ void *sv2ptr(pTHX_ SV *type, SV *data) {
         warn("coderef");
         PING;
         if (SvOK(data)) {
-            PING;
-            HV *field = MUTABLE_HV(SvRV(type)); // Make broad assumptions
-            //~ SV **ret = hv_fetchs(field, "ret", 0);
-
-            DD(MUTABLE_SV(AXT_CODEREF_ARGS(type)));
-
-            DD(AXT_CODEREF_RET(type));
-
-            // TODO: This should not be a hash!!!! Args are in slot SLOT_CODEREF_ARGS
-            warn("line %d", __LINE__);
-            Callback *callback;
-            warn("line %d", __LINE__);
-
-            Newxz(callback, 1, Callback);
-            warn("line %d", __LINE__);
-            callback->arg_info = AXT_CODEREF_ARGS(type);
-            warn("line %d", __LINE__);
-            size_t arg_count = av_count(callback->arg_info);
-            warn("line %d [%d]", __LINE__, arg_count);
-
-            callback->sig = SvPV_nolen(AXT_CODEREF_SIG(type));
-            warn("line %d", __LINE__);
-            callback->sig_len = strchr(callback->sig, ')') - callback->sig;
-            warn("line %d", __LINE__);
-            callback->ret = callback->sig[callback->sig_len + 1];
-            warn("line %d", __LINE__);
-            callback->cv = SvREFCNT_inc(data);
-            warn("line %d", __LINE__);
-            storeTHX(callback->perl);
-            warn("line %d", __LINE__);
-            PING;
-            warn("line %d", __LINE__);
+            Callback *userdata;
+            Newxz(userdata, 1, Callback);
+            userdata->sig = SvPV_nolen(AXT_CODEREF_SIG(type));
+            userdata->arg_info = AXT_CODEREF_ARGS(type);
+            size_t arg_count = av_count(userdata->arg_info);
+            userdata->sig_len = strchr(userdata->sig, ')') - userdata->sig;
+            userdata->ret = userdata->sig[userdata->sig_len + 1];
+            userdata->cv = SvREFCNT_inc(data);
+            storeTHX(userdata->perl);
             Newxz(ret, 1, CallbackWrapper);
-            warn("line %d; sig: %s", __LINE__, callback->sig);
-            ((CallbackWrapper *)ret)->cb = dcbNewCallback(callback->sig, cbHandler, callback);
-            warn("line %d", __LINE__);
+            ret = dcbNewCallback(userdata->sig, &cbHandlerXXXXX, userdata);
         }
         else { Newxz(ret, 1, intptr_t); }
     } break;

@@ -50,10 +50,15 @@ subtest 'API' => sub {
             Struct Array
             Pointer
             Callback
-            SV];
+            SV
+            Enum
+            IntEnum
+            UIntEnum
+            CharEnum];
         isa_ok $_, ['Affix::Type']
             for Void, Bool, Char, UChar, SChar, WChar, Short, UShort, Int, UInt, Long, ULong, LongLong, ULongLong, Float, Double, Size_t, SSize_t,
             String, WString, Struct [], Struct [ a => Int, b => Double ], SV, Pointer [Void], Array [Int], Callback [ [ Int, Float, Int ] => Void ];
+        Affix::Type::Enum::Enum( [qw[a b c]] );
     };
     subtest 'core' => sub {
         can_ok __PACKAGE__, $_ for qw[affix wrap pin unpin];

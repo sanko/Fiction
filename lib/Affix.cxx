@@ -180,7 +180,8 @@ XS_INTERNAL(Affix_fiction) {
         SV *const xsub_tmp_sv = ST(1);
         SvGETMAGIC(xsub_tmp_sv);
         if (SvROK(xsub_tmp_sv) && SvTYPE(SvRV(xsub_tmp_sv)) == SVt_PVAV) {
-            AV *tmp = MUTABLE_AV(SvRV(xsub_tmp_sv));
+            //~ AV *tmp = MUTABLE_AV(SvRV(xsub_tmp_sv));
+            AV *tmp = MUTABLE_AV(SvREFCNT_inc(SvRV(xsub_tmp_sv)));
             size_t tmp_len = av_count(tmp);
             if (tmp_len != 2) { croak("Expected a symbol and name"); }
             if (ix == 1 && tmp_len > 1) {
@@ -222,7 +223,7 @@ XS_INTERNAL(Affix_fiction) {
                 ret->argtypes = NULL;
             }
             else if (SvROK(xsub_tmp_sv) && SvTYPE(SvRV(xsub_tmp_sv)) == SVt_PVAV) {
-                ret->argtypes = MUTABLE_AV(SvRV(xsub_tmp_sv));
+                ret->argtypes = MUTABLE_AV(SvREFCNT_inc(SvRV(xsub_tmp_sv)));
                 size_t sig_len = av_count(ret->argtypes);
                 Newxz(ret->signature, sig_len + 1, char);
                 Newxz(prototype, sig_len + 1, char);
@@ -418,28 +419,7 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
                 break;
             }
             case CODEREF_FLAG: {
-                warn("alpha");
-                DD(MUTABLE_SV(a->argtypes));
-                warn("beta");
-                DD(*av_fetch(a->argtypes, sig_pos, 0));
-                warn("send");
-
-                CallbackWrapper *hold = (CallbackWrapper *)sv2ptr(
-                    aTHX_ * av_fetch(a->argtypes, sig_pos, 0), ST(st_pos));
-                warn("affix.cxx line %d", __LINE__);
-
-                //~ dcArgPointer(cvm, hold);
-                warn("affix.cxx line %d", __LINE__);
-
-                {
-
-                    DCCallback *cb;
-                    short result = 0;
-                    int userdata = 1337;
-                    cb = dcbNewCallback("ifsdl)s", &cbHandlerXXXXX, &userdata);
-                    dcArgPointer(cvm, (DCpointer)cb);
-                }
-
+                dcArgPointer(cvm, sv2ptr(aTHX_ * av_fetch(a->argtypes, st_pos, 0), ST(st_pos)));
                 break;
             }
             default:

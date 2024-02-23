@@ -9,7 +9,7 @@ $|++;
 #
 #~ pow();
 #~ $affix->call();
-isa_ok Pointer [Int], [ 'Fiction::Type', 'Fiction::Type::Pointer' ];
+isa_ok Pointer [Int], [ 'Affix::Type', 'Affix::Type::Pointer' ];
 ok my $lib = compile_test_lib('99_preview'), 'compile_test_lib("99_preview")';
 diag $lib;
 diag `nm $lib`;
@@ -20,10 +20,10 @@ ddx [ Callback [ [ Int, Int ] => Int ] ];
 my $xxx = affix $lib, [ '_Z11do_callbackPFiiiE', 'do_callback' ], [ Callback [ [ Int, Int ] => Int ] ] => Double;
 use Data::Dump;
 ddx $xxx;
-diag $xxx->( sub { warn 'hi'; ... } );
 
+#~ diag $xxx->( sub { diag 'hi'; ... } );
 #~ typedef int cb(int, int);
-warn do_callback( sub {...} );
+warn do_callback( sub { } );
 
 #~ Affix::args( Pointer [Int] );
 #
