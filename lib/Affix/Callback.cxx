@@ -1,7 +1,7 @@
 #include "../Affix.h"
 
 DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointer userdata) {
-    int *ud = (int *)userdata;
+    Callback *ud = (Callback *)userdata;
     //~ int       arg1 = dcbArgInt     (args);
     //~ float     arg2 = dcbArgFloat   (args);
     //~ short     arg3 = dcbArgShort   (args);
@@ -10,7 +10,7 @@ DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointe
     //~ long long arg5 = dcbArgLongLong(args);
 
     /* .. do something .. */
-    warn("AH!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    warn("Callback signature: %s", ud->sig);
     result->d = 1244.0;
     return 'd';
 }

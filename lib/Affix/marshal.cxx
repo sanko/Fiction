@@ -666,8 +666,6 @@ void *sv2ptr(pTHX_ SV *type, SV *data) {
 
     } break;
     case CODEREF_FLAG: {
-        warn("coderef");
-        PING;
         if (SvOK(data)) {
             Callback *userdata;
             Newxz(userdata, 1, Callback);
