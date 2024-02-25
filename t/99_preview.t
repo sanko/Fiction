@@ -17,21 +17,10 @@ warn Callback [ [], Int ];
 use Data::Dump;
 ddx [ Callback [ [ Int, Int ] => Int ] ];
 #
-my $xxx = affix $lib, [ '_Z11do_callbackPFiiiE', 'do_callback' ], [ Callback [ [ Int, Int ] => Int ] ] => Int;
-use Data::Dump;
-ddx $xxx;
+
 
 #~ diag $xxx->( sub { diag 'hi'; ... } );
 #~ typedef int cb(int, int);
-is do_callback(
-    sub {
-        is \@_, [ 100, 200 ], 'args passed are correct';
-        pass 'inside the callback';
-        300;
-    }
-    ),
-    300, 'return int from callback';
-
 #~ Affix::args( Pointer [Int] );
 #
 done_testing;

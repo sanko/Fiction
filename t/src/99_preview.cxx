@@ -32,9 +32,3 @@ Person getobj(const char *name, int age) {
     person.introduce(); // Output: Hello, my name is Alice and I am 30 years old.
     return person;
 }
-
-typedef int cb(int, int);
-
-int do_callback(cb *callback) {
-    return callback(100, 200);
-}

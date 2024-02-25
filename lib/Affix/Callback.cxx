@@ -31,11 +31,49 @@ DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointe
                 switch (c->signature[sig_pos]) {
                 case VOID_FLAG:
                     break; // ...skip?
-                           // case BOOL_FLAG:
-                // dcArgBool(cvm, SvTRUE(ST(st_pos))); // Anything can be a bool
-                //    break;
-                // case SCHAR_FLAG:
-                // case CHAR_FLAG: {
+                case BOOL_FLAG:
+                    PUSHs(sv_2mortal(boolSV(dcbArgBool(args))));
+                    break;
+                case SCHAR_FLAG:
+                    PUSHs(sv_2mortal(newSViv(dcbArgChar(args))));
+                    break;
+                    //~ #define CHAR_FLAG 'c'
+                    //~ #define UCHAR_FLAG 'h'
+                    //~ #define WCHAR_FLAG 'w'
+                    //~ #define SHORT_FLAG 's'
+                    //~ #define USHORT_FLAG 't'
+                    //~ #define INT_FLAG 'i'
+                    //~ #define UINT_FLAG 'j'
+                    //~ #define LONG_FLAG 'l'
+                    //~ #define ULONG_FLAG 'm'
+                    //~ #define LONGLONG_FLAG 'x'
+                    //~ #define ULONGLONG_FLAG 'y'
+                    //~ #if SIZEOF_SIZE_T == INTSIZE
+                    //~ #define SSIZE_T_FLAG INT_FLAG
+                    //~ #define SIZE_T_FLAG UINT_FLAG
+                    //~ #elif SIZEOF_SIZE_T == LONGSIZE
+                    //~ #define SSIZE_T_FLAG LONG_FLAG
+                    //~ #define SIZE_T_FLAG ULONG_FLAG
+                    //~ #elif SIZEOF_SIZE_T == LONGLONGSIZE
+                    //~ #define SSIZE_T_FLAG LONGLONG_FLAG
+                    //~ #define SIZE_T_FLAG ULONGLONG_FLAG
+                    //~ #else // quadmath is broken
+                    //~ #define SSIZE_T_FLAG LONGLONG_FLAG
+                    //~ #define SIZE_T_FLAG ULONGLONG_FLAG
+                    //~ #endif
+                    //~ #define FLOAT_FLAG 'f'
+                    //~ #define DOUBLE_FLAG 'd'
+                    //~ #define STRING_FLAG 'z'
+                    //~ #define WSTRING_FLAG '<'
+                    //~ #define STDSTRING_FLAG 'Y'
+                    //~ #define STRUCT_FLAG 'A'
+                    //~ #define CPPSTRUCT_FLAG 'B'
+                    //~ #define UNION_FLAG 'u'
+                    //~ #define ARRAY_FLAG '@'
+                    //~ #define CODEREF_FLAG '&'
+                    //~ #define POINTER_FLAG 'P'
+                    //~ #define SV_FLAG '?'
+
                 case INT_FLAG:
                     PUSHs(sv_2mortal(newSViv(dcbArgInt(args))));
                     break;
@@ -43,7 +81,8 @@ DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointe
                     PUSHs(sv_2mortal(newSVnv(dcbArgDouble(args))));
                     break;
                 default:
-                    warn("Unhandled type passed in callback: %c", c->signature[sig_pos]);
+                    warn("Attempt to pass unknown or unhandled type to callback: %c",
+                         c->signature[sig_pos]);
                     break;
                 }
 
