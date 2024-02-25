@@ -235,7 +235,7 @@ package Affix::Type 0.5 {
         bless(
             [   sprintf( 'Callback[ [ %s ] => %s ]', join( ', ', @$args ), $ret ), Affix::CODEREF_FLAG(), Affix::Platform::SIZEOF_INTPTR_T(),
                 Affix::Platform::ALIGNOF_INTPTR_T(), undef,    # offset
-                $ret,                                $args, join( '', @$args, ')', chr int $ret ), 14, 15, 16, 17
+                $ret,                                $args, join( '', @$args )
             ],
             'Affix::Type::Callback'
         );

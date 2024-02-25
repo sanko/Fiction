@@ -672,8 +672,8 @@ void *sv2ptr(pTHX_ SV *type, SV *data) {
             userdata->sig = SvPV_nolen(AXT_CODEREF_SIG(type));
             userdata->arg_info = AXT_CODEREF_ARGS(type);
             size_t arg_count = av_count(userdata->arg_info);
-            userdata->sig_len = strchr(userdata->sig, ')') - userdata->sig;
-            userdata->ret = userdata->sig[userdata->sig_len + 1];
+            userdata->sig_len = strlen(userdata->sig);
+            userdata->ret = *SvPV_nolen(AXT_CODEREF_RET(type));
             userdata->cv = SvREFCNT_inc(data);
             storeTHX(userdata->perl);
             Newxz(ret, 1, CallbackWrapper);

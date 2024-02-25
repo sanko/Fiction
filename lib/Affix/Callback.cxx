@@ -2,6 +2,9 @@
 
 DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointer userdata) {
     Callback *ud = (Callback *)userdata;
+    dTHXa(ud->perl);
+    //~ char ret_c = cbx->ret;
+
     //~ int       arg1 = dcbArgInt     (args);
     //~ float     arg2 = dcbArgFloat   (args);
     //~ short     arg3 = dcbArgShort   (args);
@@ -10,7 +13,25 @@ DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointe
     //~ long long arg5 = dcbArgLongLong(args);
 
     /* .. do something .. */
-    warn("Callback signature: %s", ud->sig);
+    warn("Callback signature: %s => %c", ud->sig, ud->ret);
+
+    {
+        dSP;
+        ENTER;
+        SAVETMPS;
+
+        PUSHMARK(SP);
+        //~ EXTEND(SP, 2);
+        //~ PUSHs(sv_2mortal(newSVpv(a, 0)));
+        //~ PUSHs(sv_2mortal(newSViv(b)));
+        PUTBACK;
+
+        call_sv(ud->cv, G_DISCARD);
+
+        FREETMPS;
+        LEAVE;
+    }
+
     result->d = 1244.0;
     return 'd';
 }
