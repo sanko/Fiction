@@ -17,8 +17,6 @@ warn Callback [ [], Int ];
 use Data::Dump;
 ddx [ Callback [ [ Int, Int ] => Int ] ];
 #
-
-
 #~ diag $xxx->( sub { diag 'hi'; ... } );
 #~ typedef int cb(int, int);
 #~ Affix::args( Pointer [Int] );

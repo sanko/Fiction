@@ -372,7 +372,7 @@ void *sv2ptr(pTHX_ SV *type, SV *data) {
     warn("type: %d/%c", type_c, type_c);
     PING;
     size_t size = AXT_SIZEOF(type);
-    warn("after size: %d", size);
+    //~ warn("after size: %d", size);
     PING;
 #if DEBUG
     warn("sv2ptr(%s, ...) at %s line %d", AXT_STRINGIFY(type), __FILE__, __LINE__);
@@ -382,7 +382,6 @@ void *sv2ptr(pTHX_ SV *type, SV *data) {
 #endif
 #endif
     PING;
-    warn("jjjjj");
     switch (type_c) {
     case VOID_FLAG: {
         PING;

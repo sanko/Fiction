@@ -5,64 +5,60 @@ BEGIN { chdir '../' if !-d 't'; }
 use t::lib::helper;
 $|++;
 #
-subtest 'typedef int cb(int, int);' => sub {
-    plan 4;
-    my $lib = compile_test_lib(<<'END');
+my %tests = (
+    'typedef void cb(void)' => [ <<'', [ Callback [ [] => Void ] ], Void, [], (), () ],
 #include "std.h"
 // ext: .c
+typedef void cb(void);
+void c(cb *callback) {
+    callback();
+}
 
+    'typedef bool cb(bool)' => [ <<'', [ Callback [ [Bool] => Bool ] ], Bool, [ F() ], !0, T() ],
+#include "std.h"
+// ext: .c
+typedef bool cb( bool );
+bool c(cb *callback) {
+    return callback(false);
+}
+
+    'typedef char cb(char)' => [ <<'', [ Callback [ [Char] => Char ] ], Char, ['a'], 'm', 'm' ],
+#include "std.h"
+// ext: .c
+typedef char cb( char );
+char c(cb *callback) {
+    return callback('a');
+}
+
+    'typedef int cb(int, int)' => [ <<'', [ Callback [ [ Int, Int ] => Int ] ], Int, [ 100, 200 ], 600, 600 ],
+#include "std.h"
+// ext: .c
 typedef int cb(int, int);
-
 int c(cb *callback) {
     return callback(100, 200);
 }
 
-END
-    diag '$lib: ' . $lib;
-    ok my $_lib = load_library($lib), 'lib is loaded [debugging]';
-    diag $_lib;
-    isa_ok my $cb = Affix::wrap( $lib, 'c', [ Callback [ [ Int, Int ] => Int ] ], Int ), [qw[Affix]], 'my $cb = ...';
+    'typedef double cb(double, double)' => [
+        <<'', [ Callback [ [ Double, Double ] => Double ] ], Double, [ float( 1.5, tolerance => 0.01 ), float( 3.98, tolerance => 0.01 ) ], 4.3, float( 4.3, tolerance => 0.01 ) ],
+#include "std.h"
+// ext: .c
+typedef double cb(double, double);
+double c(cb *callback) {
+    return callback(1.5, 3.98);
+}
+
+);
+subtest $_ => sub {
+    plan 4;
+    ok my $lib    = compile_test_lib( $tests{$_}[0] ), 'build test lib';
+    isa_ok my $cb = Affix::wrap( $lib, 'c', $tests{$_}[1], $tests{$_}[2] ), [qw[Affix]], 'my $cb = ...';
     is $cb->(
         sub {
-            is \@_, [ 100, 200 ], '@_ in $cb is correct';
-            return 600;
+            is \@_, $tests{$_}[3], '@_ in $cb is correct';
+            return $tests{$_}[4];
         }
         ),
-        600, 'return from $cb->(sub {[...]}) is correct';
-};
-#
-done_testing;
-__END__
-
-
-#
-#~ my $affix = affix 'm', 'pow', [ Struct [ a => Int ] ], Void;
-#
-#~ pow();
-#~ $affix->call();
-isa_ok Pointer [Int], [ 'Affix::Type', 'Affix::Type::Pointer' ];
-ok my $lib = compile_test_lib('99_preview'), 'compile_test_lib("99_preview")';
-diag $lib;
-diag `nm $lib`;
-warn Callback [ [], Int ];
-use Data::Dump;
-ddx [ Callback [ [ Int, Int ] => Int ] ];
-#
-my $xxx = affix $lib, [ '_Z11do_callbackPFiiiE', 'do_callback' ], [ Callback [ [ Int, Int ] => Int ] ] => Int;
-use Data::Dump;
-ddx $xxx;
-
-#~ diag $xxx->( sub { diag 'hi'; ... } );
-#~ typedef int cb(int, int);
-is do_callback(
-    sub {
-        is \@_, [ 100, 200 ], 'args passed are correct';
-        pass 'inside the callback';
-        300;
+        $tests{$_}[5], 'return from $cb->(sub {[...]}) is correct';
     }
-    ),
-    300, 'return int from callback';
-
-#~ Affix::args( Pointer [Int] );
-#
+    for sort keys %tests;
 done_testing;

@@ -433,15 +433,72 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
         dcCallVoid(cvm, a->entry_point);
         sv_set_undef(a->res);
         break;
+    case BOOL_FLAG:
+        sv_setsv(a->res, boolSV(dcCallBool(cvm, a->entry_point)));
+        break;
+    case CHAR_FLAG:
+    case SCHAR_FLAG: {
+        char value[1];
+        value[0] = dcCallChar(cvm, a->entry_point);
+        sv_setsv(a->res, newSVpv(value, 1));
+        (void)SvUPGRADE(a->res, SVt_PVIV);
+        SvIV_set(a->res, ((IV)value[0]));
+        SvIOK_on(a->res);
+        sv_dump(a->res);
+    } break;
+    case UCHAR_FLAG: {
+        char value[1];
+        value[0] = dcCallChar(cvm, a->entry_point);
+        sv_setsv(a->res, newSVpv(value, 1));
+        (void)SvUPGRADE(a->res, SVt_PVIV);
+        SvIV_set(a->res, ((UV)value[0]));
+        SvIOK_on(a->res);
+    } break;
+        //~ #define WCHAR_FLAG 'w'
+        //~ #define SHORT_FLAG 's'
+        //~ #define USHORT_FLAG 't'
     case INT_FLAG:
         sv_setiv(a->res, dcCallInt(cvm, a->entry_point));
         break;
     case UINT_FLAG:
         sv_setuv(a->res, dcCallInt(cvm, a->entry_point));
         break;
+
+        //~ #define UINT_FLAG 'j'
+        //~ #define LONG_FLAG 'l'
+        //~ #define ULONG_FLAG 'm'
+        //~ #define LONGLONG_FLAG 'x'
+        //~ #define ULONGLONG_FLAG 'y'
+        //~ #if SIZEOF_SIZE_T == INTSIZE
+        //~ #define SSIZE_T_FLAG INT_FLAG
+        //~ #define SIZE_T_FLAG UINT_FLAG
+        //~ #elif SIZEOF_SIZE_T == LONGSIZE
+        //~ #define SSIZE_T_FLAG LONG_FLAG
+        //~ #define SIZE_T_FLAG ULONG_FLAG
+        //~ #elif SIZEOF_SIZE_T == LONGLONGSIZE
+        //~ #define SSIZE_T_FLAG LONGLONG_FLAG
+        //~ #define SIZE_T_FLAG ULONGLONG_FLAG
+        //~ #else // quadmath is broken
+        //~ #define SSIZE_T_FLAG LONGLONG_FLAG
+        //~ #define SIZE_T_FLAG ULONGLONG_FLAG
+        //~ #endif
+        //~ #define FLOAT_FLAG 'f'
     case DOUBLE_FLAG:
         sv_setnv(a->res, dcCallDouble(cvm, a->entry_point));
         break;
+
+        //~ #define STRING_FLAG 'z'
+        //~ #define WSTRING_FLAG '<'
+        //~ #define STDSTRING_FLAG 'Y'
+        //~ #define STRUCT_FLAG 'A'
+        //~ #define CPPSTRUCT_FLAG 'B'
+        //~ #define UNION_FLAG 'u'
+        //~ #define ARRAY_FLAG '@'
+        //~ #define CODEREF_FLAG '&'
+        //~ #define POINTER_FLAG 'P'
+        //~ #define SV_FLAG '?'
+    default:
+        croak("Unknown or unhandled return type: %c", a->restype_c);
     };
 
     //~ sv_setnv(a->res, dcCallDouble(cvm, a->entry_point));
