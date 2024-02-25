@@ -23,7 +23,12 @@ ddx $xxx;
 
 #~ diag $xxx->( sub { diag 'hi'; ... } );
 #~ typedef int cb(int, int);
-warn do_callback( sub { pass 'inside the callback' } );
+warn do_callback(
+    sub {
+        is \@_, [ 100, 200 ], 'args passed are correct';
+        pass 'inside the callback';
+    }
+);
 
 #~ Affix::args( Pointer [Int] );
 #

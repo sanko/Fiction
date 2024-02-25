@@ -1,19 +1,18 @@
 #include "../Affix.h"
 
 DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointer userdata) {
-    Callback *ud = (Callback *)userdata;
-    dTHXa(ud->perl);
-    //~ char ret_c = cbx->ret;
-
-    //~ int       arg1 = dcbArgInt     (args);
-    //~ float     arg2 = dcbArgFloat   (args);
-    //~ short     arg3 = dcbArgShort   (args);
-    double arg4 = dcbArgDouble(args);
-    double arg5 = dcbArgDouble(args);
-    //~ long long arg5 = dcbArgLongLong(args);
-
-    /* .. do something .. */
-    warn("Callback signature: %s => %c", ud->sig, ud->ret);
+    Callback *c = (Callback *)userdata;
+    dTHXa(c->perl);
+    //~ typedef struct {
+    //~ char *sig;
+    //~ size_t sig_len;
+    //~ char ret;
+    //~ char *perl_sig;
+    //~ SV *cv;
+    //~ AV *arg_info;
+    //~ SV *retval;
+    //~ dTHXfield(perl)
+    //~ } Callback;
 
     {
         dSP;
@@ -21,12 +20,50 @@ DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointe
         SAVETMPS;
 
         PUSHMARK(SP);
-        //~ EXTEND(SP, 2);
+        if (c->signature != NULL) {
+            size_t sig_len = strlen(c->signature);
+            EXTEND(SP, sig_len);
+            /*if (items != sig_len)
+                croak("%s arguments for %s; expected %d, found %d)",
+                      items > sig_len ? "Too many" : "Not enough", c->symbol, sig_len, items);*/
+            for (size_t sig_pos = 0, st_pos = 0; sig_pos < sig_len; sig_pos++, st_pos++) {
+                warn("sig_pos: %d, st_pos: %d", sig_pos, st_pos);
+
+                switch (c->signature[sig_pos]) {
+                case VOID_FLAG:
+                    break; // ...skip?
+                           // case BOOL_FLAG:
+                // dcArgBool(cvm, SvTRUE(ST(st_pos))); // Anything can be a bool
+                //    break;
+                // case SCHAR_FLAG:
+                // case CHAR_FLAG: {
+                case INT_FLAG:
+                    PUSHs(sv_2mortal(newSViv(dcbArgInt(args))));
+                    break;
+                case DOUBLE_FLAG:
+                    PUSHs(sv_2mortal(newSVnv(dcbArgDouble(args))));
+                    break;
+                default:
+                    warn("Unhandled type passed in callback: %c", c->signature[sig_pos]);
+                    break;
+                }
+
+                //~ int       arg1 = dcbArgInt     (args);
+                //~ float     arg2 = dcbArgFloat   (args);
+                //~ short     arg3 = dcbArgShort   (args);
+                //~ double arg4 = dcbArgDouble(args);
+                //~ double arg5 = dcbArgDouble(args);
+                //~ long long arg5 = dcbArgLongLong(args);
+            }
+        }
+        /* .. do something .. */
+        warn("Callback signature: %s => %c", c->signature, c->restype_c);
+
         //~ PUSHs(sv_2mortal(newSVpv(a, 0)));
         //~ PUSHs(sv_2mortal(newSViv(b)));
         PUTBACK;
 
-        call_sv(ud->cv, G_DISCARD);
+        call_sv(c->cv, G_DISCARD);
 
         FREETMPS;
         LEAVE;
@@ -35,7 +72,7 @@ DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointe
     result->d = 1244.0;
     return 'd';
 }
-
+/*
 char cbHandler(DCCallback *cb, DCArgs *args, DCValue *result, DCpointer userdata) {
     PERL_UNUSED_VAR(cb);
     warn("Callback.cxx line %d", __LINE__);
@@ -256,3 +293,4 @@ char cbHandler(DCCallback *cb, DCArgs *args, DCValue *result, DCpointer userdata
 
     return ret_c;
 }
+*/

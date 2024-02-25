@@ -669,15 +669,14 @@ void *sv2ptr(pTHX_ SV *type, SV *data) {
         if (SvOK(data)) {
             Callback *userdata;
             Newxz(userdata, 1, Callback);
-            userdata->sig = SvPV_nolen(AXT_CODEREF_SIG(type));
-            userdata->arg_info = AXT_CODEREF_ARGS(type);
-            size_t arg_count = av_count(userdata->arg_info);
-            userdata->sig_len = strlen(userdata->sig);
-            userdata->ret = *SvPV_nolen(AXT_CODEREF_RET(type));
+            userdata->signature = SvPV_nolen(AXT_CODEREF_SIG(type));
+            userdata->argtypes = AXT_CODEREF_ARGS(type);
+            size_t arg_count = av_count(userdata->argtypes);
+            userdata->restype_c = *SvPV_nolen(AXT_CODEREF_RET(type));
             userdata->cv = SvREFCNT_inc(data);
             storeTHX(userdata->perl);
             Newxz(ret, 1, CallbackWrapper);
-            ret = dcbNewCallback(userdata->sig, &cbHandlerXXXXX, userdata);
+            ret = dcbNewCallback(userdata->signature, &cbHandlerXXXXX, userdata);
         }
         else { Newxz(ret, 1, intptr_t); }
     } break;

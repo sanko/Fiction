@@ -359,18 +359,28 @@ struct CallbackWrapper {
 };
 
 typedef struct {
-    char *sig;
-    size_t sig_len;
-    char ret;
+    const char *signature;
+    char restype_c;
     char *perl_sig;
     SV *cv;
-    AV *arg_info;
+    AV *argtypes;
     SV *retval;
     dTHXfield(perl)
 } Callback;
 
 char cbHandler(DCCallback *cb, DCArgs *args, DCValue *result, DCpointer userdata);
 DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointer userdata);
+
+struct fiction {
+    DLLib *lib;            // safefree
+    DCpointer entry_point; // not malloc'd
+    const char *symbol;
+    const char *signature;
+    AV *argtypes;
+    SV *restype;
+    SV *res;
+    char restype_c; // TODO: Remember to safefree() this on destruction!!!!!!!!!!!!!!!!!!!!!!!!!!
+};
 
 // XS Boot
 void boot_Affix_pin(pTHX_ CV *);

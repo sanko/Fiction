@@ -137,17 +137,6 @@ XS_INTERNAL(Affix_find_symbol) {
     XSRETURN(1);
 }
 
-struct fiction {
-    DLLib *lib;            // safefree
-    DCpointer entry_point; // not malloc'd
-    const char *symbol;
-    const char *signature;
-    AV *argtypes;
-    SV *restype;
-    SV *res;
-    char restype_c; // TODO: Remember to safefree() this on destruction!!!!!!!!!!!!!!!!!!!!!!!!!!
-};
-
 XS_INTERNAL(Affix_fiction) {
     dXSARGS;
     dXSI32;
