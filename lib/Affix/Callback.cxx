@@ -13,7 +13,7 @@ DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointe
     //~ SV *retval;
     //~ dTHXfield(perl)
     //~ } Callback;
-
+    char ret = c->restype_c;
     {
         dSP;
         ENTER;
@@ -62,14 +62,23 @@ DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointe
         //~ PUSHs(sv_2mortal(newSViv(b)));
         PUTBACK;
 
-        call_sv(c->cv, G_DISCARD);
+        if (c->restype_c == VOID_FLAG) { call_sv(c->cv, G_DISCARD); }
+        else {
+            call_sv(c->cv, G_SCALAR);
+
+            SPAGAIN;
+
+            switch (c->restype_c) {
+            case INT_FLAG:
+                result->i = POPi;
+                break;
+            }
+        }
 
         FREETMPS;
         LEAVE;
     }
-
-    result->d = 1244.0;
-    return 'd';
+    return ret;
 }
 /*
 char cbHandler(DCCallback *cb, DCArgs *args, DCValue *result, DCpointer userdata) {
