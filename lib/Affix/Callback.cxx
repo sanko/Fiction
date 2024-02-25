@@ -24,11 +24,10 @@ DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointe
             size_t sig_len = strlen(c->signature);
             EXTEND(SP, sig_len);
             /*if (items != sig_len)
-                croak("%s arguments for %s; expected %d, found %d)",
+                croak("%s arguments for %s; expected %ld, found %d)",
                       items > sig_len ? "Too many" : "Not enough", c->symbol, sig_len, items);*/
             for (size_t sig_pos = 0, st_pos = 0; sig_pos < sig_len; sig_pos++, st_pos++) {
-                warn("sig_pos: %d, st_pos: %d", sig_pos, st_pos);
-
+                //~ warn("sig_pos: %d, st_pos: %d", sig_pos, st_pos);
                 switch (c->signature[sig_pos]) {
                 case VOID_FLAG:
                     break; // ...skip?
