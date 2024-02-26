@@ -360,8 +360,6 @@ void *av2ptr(pTHX_ SV *type, AV *av_data) {
 }
 
 void *sv2ptr(pTHX_ SV *type, SV *data) {
-    warn("sv2ptr");
-
     DD(data);
     DD(type);
     PING;
