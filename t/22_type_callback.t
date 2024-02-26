@@ -6,7 +6,7 @@ use t::lib::helper;
 $|++;
 #
 my %tests = (
-    'typedef void cb(void)' => [ <<'', [ Callback [ [] => Void ] ], Void, [], (), () ],
+    'typedef void cb(void)' => [ <<'', [ Callback [ [] => Void ] ], Void, [], U(), U() ],
 #include "std.h"
 // ext: .c
 typedef void cb(void);

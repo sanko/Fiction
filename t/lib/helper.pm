@@ -3,7 +3,7 @@ package t::lib::helper {
     use warnings;
     use Test2::V0;
     use experimental 'signatures';
-    use Path::Tiny qw[path tempfile];
+    use Path::Tiny qw[path tempdir tempfile];
     use Exporter 'import';
     our @EXPORT = qw[compile_test_lib compile_cpp_test_lib is_approx];
     use Config;
@@ -33,8 +33,8 @@ package t::lib::helper {
         }
         return plan skip_all => 'Failed to build test lib' if !$opt;
         my $c_file = $opt->canonpath;
-        my $o_file = path( $opt->basename(qr/\.cx*/) . '.' . $Config{_o} )->absolute;
-        my $l_file = path( $opt->basename(qr/\.cx*/) . '.' . $Config{so} )->absolute;
+        my $o_file = tempfile( UNLINK => !$keep, SUFFIX => $Config{_o} )->absolute;
+        my $l_file = tempfile( UNLINK => !$keep, SUFFIX => $opt->basename(qr/\.cx*/) . '.' . $Config{so} )->absolute;
         note sprintf 'Building %s into %s', $opt, $l_file;
         my $compiler = $Config{cc};
         if ( $opt =~ /\.cxx$/ ) {
