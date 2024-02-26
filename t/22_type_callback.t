@@ -30,7 +30,15 @@ char c(cb *callback) {
     return callback('a');
 }
 
-    'typedef int cb(int, int)' => [ <<'', [ Callback [ [ Int, Int ] => Int ] ], Int, [ 100, 200 ], 600, 600 ],
+    'typedef char cb(char) with ints' => [ <<'', [ Callback [ [Char] => Char ] ], Char, ['a'], 109, 'm' ],
+#include "std.h"
+// ext: .c
+typedef char cb( char );
+char c(cb *callback) {
+    return callback(97);
+}
+
+    'typedef int cb(int, int)' => [ <<'', [ Callback [ [ Int, Int ] => Int ] ], Int, [ 100, 200 ], -600, -600 ],
 #include "std.h"
 // ext: .c
 typedef int cb(int, int);
