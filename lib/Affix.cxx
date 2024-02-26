@@ -202,7 +202,17 @@ XS_INTERNAL(Affix_fiction) {
         case 4:
             ret->restype = newSVsv(ST(3));
             ret->restype_c = AXT_NUMERIC(ret->restype);
-            ret->res = newSV(0);
+            switch (ret->restype_c) {
+            case WCHAR_FLAG:
+            case STRING_FLAG:
+            case WSTRING_FLAG:
+            case STDSTRING_FLAG:
+                ret->res = newSVpvs("");
+                break;
+            default:
+                ret->res = newSV(0);
+                break;
+            }
         // fallthrough
         case 3: {
             SV *const xsub_tmp_sv = ST(2);
@@ -333,27 +343,25 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
                 break;
             }
             case WCHAR_FLAG: {
-                int value = 0;
                 SV *arg = ST(st_pos);
                 if (SvOK(arg)) {
-                    char *eh = SvPV_nolen(arg);
-                    PUTBACK;
-                    const char *pat = "W";
-                    SSize_t s = unpackstring(pat, pat + 1, eh, eh + SIZEOF_WCHAR + 1, SVt_PVAV);
-                    SPAGAIN;
-                    if (UNLIKELY(s != 1)) croak("Failed to unpack wchar_t");
-                    value = POPi;
-                }
+                    wchar_t *str = utf2wchar(aTHX_ ST(st_pos), 1);
 #if WCHAR_MAX == LONG_MAX
-                dcArgLong(cvm, value);
+                    // dcArgLong(cvm, str[0]);
 #elif WCHAR_MAX == INT_MAX
-                dcArgInt(cvm, value);
+                    // dcArgInt(cvm, str[0]);
 #elif WCHAR_MAX == SHORT_MAX
-                dcArgShort(cvm, value);
+                    // dcArgShort(cvm, str[0]);
 #else
-                dcArgChar(cvm, value);
+                    // dcArgChar(cvm, str[0]);
 #endif
-            } break;
+                    dcArgLong(cvm, str[0]);
+                }
+                else
+                    dcArgInt(cvm, 0);
+                break;
+            }
+
             case SHORT_FLAG:
                 dcArgShort(cvm, SvIV(ST(st_pos)));
                 break;
@@ -454,9 +462,13 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
         SvIV_set(a->res, ((UV)value[0]));
         SvIOK_on(a->res);
     } break;
-        //~ #define WCHAR_FLAG 'w'
-        //~ #define SHORT_FLAG 's'
-        //~ #define USHORT_FLAG 't'
+    case WCHAR_FLAG: {
+        const char *pat = "W";
+        SV *container = sv_2mortal(newSViv((long)dcCallLong(cvm, a->entry_point)));
+        packlist(a->res, pat, pat + 1, &container, &container + 1);
+    } break;
+    //~ #define SHORT_FLAG 's'
+    //~ #define USHORT_FLAG 't'
     case INT_FLAG:
         sv_setiv(a->res, dcCallInt(cvm, a->entry_point));
         break;

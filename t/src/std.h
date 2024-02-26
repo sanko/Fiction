@@ -1,11 +1,13 @@
 #pragma once
 
+#include <locale.h>
 #include <math.h>
 #include <stdbool.h>
 #include <stddef.h> // offsetof
 #include <stdio.h>
 #include <stdlib.h> // malloc
 #include <string.h>
+#include <wchar.h>
 
 #define warn(FORMAT, ...)                                                                          \
     fprintf(stderr, FORMAT " at %s line %i\n", ##__VA_ARGS__, __FILE__, __LINE__);                 \
