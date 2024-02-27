@@ -1,8 +1,11 @@
 package Affix::Platform::Unix 0.5 {
     use v5.38;
+    use Path::Tiny qw[path];
+    use Config     qw[%Config];
     use parent 'Exporter';
     our @EXPORT_OK   = qw[find_library];
     our %EXPORT_TAGS = ( all => \@EXPORT_OK );
+    my $so = $Config{so};
 
     sub is_elf {
         my ($filename) = @_;
@@ -65,8 +68,8 @@ package Affix::Platform::Unix 0.5 {
             @ret = grep { is_elf($_) } _findLib_gcc($name) unless @ret;
             @ret = grep { is_elf($_) } _findLib_ld($name)  unless @ret;
             return unless @ret;
-            for my $lib (@ret) {
-                next unless $lib =~ /^.*?\/lib$name\.\D*([\d\.\-]+)?$/;
+            for my $lib ( map { path($_)->realpath } @ret ) {
+                next unless $lib =~ /^.*?\/lib$name\.$so(?:\.([\d\.\-]+))?$/;
                 $version = $1 if $version eq '';
                 $cache->{$name}{$version} //= $lib;
             }

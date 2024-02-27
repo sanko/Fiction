@@ -61,7 +61,7 @@ char fn(cb *callback) {
 }
 
     build_and_test
-        'typedef signed char cb(char)' => <<'', [ Callback [ [Char] => Char ] ], Char, [ pack 'C', -ord 'a' ], 'm', 'm';
+        'typedef signed char cb(char)' => <<'', [ Callback [ [Char] => Char ] ], Char, [ pack 'c', -ord 'a' ], 'm', 'm';
 #include "std.h"
 // ext: .c
 typedef char cb( char );
@@ -176,7 +176,6 @@ unsigned int fn(cb *callback) {
 
 };
 
-#define UINT_FLAG 'j'
 #define LONG_FLAG 'l'
 #define ULONG_FLAG 'm'
 #define LONGLONG_FLAG 'x'

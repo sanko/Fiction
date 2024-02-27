@@ -79,6 +79,7 @@ package Affix 0.50 {    # 'FFI' is my middle name!
             malloc calloc realloc free memchr memcmp memset memcpy sizeof offsetof
             raw hexdump]
     ];
+    $EXPORT_TAGS{lib}     = [qw[find_library libm libc]];
     $EXPORT_TAGS{default} = [
         qw[
             typedef
@@ -89,7 +90,7 @@ package Affix 0.50 {    # 'FFI' is my middle name!
     ];
     {
         my %seen;
-        push @{ $EXPORT_TAGS{default} }, grep { !$seen{$_}++ } @{ $EXPORT_TAGS{$_} } for qw[base types cc];
+        push @{ $EXPORT_TAGS{default} }, grep { !$seen{$_}++ } @{ $EXPORT_TAGS{$_} } for qw[base types cc lib];
     }
     {
         my %seen;
@@ -285,6 +286,9 @@ package Affix 0.50 {    # 'FFI' is my middle name!
         }
         #
     }
+    #
+    sub libm() { CORE::state $m //= find_library('m'); $m }
+    sub libc() { CORE::state $c //= find_library('c'); $c }
 
     #~ # Core
     #~ sub pin   ( $lib, $symbol, $type, $variable ) {...}

@@ -9,11 +9,11 @@ Affix - A Foreign Function Interface eXtension
 use Affix;
 
 # bind to exported function
-affix 'm', 'pow', [Double, Double], Double;
+affix libm, 'pow', [Double, Double], Double;
 warn pow(3, 4); # 81
 
 # wrap an exported function in a code reference
-my $getpid = wrap 'c', 'getpid', [], Int;
+my $getpid = wrap libc, 'getpid', [], Int;
 warn $getpid->(); # $$
 
 # bind an exported value to a Perl value
@@ -51,10 +51,10 @@ Affix's API is rather simple but not lacking in power. Let's start at the very b
 Attaches a given symbol to a named perl sub.
 
 ```perl
-affix 'm', 'pow', [Double, Double] => Double;
+affix libm, 'pow', [Double, Double] => Double;
 warn pow( 3, 5 );
 
-affix 'c', 'puts', [Str], Int;
+affix libc, 'puts', [Str], Int;
 puts( 'Hello' );
 
 affix './mylib.dll', ['output', 'write'], [Str], Int; # renamed function
@@ -63,7 +63,7 @@ write( 'Hello' );
 affix undef, [ 'rint', 'round' ], [Double], Double; # use current process
 warn round(3.14);
 
-affix 'xxhash', [ 'XXH_versionNumber', 'xxHash::version' ], [], UInt;
+affix find_library('xxhash'), [ 'XXH_versionNumber', 'xxHash::version' ], [], UInt;
 warn xxHash::version();
 ```
 
@@ -96,7 +96,7 @@ name you provided.
 Creates a wrapper around a given symbol in a given library.
 
 ```perl
-my $pow = wrap( 'm', 'pow', [Double, Double] => Double );
+my $pow = wrap libm, 'pow', [Double, Double] => Double;
 warn $pow->(5, 10); # 5**10
 ```
 
@@ -126,7 +126,7 @@ namespace with a named function.
 
 ```perl
 my $errno;
-pin $errno, 'libc', 'errno', Int;
+pin $errno, libc, 'errno', Int;
 print $errno;
 $errno = 0;
 ```
@@ -155,6 +155,37 @@ Expected parameters include:
     Indicate to Affix what type of data the variable contains.
 
 This is likely broken on BSD but patches are welcome.
+
+# Library Functions
+
+Locating libraries on different platforms can be a little tricky. These are utilities to help you out.
+
+They are exported by default but may be imported by name or with the `:lib` tag.
+
+## `find_library( ... )`
+
+```perl
+my $libm = find_library( 'm' ); # /usr/lib/libm.so.6, etc.
+my $libc = find_library( 'c' ); # /usr/lib/libc.so.6, etc.
+my $bz2 = find_library( 'bz2' ); # /usr/lib/libbz2.so.1.0.8
+```
+
+Locates a library close to the way the compiler or platform-dependant runtime loader does. Where multiple versions of
+the same shared library exists, the most recent should be returned.
+
+## `libc()`
+
+Returns the path to the platform-dependant equivalent of the standard C library.
+
+This may be something like `/usr/lib/libc.so.6` (Linux), `/lib/libc.so.7` (FreeBSD), `/usr/lib/libc.dylib` (macOS),
+`C:\Windows\system32\msvcrt.dll` (Windows), etc.
+
+## `libm()`
+
+Returns the path to the platform-dependant equivalent of the standard C math library.
+
+This may be something like `/usr/lib/libm.so.6` (Linux), `/lib/libm.so.5` (FreeBSD), `/usr/lib/libm.dylib` (macOS),
+`C:\Windows\system32\msvcrt.dll` (Windows), etc.
 
 # Memory Functions
 
@@ -312,8 +343,8 @@ types given are advisory only! No type checking is done at compile or runtime.
     <th>Raku</th>       </tr> </thead> <tbody>       <tr>         <td>Void</td> <td>void</td> <td>-&gt;()</td>
     <td>void/NULL</td> <td>-</td> <td></td>       </tr>       <tr> <td>Bool</td> <td>_Bool</td> <td>bool</td> <td>bool</td>
     <td>-</td> <td>bool</td>       </tr>       <tr>         <td>Char</td> <td>int8_t</td>    <td>i8</td> <td>sbyte</td>
-    <td>c</td>       <td>int8</td>    </tr>       <tr>   <td>UChar</td> <td>uint8_t</td>         <td>u8</td> <td>byte</td> 
-     <td>C</td> <td>byte, uint8</td>       </tr>       <tr> <td>Short</td>  <td>int16_t</td> <td>i16</td> <td>short</td>
+    <td>c</td>       <td>int8</td>    </tr>       <tr>   <td>UChar</td> <td>uint8_t</td>         <td>u8</td> <td>byte</td>
+    <td>C</td> <td>byte, uint8</td>       </tr>       <tr> <td>Short</td>  <td>int16_t</td> <td>i16</td> <td>short</td>
     <td>s</td>         <td>int16</td>       </tr> <tr> <td>UShort</td>  <td>uint16_t</td> <td>u16</td> <td>ushort</td>
     <td>S</td>   <td>uint16</td>       </tr> <tr> <td>Int</td> <td>int32_t</td> <td>i32</td> <td>int</td> <td>i</td>
     <td>int32</td>    </tr>       <tr> <td>UInt</td> <td>uint32_t</td>     <td>u32</td> <td>uint</td> <td>I</td>
@@ -323,7 +354,7 @@ types given are advisory only! No type checking is done at compile or runtime.
     </tr> <tr> <td>ULongLong</td> <td>-/unsigned long long</td> <td>u128</td> <td>Q</td> <td>ulonglong</td> <td></td> </tr>
     <tr> <td>Float</td> <td>float</td>         <td>f32</td> <td>f</td> <td>num32</td> <td></td> </tr> <tr> <td>Double</td>
     <td>double</td> <td>f64</td> <td>d</td> <td>num64</td> <td></td> </tr>    <tr> <td>SSize_t</td> <td>SSize_t</td>
-    <td>SSize_t</td> <td></td> <td></td>       <td></td> </tr> <tr> <td>Size_t</td> <td>size_t</td> <td>size_t</td>     
+    <td>SSize_t</td> <td></td> <td></td>       <td></td> </tr> <tr> <td>Size_t</td> <td>size_t</td> <td>size_t</td>
     <td></td> <td></td> <td></td> </tr>       <tr> <td>Str</td> <td>char *</td> <td></td> <td></td> <td></td> <td></td>
     </tr>       <tr> <td>WStr</td> <td>wchar_t</td> <td></td> <td></td> <td></td>      </tr> </tbody> </table>
 </div>
