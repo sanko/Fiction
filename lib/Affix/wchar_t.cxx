@@ -1,18 +1,22 @@
 #include "../Affix.h"
 
 SV *wchar2utf(pTHX_ wchar_t *src, int len) {
-    SV *RETVAL;
 #if _WIN32
     size_t outlen = WideCharToMultiByte(CP_UTF8, 0, src, len, NULL, 0, NULL, NULL);
     char *r = (char *)safecalloc(outlen + 1, sizeof(char));
     WideCharToMultiByte(CP_UTF8, 0, src, len, r, outlen, NULL, NULL);
-    RETVAL = newSVpvn_utf8(r, strlen(r), true);
+    SV *RETVAL = newSVpvn_utf8(r, strlen(r), true);
     safefree((DCpointer)r);
 #else
+    SV *RETVAL = newSV(0);
     U8 *dst = (U8 *)safecalloc(len + 1, SIZEOF_WCHAR);
     U8 *d = dst;
-    while (*src)
-        d = uvchr_to_utf8(d, *src++);
+    while (len--) {
+        if (*src < 256)
+            *d = (U8)*src;
+        else
+            d = uvchr_to_utf8(d, *src++);
+    }
     sv_setpv(RETVAL, (char *)dst);
     sv_utf8_decode(RETVAL);
     safefree(dst);

@@ -309,7 +309,7 @@ void *av2ptr(pTHX_ SV *type, AV *av_data) {
     size_t size = AXT_ARRAYLEN(type);
     // if (size == 0)
     size = av_count(av_data);
-    warn("------------------ test, size == %d", size);
+    //~ warn("------------------ test, size == %ld", size);
 
     // XXX: THIS IS INCORRECT!!!!!!!!!!!!!!
     DCpointer ret = safemalloc(AXT_SIZEOF(type) * (size + 1));

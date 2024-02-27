@@ -309,7 +309,7 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
     if (a->signature != NULL) {
         size_t sig_len = strlen(a->signature);
         if (items != sig_len)
-            croak("%s arguments for %s; expected %ld, found %d)",
+            croak("%s arguments for %s; expected %ld, found %ld)",
                   items > sig_len ? "Too many" : "Not enough", a->symbol, sig_len, items);
 
         for (size_t sig_pos = 0, st_pos = 0; sig_pos < sig_len; sig_pos++, st_pos++) {
@@ -463,36 +463,9 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
         SvIOK_on(a->res);
     } break;
     case WCHAR_FLAG: {
-
-        //~ SV *wchar2utf(pTHX_ wchar_t *src, int len) {
-#if _WIN32
         wchar_t src[1];
-       src[0] = (wchar_t) dcCallInt(cvm, a->entry_point);
-
-         a->res = wchar2utf(aTHX_ src, 1);
-
-            #else
-
-        const char *pat = "W";
-        SV *container;
-
-switch (SIZEOF_WCHAR) {
-            case I8SIZE:
-                container = newSViv((char)dcCallChar(cvm, a->entry_point));
-                break;
-            case SHORTSIZE:
-                container = newSViv((short)dcCallShort(cvm, a->entry_point));
-                break;
-            case INTSIZE:
-                container = newSViv((int)dcCallInt(cvm, a->entry_point));
-                break;
-            default:
-                croak("Invalid wchar_t size for argument!");
-            }
-            sv_2mortal(container);
-
-            packlist(a->res, pat, pat + 1, &container, &container + 1);
-            #endif
+        src[0] = (wchar_t)dcCallLong(cvm, a->entry_point);
+        a->res = wchar2utf(aTHX_ src, 1);
     } break;
     case SHORT_FLAG:
         sv_setiv(a->res, (short)dcCallShort(cvm, a->entry_point));
@@ -1107,7 +1080,7 @@ extern "C" void Affix_trigger(pTHX_ CV *cv) {
 #if DEBUG
                 DumpHex(affix->temp_ptrs[st_pos], AXT_SIZEOF(MUTABLE_SV(affix->arg_info[st_pos])));
 #endif
-                warn("st_pos: %d", st_pos);
+                //~ warn("st_pos: %d", st_pos);
 
                 sv_setsv_mg(ST(st_pos), ptr2sv(aTHX_ affix->temp_ptrs[st_pos],
                                                MUTABLE_SV(affix->arg_info[st_pos])));
