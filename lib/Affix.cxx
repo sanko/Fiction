@@ -463,12 +463,43 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
         SvIOK_on(a->res);
     } break;
     case WCHAR_FLAG: {
+
+        //~ SV *wchar2utf(pTHX_ wchar_t *src, int len) {
+#if _WIN32
+        wchar_t src[1];
+       src[0] = (wchar_t) dcCallInt(cvm, a->entry_point);
+
+         a->res = wchar2utf(aTHX_ src, 1);
+
+            #else
+
         const char *pat = "W";
-        SV *container = sv_2mortal(newSViv((long)dcCallLong(cvm, a->entry_point)));
-        packlist(a->res, pat, pat + 1, &container, &container + 1);
+        SV *container;
+
+switch (SIZEOF_WCHAR) {
+            case I8SIZE:
+                container = newSViv((char)dcCallChar(cvm, a->entry_point));
+                break;
+            case SHORTSIZE:
+                container = newSViv((short)dcCallShort(cvm, a->entry_point));
+                break;
+            case INTSIZE:
+                container = newSViv((int)dcCallInt(cvm, a->entry_point));
+                break;
+            default:
+                croak("Invalid wchar_t size for argument!");
+            }
+            sv_2mortal(container);
+
+            packlist(a->res, pat, pat + 1, &container, &container + 1);
+            #endif
     } break;
-    //~ #define SHORT_FLAG 's'
-    //~ #define USHORT_FLAG 't'
+    case SHORT_FLAG:
+        sv_setiv(a->res, (short)dcCallShort(cvm, a->entry_point));
+        break;
+    case USHORT_FLAG:
+        sv_setuv(a->res, (unsigned short)dcCallShort(cvm, a->entry_point));
+        break;
     case INT_FLAG:
         sv_setiv(a->res, dcCallInt(cvm, a->entry_point));
         break;
