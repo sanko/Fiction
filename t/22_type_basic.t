@@ -11,7 +11,7 @@ sub build_and_test {
     subtest $name => sub {
         plan 3;
         ok my $lib    = compile_test_lib($c), 'build test lib';
-        isa_ok my $fn = Affix::wrap( $lib, 'fn', $arg_types, $ret_type ), [qw[Affix]], 'my $cb = ...';
+        isa_ok my $fn = Affix::wrap( $lib, 'fn', $arg_types, $ret_type ), [qw[Affix]], 'my $fn = ...';
         is $fn->( $arg1 // () ), $ret_check, 'return from $fn->(...) is correct';
     }
 }
@@ -64,7 +64,7 @@ unsigned char fn(unsigned char i) { return i == 'v' ? 'x' : 'y';}
 unsigned char fn(unsigned char i) { return i == 'v' ? 'x' : 'y';}
 
 };
-subtest bool => sub {
+subtest wchar => sub {
     build_and_test 'bool fn(wchar_t) 時 == 時' => <<'', [WChar], Bool, '時', T();
 #include "std.h"
 // ext: .c
@@ -81,8 +81,6 @@ bool fn(wchar_t chr) {
     return chr == L'時' ? true : false;
 }
 
-};
-subtest wchar_t => sub {
     build_and_test 'wchar_t fn() 時' => <<'', [], WChar, undef, '時';
 #include "std.h"
 // ext: .c
@@ -150,4 +148,22 @@ unsigned int fn(unsigned int i) { return 46 + i;}
 
 };
 
+#define LONG_FLAG 'l'
+#define ULONG_FLAG 'm'
+#define LONGLONG_FLAG 'x'
+#define ULONGLONG_FLAG 'y'
+#define SSIZE_T_FLAG LONGLONG_FLAG
+#define SIZE_T_FLAG ULONGLONG_FLAG
+#define FLOAT_FLAG 'f'
+#define DOUBLE_FLAG 'd'
+#define STRING_FLAG 'z'
+#define WSTRING_FLAG '<'
+#define STDSTRING_FLAG 'Y'
+#define STRUCT_FLAG 'A'
+#define CPPSTRUCT_FLAG 'B'
+#define UNION_FLAG 'u'
+#define ARRAY_FLAG '@'
+#define CODEREF_FLAG '&'
+#define POINTER_FLAG 'P'
+#define SV_FLAG '?'
 done_testing;

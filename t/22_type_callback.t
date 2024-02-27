@@ -5,68 +5,118 @@ BEGIN { chdir '../' if !-d 't'; }
 use t::lib::helper;
 $|++;
 #
-my %tests = (
-    'typedef void cb(void)' => [ <<'', [ Callback [ [] => Void ] ], Void, [], U(), U() ],
+sub build_and_test {
+    my ( $name, $c, $arg_types, $ret_type, $arg1, $ret, $ret_check ) = @_;
+    subtest $name => sub {
+        plan 4;
+        ok my $lib    = compile_test_lib($c), 'build test lib';
+        isa_ok my $fn = Affix::wrap( $lib, 'fn', $arg_types, $ret_type ), [qw[Affix]], 'my $fn = ...';
+        is $fn->(
+            sub {
+                is \@_, $arg1, '@_ in $fn is correct';
+                return $ret;
+            }
+            ),
+            $ret_check, 'return from $fn->(sub {[...]}) is correct';
+    }
+}
+build_and_test
+    'typedef void cb(void)' => <<'', [ Callback [ [] => Void ] ], Void, [], U(), U();
 #include "std.h"
 // ext: .c
 typedef void cb(void);
-void c(cb *callback) {
+void fn(cb *callback) {
     callback();
 }
 
-    'typedef bool cb(bool)' => [ <<'', [ Callback [ [Bool] => Bool ] ], Bool, [ F() ], !0, T() ],
+subtest bool => sub {
+    build_and_test
+        'typedef bool cb(bool) false' => <<'', [ Callback [ [Bool] => Bool ] ], Bool, [ F() ], !1, F();
 #include "std.h"
 // ext: .c
 typedef bool cb( bool );
-bool c(cb *callback) {
+bool fn(cb *callback) {
     return callback(false);
 }
 
-    'typedef char cb(char)' => [ <<'', [ Callback [ [Char] => Char ] ], Char, ['a'], 'm', 'm' ],
+    build_and_test
+        'typedef bool cb(bool) true' => <<'', [ Callback [ [Bool] => Bool ] ], Bool, [ T() ], !0, T();
+#include "std.h"
+// ext: .c
+typedef bool cb( bool );
+bool fn(cb *callback) {
+    return callback(true);
+}
+
+};
+
+#define SCHAR_FLAG 'a'
+subtest char => sub {
+    build_and_test
+        'typedef char cb(char)' => <<'', [ Callback [ [Char] => Char ] ], Char, ['a'], 'm', 'm';
 #include "std.h"
 // ext: .c
 typedef char cb( char );
-char c(cb *callback) {
+char fn(cb *callback) {
     return callback('a');
 }
 
-    'typedef char cb(char) with ints' => [ <<'', [ Callback [ [Char] => Char ] ], Char, ['a'], 109, 'm' ],
+    build_and_test
+        'typedef char cb(char) with ints' => <<'', [ Callback [ [Char] => Char ] ], Char, ['a'], 109, 'm';
 #include "std.h"
 // ext: .c
 typedef char cb( char );
-char c(cb *callback) {
+char fn(cb *callback) {
     return callback(97);
 }
 
-    'typedef int cb(int, int)' => [ <<'', [ Callback [ [ Int, Int ] => Int ] ], Int, [ 100, 200 ], -600, -600 ],
+};
+
+#define UCHAR_FLAG 'h'
+#define WCHAR_FLAG 'w'
+#define SHORT_FLAG 's'
+#define USHORT_FLAG 't'
+subtest int => sub {
+    build_and_test
+        'typedef int cb(int, int)' => <<'', [ Callback [ [ Int, Int ] => Int ] ], Int, [ 100, 200 ], -600, -600;
 #include "std.h"
 // ext: .c
 typedef int cb(int, int);
-int c(cb *callback) {
+int fn(cb *callback) {
     return callback(100, 200);
 }
 
-    'typedef double cb(double, double)' => [
-        <<'', [ Callback [ [ Double, Double ] => Double ] ], Double, [ float( 1.5, tolerance => 0.01 ), float( 3.98, tolerance => 0.01 ) ], 4.3, float( 4.3, tolerance => 0.01 ) ],
+};
+
+#define UINT_FLAG 'j'
+#define LONG_FLAG 'l'
+#define ULONG_FLAG 'm'
+#define LONGLONG_FLAG 'x'
+#define ULONGLONG_FLAG 'y'
+#define SSIZE_T_FLAG LONGLONG_FLAG
+#define SIZE_T_FLAG ULONGLONG_FLAG
+#define FLOAT_FLAG 'f'
+subtest double => sub {
+    build_and_test
+        'typedef double cb(double, double)' =>
+        <<'', [ Callback [ [ Double, Double ] => Double ] ], Double, [ float( 1.5, tolerance => 0.01 ), float( 3.98, tolerance => 0.01 ) ], 4.3, float( 4.3, tolerance => 0.01 );
 #include "std.h"
 // ext: .c
 typedef double cb(double, double);
-double c(cb *callback) {
+double fn(cb *callback) {
     return callback(1.5, 3.98);
 }
 
-);
-subtest $_ => sub {
-    plan 4;
-    ok my $lib    = compile_test_lib( $tests{$_}[0] ), 'build test lib';
-    isa_ok my $cb = Affix::wrap( $lib, 'c', $tests{$_}[1], $tests{$_}[2] ), [qw[Affix]], 'my $cb = ...';
-    is $cb->(
-        sub {
-            is \@_, $tests{$_}[3], '@_ in $cb is correct';
-            return $tests{$_}[4];
-        }
-        ),
-        $tests{$_}[5], 'return from $cb->(sub {[...]}) is correct';
-    }
-    for sort keys %tests;
+};
+
+#define STRING_FLAG 'z'
+#define WSTRING_FLAG '<'
+#define STDSTRING_FLAG 'Y'
+#define STRUCT_FLAG 'A'
+#define CPPSTRUCT_FLAG 'B'
+#define UNION_FLAG 'u'
+#define ARRAY_FLAG '@'
+#define CODEREF_FLAG '&'
+#define POINTER_FLAG 'P'
+#define SV_FLAG '?'
 done_testing;
