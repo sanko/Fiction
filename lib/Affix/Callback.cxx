@@ -45,12 +45,29 @@ DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointe
 
                     PUSHs(sv);
                 } break;
-                    //~ #define UCHAR_FLAG 'h'
+                case UCHAR_FLAG: {
+                    char value[1];
+                    value[0] = dcbArgChar(args);
+                    SV *sv = newSVpvn_flags(value, 1, SVs_TEMP);
+                    (void)SvUPGRADE(sv, SVt_PVIV);
+                    SvIV_set(sv, ((UV)value[0]));
+                    SvIOK_on(sv);
+                    PUSHs(sv);
+                } break;
+
                     //~ #define WCHAR_FLAG 'w'
-                    //~ #define SHORT_FLAG 's'
-                    //~ #define USHORT_FLAG 't'
-                    //~ #define INT_FLAG 'i'
-                    //~ #define UINT_FLAG 'j'
+                case SHORT_FLAG:
+                    PUSHs(sv_2mortal(newSViv(dcbArgShort(args))));
+                    break;
+                case USHORT_FLAG:
+                    PUSHs(sv_2mortal(newSVuv(dcbArgShort(args))));
+                    break;
+                case INT_FLAG:
+                    PUSHs(sv_2mortal(newSViv(dcbArgInt(args))));
+                    break;
+                case UINT_FLAG:
+                    PUSHs(sv_2mortal(newSVuv(dcbArgInt(args))));
+                    break;
                     //~ #define LONG_FLAG 'l'
                     //~ #define ULONG_FLAG 'm'
                     //~ #define LONGLONG_FLAG 'x'
@@ -81,15 +98,12 @@ DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointe
                     //~ #define POINTER_FLAG 'P'
                     //~ #define SV_FLAG '?'
 
-                case INT_FLAG:
-                    PUSHs(sv_2mortal(newSViv(dcbArgInt(args))));
-                    break;
                 case DOUBLE_FLAG:
                     PUSHs(sv_2mortal(newSVnv(dcbArgDouble(args))));
                     break;
                 default:
-                    warn("Attempt to pass unknown or unhandled type to callback: %c",
-                         c->signature[sig_pos]);
+                    croak("Attempt to pass unknown or unhandled type to callback: %c",
+                          c->signature[sig_pos]);
                     break;
                 }
 
@@ -102,7 +116,7 @@ DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointe
             }
         }
         /* .. do something .. */
-        warn("Callback signature: %s => %c", c->signature, c->restype_c);
+        //~ warn("Callback signature: %s => %c", c->signature, c->restype_c);
 
         //~ PUSHs(sv_2mortal(newSVpv(a, 0)));
         //~ PUSHs(sv_2mortal(newSViv(b)));
@@ -127,19 +141,29 @@ DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointe
             } break;
             case UCHAR_FLAG: {
                 SV *sv = POPs;
-                result->C = SvUOK(sv) ? SvUV(sv) : (unsigned char)*SvPV_nolen(sv);
+                result->C = SvIOK(sv) ? SvUV(sv) : (unsigned char)*SvPV_nolen(sv);
                 ret = 'C';
             } break;
                 //~ #define WCHAR_FLAG 'w'
-                //~ #define SHORT_FLAG 's'
-                //~ #define USHORT_FLAG 't'
+            case SHORT_FLAG:
+                result->s = POPi;
+                ret = 's';
+                break;
+            case USHORT_FLAG:
+                result->S = POPi;
+                ret = 'S';
+                break;
             case INT_FLAG:
                 result->i = POPi;
+                ret = 'i';
                 break;
-            //~ #define UINT_FLAG 'j'
-            //~ #define LONG_FLAG 'l'
+            case UINT_FLAG:
+                result->I = POPi;
+                ret = 'I';
+                break;
             case LONG_FLAG:
                 result->j = POPl;
+                ret = 'j';
                 break;
             //~ #define ULONG_FLAG 'm'
             //~ #define LONGLONG_FLAG 'x'
@@ -172,6 +196,10 @@ DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointe
                 //~ #define CODEREF_FLAG '&'
                 //~ #define POINTER_FLAG 'P'
                 //~ #define SV_FLAG '?'
+            default:
+                croak("Attempt to return unknown or unhandled type from callback: %c",
+                      c->restype_c);
+                break;
             }
         }
 

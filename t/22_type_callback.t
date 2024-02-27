@@ -20,6 +20,7 @@ sub build_and_test {
             $ret_check, 'return from $fn->(sub {[...]}) is correct';
     }
 }
+#
 build_and_test
     'typedef void cb(void)' => <<'', [ Callback [ [] => Void ] ], Void, [], U(), U();
 #include "std.h"
@@ -49,8 +50,6 @@ bool fn(cb *callback) {
 }
 
 };
-
-#define SCHAR_FLAG 'a'
 subtest char => sub {
     build_and_test
         'typedef char cb(char)' => <<'', [ Callback [ [Char] => Char ] ], Char, ['a'], 'm', 'm';
@@ -59,6 +58,15 @@ subtest char => sub {
 typedef char cb( char );
 char fn(cb *callback) {
     return callback('a');
+}
+
+    build_and_test
+        'typedef signed char cb(char)' => <<'', [ Callback [ [Char] => Char ] ], Char, [ pack 'C', -ord 'a' ], 'm', 'm';
+#include "std.h"
+// ext: .c
+typedef char cb( char );
+char fn(cb *callback) {
+    return callback(-'a');
 }
 
     build_and_test
@@ -71,11 +79,80 @@ char fn(cb *callback) {
 }
 
 };
+subtest schar => sub {
+    build_and_test
+        'typedef signed char cb(char)' => <<'', [ Callback [ [SChar] => SChar ] ], Char, ['a'], 'm', 'm';
+#include "std.h"
+// ext: .c
+typedef signed char cb( signed char );
+signed char fn(cb *callback) {
+    return callback('a');
+}
 
-#define UCHAR_FLAG 'h'
+    build_and_test
+        'typedef signed char cb(char)' => <<'', [ Callback [ [SChar] => SChar ] ], SChar, [ pack 'c', -ord 'a' ], 'm', 'm';
+#include "std.h"
+// ext: .c
+typedef signed char cb( signed char );
+signed char fn(cb *callback) {
+    return callback(-'a');
+}
+
+    build_and_test
+        'typedef signed char cb(char) with ints' => <<'', [ Callback [ [SChar] => SChar ] ], SChar, ['a'], 109, 'm';
+#include "std.h"
+// ext: .c
+typedef signed char cb( signed char );
+signed char fn(cb *callback) {
+    return callback(97);
+}
+
+};
+subtest uchar => sub {
+    build_and_test
+        'typedef unsigned char cb(unsigned char)' => <<'', [ Callback [ [UChar] => UChar ] ], UChar, ['a'], 'm', 'm';
+#include "std.h"
+// ext: .c
+typedef signed char cb( unsigned char );
+unsigned char fn(cb *callback) {
+    return callback('a');
+}
+
+    build_and_test
+        'typedef unsigned char cb(unsigned char) with ints' => <<'', [ Callback [ [UChar] => UChar ] ], UChar, ['a'], 109, 'm';
+#include "std.h"
+// ext: .c
+typedef unsigned char cb( unsigned char );
+unsigned char fn(cb *callback) {
+    return callback(97);
+}
+
+};
+
 #define WCHAR_FLAG 'w'
-#define SHORT_FLAG 's'
-#define USHORT_FLAG 't'
+subtest short => sub {
+    build_and_test
+        'typedef short cb(short, short)' => <<'', [ Callback [ [ Short, Short ] => Short ] ], Short, [ 100, 200 ], -600, -600;
+#include "std.h"
+// ext: .c
+typedef short cb(short, short);
+short fn(cb *callback) {
+    return callback(100, 200);
+}
+
+};
+subtest ushort => sub {
+    build_and_test
+        'typedef unsigned short cb(unsigned short, unsigned short)' =>
+        <<'', [ Callback [ [ UShort, UShort ] => UShort ] ], UShort, [ 100, 200 ], 500, 500;
+#include "std.h"
+// ext: .c
+typedef short cb(unsigned short, unsigned short);
+unsigned short fn(cb *callback) {
+    return callback(100, 200);
+}
+
+};
 subtest int => sub {
     build_and_test
         'typedef int cb(int, int)' => <<'', [ Callback [ [ Int, Int ] => Int ] ], Int, [ 100, 200 ], -600, -600;
@@ -83,6 +160,17 @@ subtest int => sub {
 // ext: .c
 typedef int cb(int, int);
 int fn(cb *callback) {
+    return callback(100, 200);
+}
+
+};
+subtest uint => sub {
+    build_and_test
+        'typedef unsigned int cb(unsigned int, unsigned int)' => <<'', [ Callback [ [ UInt, UInt ] => UInt ] ], UInt, [ 100, 200 ], 600, 600;
+#include "std.h"
+// ext: .c
+typedef int cb(unsigned int, unsigned int);
+unsigned int fn(cb *callback) {
     return callback(100, 200);
 }
 
