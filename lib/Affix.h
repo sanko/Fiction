@@ -79,9 +79,10 @@ extern "C" {
 #include <dyncall_version.h>
 
 #if defined(DC__OS_Win32) || defined(DC__OS_Win64)
+#elif defined(DC__OS_MacOS)
 #else
 #include <dlfcn.h>
-#include <iconv.h>
+//~ #include <iconv.h>
 #endif
 
 #include <wchar.h>

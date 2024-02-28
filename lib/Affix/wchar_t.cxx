@@ -50,9 +50,9 @@ wchar_t *utf2wchar(pTHX_ SV *src, size_t len) {
         }*/
     }
     //~ else {
-        //~ while (*raw) {
-            //~ *p++ = (wchar_t)*raw++;
-        //~ }
+    //~ while (*raw) {
+    //~ *p++ = (wchar_t)*raw++;
+    //~ }
     //~ }
     //~ *p = 0;
 #endif

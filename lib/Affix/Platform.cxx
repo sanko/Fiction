@@ -325,4 +325,128 @@ void boot_Affix_Platform(pTHX_ CV *cv) {
     export_constant("Affix::Platform", "ALIGNOF_SIZE_T", "all", ALIGNOF_SIZE_T);
     export_constant("Affix::Platform", "ALIGNOF_SSIZE_T", "all", ALIGNOF_SSIZE_T);
     export_constant("Affix::Platform", "ALIGNOF_INTPTR_T", "all", ALIGNOF_INTPTR_T);
+
+    // Undocumented
+    register_constant("Affix::Platform", "Win64",
+                      boolSV(
+#ifdef DC__OS_Win64
+                          1
+#else
+                          0
+#endif
+                          ));
+
+    register_constant("Affix::Platform", "Win32",
+                      boolSV(
+#ifdef DC__OS_Win32
+                          1
+#else
+                          0
+#endif
+                          ));
+
+    register_constant("Affix::Platform", "macOS",
+                      boolSV(
+#ifdef DC__OS_MacOSX
+                          1
+#else
+                          0
+#endif
+                          ));
+    register_constant("Affix::Platform", "iPhone",
+                      boolSV(
+#ifdef DC__OS_IPhone
+                          1
+#else
+                          0
+#endif
+                          ));
+    register_constant("Affix::Platform", "linux",
+                      boolSV(
+#ifdef DC__OS_Linux
+                          1
+#else
+                          0
+#endif
+                          ));
+    register_constant("Affix::Platform", "FreeBSD",
+                      boolSV(
+#ifdef DC__OS_FreeBSD
+                          1
+#else
+                          0
+#endif
+                          ));
+    register_constant("Affix::Platform", "OpenBSD",
+                      boolSV(
+#ifdef DC__OS_OpenBSD
+                          1
+#else
+                          0
+#endif
+                          ));
+    register_constant("Affix::Platform", "NetBSD",
+                      boolSV(
+#ifdef DC__OS_NetBSD
+                          1
+#else
+                          0
+#endif
+                          ));
+    register_constant("Affix::Platform", "DragonFlyBSD",
+                      boolSV(
+#ifdef DC__OS_DragonFlyBSD
+                          1
+#else
+                          0
+#endif
+                          ));
+    register_constant("Affix::Platform", "NintendoDS",
+                      boolSV(
+#ifdef DC__OS_NDS
+                          1
+#else
+                          0
+#endif
+                          ));
+    register_constant("Affix::Platform", "PlayStationPortable",
+                      boolSV(
+#ifdef DC__OS_PSP
+                          1
+#else
+                          0
+#endif
+                          ));
+    register_constant("Affix::Platform", "BeOS",
+                      boolSV(
+#ifdef DC__OS_BeOS
+                          1
+#else
+                          0
+#endif
+                          ));
+    register_constant("Affix::Platform", "Plan9",
+                      boolSV(
+#ifdef DC__OS_Plan9
+                          1
+#else
+                          0
+#endif
+                          ));
+    register_constant("Affix::Platform", "VMS",
+                      boolSV(
+#ifdef DC__OS_VMS
+                          1
+#else
+                          0
+#endif
+                          ));
+    register_constant("Affix::Platform", "Minix",
+                      boolSV(
+#ifdef DC__OS_Minix
+                          1
+#else
+                          0
+#endif
+                          ));
 }
