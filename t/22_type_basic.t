@@ -64,7 +64,7 @@ unsigned char fn(unsigned char i) { return i == 'v' ? 'x' : 'y';}
 unsigned char fn(unsigned char i) { return i == 'v' ? 'x' : 'y';}
 
 };
-subtest wchar => sub {
+subtest wchar_t => sub {
     build_and_test 'bool fn(wchar_t) 時 == 時' => <<'', [WChar], Bool, '時', T();
 #include "std.h"
 // ext: .c
@@ -147,11 +147,45 @@ subtest uint => sub {
 unsigned int fn(unsigned int i) { return 46 + i;}
 
 };
+subtest long => sub {
+    build_and_test 'long fn(long) positive' => <<'', [Long], Long, 47, 2147483647;
+#include "std.h"
+// ext: .c
+long fn(long i) { return 2147483600 + i;}
 
-#define LONG_FLAG 'l'
-#define ULONG_FLAG 'm'
-#define LONGLONG_FLAG 'x'
-#define ULONGLONG_FLAG 'y'
+    build_and_test 'long fn(long) negative' => <<'', [Long], Long, -2147483647, -2147483642;
+#include "std.h"
+// ext: .c
+long fn(long i) { return 5 + i;}
+
+};
+subtest ulong => sub {
+    build_and_test 'unsigned long fn(unsigned long)' => <<'', [ULong], ULong, 3, 49;
+#include "std.h"
+// ext: .c
+unsigned long fn(unsigned long i) { return 46 + i;}
+
+};
+subtest longlong => sub {
+    build_and_test 'long long fn(long long) positive' => <<'', [LongLong], LongLong, 47, 2147483647;
+#include "std.h"
+// ext: .c
+long long fn(long long i) { return 2147483600 + i;}
+
+    build_and_test 'long fn(long long) negative' => <<'', [LongLong], LongLong, -2147483647, -2147483642;
+#include "std.h"
+// ext: .c
+long long fn(long long i) { return 5 + i;}
+
+};
+subtest ulonglong => sub {
+    build_and_test 'unsigned long fn(unsigned long long)' => <<'', [ULongLong], ULongLong, 3, 49;
+#include "std.h"
+// ext: .c
+unsigned long long fn(unsigned long long i) { return 46 + i;}
+
+};
+
 #define SSIZE_T_FLAG LONGLONG_FLAG
 #define SIZE_T_FLAG ULONGLONG_FLAG
 #define FLOAT_FLAG 'f'

@@ -519,8 +519,8 @@ Sanko Robinson E<lt>sanko@cpan.orgE<gt>
 
 =begin stopwords
 
-dyncall OpenBSD FreeBSD Linux macOS DragonFlyBSD NetBSD iOS ReactOS mips mips64 ppc32 ppc64 sparc sparc64 co-existing varargs
-variadic struct enum structs enums eXtension rvalue dualvars libsomething versioned errno syscall
+dyncall OpenBSD FreeBSD Linux macOS DragonFlyBSD NetBSD iOS ReactOS mips mips64 ppc32 ppc64 sparc sparc64 co-existing
+varargs variadic struct enum structs enums eXtension rvalue dualvars libsomething versioned errno syscall
 
 =end stopwords
 

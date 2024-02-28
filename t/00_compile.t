@@ -71,4 +71,6 @@ subtest 'API' => sub {
     }
 };
 #
+diag 'SIZEOF_WCHAR: ' . Affix::Platform::SIZEOF_WCHAR();
+#
 done_testing;

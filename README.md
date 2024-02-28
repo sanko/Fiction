@@ -168,6 +168,7 @@ They are exported by default but may be imported by name or with the `:lib` tag.
 my $libm = find_library( 'm' ); # /usr/lib/libm.so.6, etc.
 my $libc = find_library( 'c' ); # /usr/lib/libc.so.6, etc.
 my $bz2 = find_library( 'bz2' ); # /usr/lib/libbz2.so.1.0.8
+my $ntdll = find_library( 'ntdll' ); # C:\Windows\system32\ntdll.dll
 ```
 
 Locates a library close to the way the compiler or platform-dependant runtime loader does. Where multiple versions of

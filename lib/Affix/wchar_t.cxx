@@ -1,7 +1,7 @@
 #include "../Affix.h"
 
-SV *wchar2utf(pTHX_ wchar_t *src, int len) {
-#if _WIN32
+SV *wchar2utf(pTHX_ wchar_t *src, size_t len) {
+#if defined(DC__OS_Win32) || defined(DC__OS_Win64)
     size_t outlen = WideCharToMultiByte(CP_UTF8, 0, src, len, NULL, 0, NULL, NULL);
     char *r = (char *)safecalloc(outlen + 1, sizeof(char));
     WideCharToMultiByte(CP_UTF8, 0, src, len, r, outlen, NULL, NULL);
@@ -24,26 +24,37 @@ SV *wchar2utf(pTHX_ wchar_t *src, int len) {
     return RETVAL;
 }
 
-wchar_t *utf2wchar(pTHX_ SV *src, int len) {
+wchar_t *utf2wchar(pTHX_ SV *src, size_t len) {
     wchar_t *RETVAL = (wchar_t *)safemalloc((len + 1) * SIZEOF_WCHAR);
-#ifdef _WIN32
+#if defined(DC__OS_Win32) || defined(DC__OS_Win64)
     MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, SvPV_nolen(src), -1, RETVAL, len + 1);
 #else
-    U8 *raw = (U8 *)SvPV_nolen(src);
     wchar_t *p = RETVAL;
     if (SvUTF8(src)) {
-        STRLEN len;
+        STRLEN len_;
+        char *raw = SvPVutf8(src, len_);
+
+        mbstowcs(RETVAL, raw, (len_ + 1) * SIZEOF_WCHAR); // Include space for null terminator
+
+        /*
+        STRLEN xlen;
+        size_t utflen;
         while (*raw) {
-            *p++ = utf8_to_uvchr_buf(raw, raw + SIZEOF_WCHAR, &len);
-            raw += len;
-        }
+            utflen = isUTF8_CHAR(raw, raw + SIZEOF_WCHAR);
+            if (utflen) {
+                *p++ = utf8_to_uvchr_buf(raw, raw +( utflen* 4), &xlen);
+                raw += xlen;
+            }
+            else
+                *p++ = (wchar_t)*raw++;
+        }*/
     }
-    else {
-        while (*raw) {
-            *p++ = (wchar_t)*raw++;
-        }
-    }
-    *p = 0;
+    //~ else {
+        //~ while (*raw) {
+            //~ *p++ = (wchar_t)*raw++;
+        //~ }
+    //~ }
+    //~ *p = 0;
 #endif
     return RETVAL;
 }

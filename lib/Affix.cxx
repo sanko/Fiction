@@ -361,7 +361,6 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
                     dcArgInt(cvm, 0);
                 break;
             }
-
             case SHORT_FLAG:
                 dcArgShort(cvm, SvIV(ST(st_pos)));
                 break;
@@ -463,8 +462,10 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
         SvIOK_on(a->res);
     } break;
     case WCHAR_FLAG: {
-        wchar_t src[1];
-        src[0] = (wchar_t)dcCallLong(cvm, a->entry_point);
+        wchar_t src[5];
+        src[0] = (wchar_t)dcCallLongLong(cvm, a->entry_point);
+                            warn("# -----> src[0] : %d", src[0]);
+                            warn("# -----> src[1] : %d", src[1]);
         a->res = wchar2utf(aTHX_ src, 1);
     } break;
     case SHORT_FLAG:
@@ -479,25 +480,18 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
     case UINT_FLAG:
         sv_setuv(a->res, dcCallInt(cvm, a->entry_point));
         break;
-
-        //~ #define UINT_FLAG 'j'
-        //~ #define LONG_FLAG 'l'
-        //~ #define ULONG_FLAG 'm'
-        //~ #define LONGLONG_FLAG 'x'
-        //~ #define ULONGLONG_FLAG 'y'
-        //~ #if SIZEOF_SIZE_T == INTSIZE
-        //~ #define SSIZE_T_FLAG INT_FLAG
-        //~ #define SIZE_T_FLAG UINT_FLAG
-        //~ #elif SIZEOF_SIZE_T == LONGSIZE
-        //~ #define SSIZE_T_FLAG LONG_FLAG
-        //~ #define SIZE_T_FLAG ULONG_FLAG
-        //~ #elif SIZEOF_SIZE_T == LONGLONGSIZE
-        //~ #define SSIZE_T_FLAG LONGLONG_FLAG
-        //~ #define SIZE_T_FLAG ULONGLONG_FLAG
-        //~ #else // quadmath is broken
-        //~ #define SSIZE_T_FLAG LONGLONG_FLAG
-        //~ #define SIZE_T_FLAG ULONGLONG_FLAG
-        //~ #endif
+    case LONG_FLAG:
+        sv_setiv(a->res, dcCallLong(cvm, a->entry_point));
+        break;
+    case ULONG_FLAG:
+        sv_setuv(a->res, dcCallLong(cvm, a->entry_point));
+        break;
+    case LONGLONG_FLAG:
+        sv_setiv(a->res, dcCallLongLong(cvm, a->entry_point));
+        break;
+    case ULONGLONG_FLAG:
+        sv_setuv(a->res, dcCallLongLong(cvm, a->entry_point));
+        break;
         //~ #define FLOAT_FLAG 'f'
     case DOUBLE_FLAG:
         sv_setnv(a->res, dcCallDouble(cvm, a->entry_point));

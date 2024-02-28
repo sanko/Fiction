@@ -54,8 +54,18 @@ DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointe
                     SvIOK_on(sv);
                     PUSHs(sv);
                 } break;
-
-                    //~ #define WCHAR_FLAG 'w'
+                case WCHAR_FLAG: {
+                    wchar_t *c;
+                    Newx(c, 2, wchar_t);
+                    c[0] = (wchar_t)dcbArgLong(args);
+                    c[1] = 0;
+                    SV *w = wchar2utf(aTHX_ c, 1);
+                    SvUPGRADE(w, SVt_PVNV);
+                    SvIVX(w) = SvIV(newSViv(c[0]));
+                    SvIOK_on(w);
+                    mPUSHs(w);
+                    safefree(c);
+                } break;
                 case SHORT_FLAG:
                     PUSHs(sv_2mortal(newSViv(dcbArgShort(args))));
                     break;
@@ -68,39 +78,32 @@ DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointe
                 case UINT_FLAG:
                     PUSHs(sv_2mortal(newSVuv(dcbArgInt(args))));
                     break;
-                    //~ #define LONG_FLAG 'l'
-                    //~ #define ULONG_FLAG 'm'
-                    //~ #define LONGLONG_FLAG 'x'
-                    //~ #define ULONGLONG_FLAG 'y'
-                    //~ #if SIZEOF_SIZE_T == INTSIZE
-                    //~ #define SSIZE_T_FLAG INT_FLAG
-                    //~ #define SIZE_T_FLAG UINT_FLAG
-                    //~ #elif SIZEOF_SIZE_T == LONGSIZE
-                    //~ #define SSIZE_T_FLAG LONG_FLAG
-                    //~ #define SIZE_T_FLAG ULONG_FLAG
-                    //~ #elif SIZEOF_SIZE_T == LONGLONGSIZE
-                    //~ #define SSIZE_T_FLAG LONGLONG_FLAG
-                    //~ #define SIZE_T_FLAG ULONGLONG_FLAG
-                    //~ #else // quadmath is broken
-                    //~ #define SSIZE_T_FLAG LONGLONG_FLAG
-                    //~ #define SIZE_T_FLAG ULONGLONG_FLAG
-                    //~ #endif
+                case LONG_FLAG:
+                    PUSHs(sv_2mortal(newSViv(dcbArgLong(args))));
+                    break;
+                case ULONG_FLAG:
+                    PUSHs(sv_2mortal(newSVuv(dcbArgLong(args))));
+                    break;
+                case LONGLONG_FLAG:
+                    PUSHs(sv_2mortal(newSViv(dcbArgLongLong(args))));
+                    break;
+                case ULONGLONG_FLAG:
+                    PUSHs(sv_2mortal(newSVuv(dcbArgLongLong(args))));
+                    break;
                     //~ #define FLOAT_FLAG 'f'
-                    //~ #define DOUBLE_FLAG 'd'
-                    //~ #define STRING_FLAG 'z'
-                    //~ #define WSTRING_FLAG '<'
-                    //~ #define STDSTRING_FLAG 'Y'
-                    //~ #define STRUCT_FLAG 'A'
-                    //~ #define CPPSTRUCT_FLAG 'B'
-                    //~ #define UNION_FLAG 'u'
-                    //~ #define ARRAY_FLAG '@'
-                    //~ #define CODEREF_FLAG '&'
-                    //~ #define POINTER_FLAG 'P'
-                    //~ #define SV_FLAG '?'
-
                 case DOUBLE_FLAG:
                     PUSHs(sv_2mortal(newSVnv(dcbArgDouble(args))));
                     break;
+                //~ #define STRING_FLAG 'z'
+                //~ #define WSTRING_FLAG '<'
+                //~ #define STDSTRING_FLAG 'Y'
+                //~ #define STRUCT_FLAG 'A'
+                //~ #define CPPSTRUCT_FLAG 'B'
+                //~ #define UNION_FLAG 'u'
+                //~ #define ARRAY_FLAG '@'
+                //~ #define CODEREF_FLAG '&'
+                //~ #define POINTER_FLAG 'P'
+                //~ #define SV_FLAG '?'
                 default:
                     croak("Attempt to pass unknown or unhandled type to callback: %c",
                           c->signature[sig_pos]);
@@ -144,7 +147,19 @@ DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointe
                 result->C = SvIOK(sv) ? SvUV(sv) : (unsigned char)*SvPV_nolen(sv);
                 ret = 'C';
             } break;
-                //~ #define WCHAR_FLAG 'w'
+            case WCHAR_FLAG: {
+                SV *sv = POPs;
+                if (SvPOK(sv)) {
+                    STRLEN len;
+                    (void)SvPVutf8x(sv, len);
+                    wchar_t * wc = utf2wchar(aTHX_ sv, len);
+                    result->L = wc[0];
+                    warn("# -----> result->L : %d", result->L);
+                    safefree(wc);
+                }
+                else { result->L = 0; }
+                ret = 'L'; // Fake it
+            } break;
             case SHORT_FLAG:
                 result->s = POPi;
                 ret = 's';
@@ -165,22 +180,21 @@ DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointe
                 result->j = POPl;
                 ret = 'j';
                 break;
-            //~ #define ULONG_FLAG 'm'
+            case ULONG_FLAG:
+                result->J = POPi;
+                ret = 'J';
+                break;
+            case LONGLONG_FLAG:
+                result->l = POPl;
+                ret = 'l';
+                break;
+            case ULONGLONG_FLAG:
+                result->L = POPi;
+                ret = 'L';
+                break;
             //~ #define LONGLONG_FLAG 'x'
             //~ #define ULONGLONG_FLAG 'y'
-            //~ #if SIZEOF_SIZE_T == INTSIZE
-            //~ #define SSIZE_T_FLAG INT_FLAG
-            //~ #define SIZE_T_FLAG UINT_FLAG
-            //~ #elif SIZEOF_SIZE_T == LONGSIZE
-            //~ #define SSIZE_T_FLAG LONG_FLAG
-            //~ #define SIZE_T_FLAG ULONG_FLAG
-            //~ #elif SIZEOF_SIZE_T == LONGLONGSIZE
-            //~ #define SSIZE_T_FLAG LONGLONG_FLAG
-            //~ #define SIZE_T_FLAG ULONGLONG_FLAG
-            //~ #else // quadmath is broken
-            //~ #define SSIZE_T_FLAG LONGLONG_FLAG
-            //~ #define SIZE_T_FLAG ULONGLONG_FLAG
-            //~ #endif
+
             //~ #define FLOAT_FLAG 'f'
             case DOUBLE_FLAG:
                 result->d = POPn;

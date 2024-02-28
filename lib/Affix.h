@@ -21,8 +21,6 @@ extern "C" {
 #define newSVbool(b) boolSV(b) /* new in perl 5.36 */
 #endif
 
-#include <wchar.h>
-
 #if __WIN32
 #include <cstdint>
 #include <windows.h>
@@ -67,18 +65,6 @@ extern "C" {
 #define av_count(av) (AvFILL(av) + 1)
 #endif
 
-#if defined(_WIN32) || defined(_WIN64)
-#else
-#include <dlfcn.h>
-#include <iconv.h>
-#endif
-
-// older perls are missing wcslen
-// PERL_VERSION is deprecated but PERL_VERSION_LE, etc. do not exist pre-5.34.x
-#if /*(defined(PERL_VERSION_LE) && PERL_VERSION_LE(5, 30, '*')) ||*/ PERL_VERSION <= 30
-#include <wchar.h>
-#endif
-
 #include <dyncall.h>
 #include <dyncall_callback.h>
 #include <dynload.h>
@@ -91,6 +77,14 @@ extern "C" {
 #include <dyncall/dyncall/dyncall_aggregate.h>
 
 #include <dyncall_version.h>
+
+#if defined(DC__OS_Win32) || defined(DC__OS_Win64)
+#else
+#include <dlfcn.h>
+#include <iconv.h>
+#endif
+
+#include <wchar.h>
 
 #if defined(DC__C_GNU) || defined(DC__C_CLANG)
 #include <cxxabi.h>
@@ -305,8 +299,8 @@ size_t _sizeof(pTHX_ SV *type);
 size_t _offsetof(pTHX_ SV *type);
 
 // wchar_t.cxx
-SV *wchar2utf(pTHX_ wchar_t *src, int len);
-wchar_t *utf2wchar(pTHX_ SV *src, int len);
+SV *wchar2utf(pTHX_ wchar_t *src, size_t len);
+wchar_t *utf2wchar(pTHX_ SV *src, size_t len);
 
 // Affix/Aggregate.cxx
 DCaggr *_aggregate(pTHX_ SV *type);

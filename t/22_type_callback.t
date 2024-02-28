@@ -3,6 +3,7 @@ use lib '../lib', 'lib', '../blib/arch', '../blib/lib', 'blib/arch', 'blib/lib',
 use Affix qw[:all];
 BEGIN { chdir '../' if !-d 't'; }
 use t::lib::helper;
+use utf8;
 $|++;
 #
 sub build_and_test {
@@ -14,6 +15,7 @@ sub build_and_test {
         is $fn->(
             sub {
                 is \@_, $arg1, '@_ in $fn is correct';
+                diag $ret;
                 return $ret;
             }
             ),
@@ -128,8 +130,18 @@ unsigned char fn(cb *callback) {
 }
 
 };
+subtest wchar_t => sub {
+    build_and_test
+        'typedef wchar_t cb(wchar_t)' => <<'', [ Callback [ [WChar] => WChar ] ], WChar, ['愛'], '絆', '絆';
+#include "std.h"
+// ext: .c
+typedef wchar_t cb( wchar_t );
+unsigned char fn(cb *callback) {
+    fflush(stdout);
+    return callback(L'愛');
+}
 
-#define WCHAR_FLAG 'w'
+};
 subtest short => sub {
     build_and_test
         'typedef short cb(short, short)' => <<'', [ Callback [ [ Short, Short ] => Short ] ], Short, [ 100, 200 ], -600, -600;
@@ -175,13 +187,63 @@ unsigned int fn(cb *callback) {
 }
 
 };
+subtest long => sub {
+    build_and_test
+        'typedef long cb(long, long)' => <<'', [ Callback [ [ Long, Long ] => Long ] ], Long, [ 100, 200 ], -600, -600;
+#include "std.h"
+// ext: .c
+typedef long cb(long, long);
+long fn(cb *callback) {
+    return callback(100, 200);
+}
 
-#define LONG_FLAG 'l'
-#define ULONG_FLAG 'm'
-#define LONGLONG_FLAG 'x'
-#define ULONGLONG_FLAG 'y'
-#define SSIZE_T_FLAG LONGLONG_FLAG
-#define SIZE_T_FLAG ULONGLONG_FLAG
+};
+subtest ulong => sub {
+    build_and_test
+        'typedef unsigned long cb(unsigned long, unsigned long)' => <<'', [ Callback [ [ ULong, ULong ] => ULong ] ], ULong, [ 100, 200 ], 600, 600;
+#include "std.h"
+// ext: .c
+typedef long cb(unsigned long, unsigned long);
+unsigned long fn(cb *callback) {
+    return callback(100, 200);
+}
+
+};
+subtest longlong => sub {
+    build_and_test
+        'typedef long long cb(long long, long long)' => <<'', [ Callback [ [ LongLong, LongLong ] => LongLong ] ], LongLong, [ 100, 200 ], -600, -600;
+#include "std.h"
+// ext: .c
+typedef long cb(long long, long long);
+long long fn(cb *callback) {
+    return callback(100, 200);
+}
+
+};
+subtest ulong => sub {
+    build_and_test
+        'typedef unsigned long cb(unsigned long, unsigned long)' =>
+        <<'', [ Callback [ [ ULongLong, ULongLong ] => ULongLong ] ], ULongLong, [ 100, 200 ], 600, 600;
+#include "std.h"
+// ext: .c
+typedef long long cb(unsigned long long, unsigned long long);
+unsigned long long fn(cb *callback) {
+    return callback(100, 200);
+}
+
+};
+subtest size_t => sub {
+    build_and_test
+        'typedef size_t cb(size_t, size_t)' => <<'', [ Callback [ [ Size_t, Size_t ] => Size_t ] ], Size_t, [ 100, 200 ], 300, 300;
+#include "std.h"
+// ext: .c
+typedef size_t cb(size_t, size_t);
+size_t fn(cb *callback) {
+    return callback(100, 200);
+}
+
+};
+
 #define FLOAT_FLAG 'f'
 subtest double => sub {
     build_and_test

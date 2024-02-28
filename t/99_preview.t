@@ -16,9 +16,12 @@ diag `nm $lib`;
 warn Callback [ [], Int ];
 use Data::Dump;
 ddx [ Callback [ [ Int, Int ] => Int ] ];
-diag find_library 'm';
-diag find_library 'c';
-diag find_library 'bz2';
+
+#~ diag find_library 'm';
+#~ diag find_library 'c';
+#~ diag find_library 'bz2';
+#~ my $getpid = wrap libc, 'getpid', [], Int;
+#~ diag $getpid->();
 #
 #~ diag $xxx->( sub { diag 'hi'; ... } );
 #~ typedef int cb(int, int);
