@@ -150,15 +150,16 @@ DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointe
             case WCHAR_FLAG: {
                 SV *sv = POPs;
                 if (SvPOK(sv)) {
+
                     STRLEN len;
                     (void)SvPVutf8x(sv, len);
                     wchar_t * wc = utf2wchar(aTHX_ sv, len);
-                    result->L = wc[0];
-                    warn("# -----> result->L : %d", result->L);
+                    result->l = wc[0];
+                    warn("# -----> result->l : %d", result->l);
                     safefree(wc);
                 }
                 else { result->L = 0; }
-                ret = 'L'; // Fake it
+                ret = 'l'; // Fake it
             } break;
             case SHORT_FLAG:
                 result->s = POPi;

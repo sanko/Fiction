@@ -462,8 +462,10 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
         SvIOK_on(a->res);
     } break;
     case WCHAR_FLAG: {
+        setlocale(LC_ALL, "");
+
         wchar_t src[5];
-        src[0] = (wchar_t)dcCallLongLong(cvm, a->entry_point);
+        src[0] = (wchar_t)dcCallLong(cvm, a->entry_point);
                             warn("# -----> src[0] : %d", src[0]);
                             warn("# -----> src[1] : %d", src[1]);
         a->res = wchar2utf(aTHX_ src, 1);
