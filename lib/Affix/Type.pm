@@ -28,7 +28,7 @@ package Affix::Type 0.5 {
     #~ $_[0]->[ Affix::SLOT_NUMERIC() ] = -1;
     #~ $_[0];
     #~ }
-    use overload '""' => sub { chr shift->[ Affix::SLOT_NUMERIC() ] }, int => sub { shift->[ Affix::SLOT_NUMERIC() ] };
+    use overload '""' => sub { shift->[ Affix::SLOT_STRINGIFY() ] }, '0+' => sub { shift->[ Affix::SLOT_NUMERIC() ] };
     sub parameterized {0}
     sub sizeof        { shift->[ Affix::SLOT_SIZEOF() ] }
     sub align         { shift->[ Affix::SLOT_ALIGNMENT() ] }
@@ -230,7 +230,7 @@ package Affix::Type 0.5 {
         bless(
             [   sprintf( 'Callback[ [ %s ] => %s ]', join( ', ', @$args ), $ret ), Affix::CODEREF_FLAG(), Affix::Platform::SIZEOF_INTPTR_T(),
                 Affix::Platform::ALIGNOF_INTPTR_T(), undef,    # offset
-                $ret,                                $args, join( '', @$args )
+                $ret,                                $args, join '', map { chr $_ } @$args
             ],
             'Affix::Type::Callback'
         );

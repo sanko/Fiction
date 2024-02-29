@@ -102,12 +102,19 @@ subtest 'affix with known argtypes and bad param lists' => sub {
 subtest 'types' => sub {
     subtest 'Void' => sub {
         isa_ok my $double = Void, ['Affix::Type'];
-        is $double, 'v', 'stringify';
+        is $double,     'Void', 'stringify';
+        is chr $double, 'v',    'numify';
     };
     subtest 'Double' => sub {
         isa_ok my $double = Double, ['Affix::Type'];
-        is $double, 'd', 'stringify';
-    }
+        is $double,     'Double', 'stringify';
+        is chr $double, 'd',      'numify';
+    };
+    subtest 'String' => sub {
+        isa_ok my $string = String, ['Affix::Type'];
+        is $string,     'Pointer[ Const [ Char ] ]', 'stringify';
+        is chr $string, 'P',                         'numify';
+    };
 };
 subtest 'compiled lib' => sub {
     my $lib = compile_test_lib(<<'END');

@@ -167,7 +167,7 @@ package Affix 0.50 {    # 'FFI' is my middle name!
                 Carp::croak 'Const requires a type' unless scalar caller =~ /^Affix(::.+)?$/;
                 $subtype = Void();    # Defaults to Pointer[Void]
             }
-            bless( [ 'Const[ ' . $subtype . ' ]', CONST_FLAG(), $subtype->sizeof(), $subtype->align(), undef, $subtype, $sizeof, undef ],
+            bless( [ 'Const [ ' . $subtype . ' ]', CONST_FLAG(), $subtype->sizeof(), $subtype->align(), undef, $subtype, $sizeof, undef ],
                 'Affix::Flag::Const' );
         }
 
@@ -192,7 +192,7 @@ package Affix 0.50 {    # 'FFI' is my middle name!
                 Carp::croak 'Volatile requires a type' unless scalar caller =~ /^Affix(::.+)?$/;
                 $subtype = Void();    # Defaults to Pointer[Void]
             }
-            bless( [ 'Volatile[ ' . $subtype . ' ]', VOLATILE_FLAG(), $subtype->sizeof(), $subtype->align(), undef, $subtype, $sizeof, undef ],
+            bless( [ 'Volatile [ ' . $subtype . ' ]', VOLATILE_FLAG(), $subtype->sizeof(), $subtype->align(), undef, $subtype, $sizeof, undef ],
                 'Affix::Flag::Volatile' );
         }
 
@@ -217,7 +217,7 @@ package Affix 0.50 {    # 'FFI' is my middle name!
                 Carp::croak 'Restrict qualifier requires a type' unless scalar caller =~ /^Affix(::.+)?$/;
                 $subtype = Void();    # Defaults to Pointer[Void]
             }
-            bless( [ 'Restrict[ ' . $subtype . ' ]', RESTRICT_FLAG(), $subtype->sizeof(), $subtype->align(), undef, $subtype, $sizeof, undef ],
+            bless( [ 'Restrict [ ' . $subtype . ' ]', RESTRICT_FLAG(), $subtype->sizeof(), $subtype->align(), undef, $subtype, $sizeof, undef ],
                 'Affix::Flag::Restrict' );
         }
 
@@ -242,7 +242,7 @@ package Affix 0.50 {    # 'FFI' is my middle name!
                 Carp::croak 'Reference requires a type' unless scalar caller =~ /^Affix(::.+)?$/;
                 $subtype = Void();    # Defaults to Pointer[Void]
             }
-            bless( [ 'Reference[ ' . $subtype . ' ]', REFERENCE_FLAG(), $subtype->sizeof(), $subtype->align(), undef, $subtype, $sizeof, undef ],
+            bless( [ 'Reference [ ' . $subtype . ' ]', REFERENCE_FLAG(), $subtype->sizeof(), $subtype->align(), undef, $subtype, $sizeof, undef ],
                 'Affix::Flag::Reference' );
         }
 

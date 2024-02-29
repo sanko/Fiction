@@ -334,7 +334,7 @@ Refer to L<the dyncall manual|https://dyncall.org/docs/manual/manualse11.html>,
 L<http://www.angelcode.com/dev/callconv/callconv.html>, L<https://en.wikipedia.org/wiki/Calling_convention>, and your
 local university's Comp Sci department for a deeper explanation.
 
-After than, feel free to use or misuse any of the current options:
+After having done that, feel free to use or misuse any of the current options:
 
 =over
 

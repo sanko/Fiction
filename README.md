@@ -347,7 +347,7 @@ Refer to [the dyncall manual](https://dyncall.org/docs/manual/manualse11.html),
 [http://www.angelcode.com/dev/callconv/callconv.html](http://www.angelcode.com/dev/callconv/callconv.html), [https://en.wikipedia.org/wiki/Calling\_convention](https://en.wikipedia.org/wiki/Calling_convention), and your
 local university's Comp Sci department for a deeper explanation.
 
-After than, feel free to use or misuse any of the current options:
+After having done that, feel free to use or misuse any of the current options:
 
 - `This`
 

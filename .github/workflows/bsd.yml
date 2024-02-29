@@ -12,7 +12,6 @@ jobs:
         uses: cross-platform-actions/action@v0.22.0
         with:
           architecture: '${{ inputs.arch }}'
-          continue-on-error: true
           cpu_count: 4
           environment_variables: MY_ENV1 MY_ENV2
           memory: 5G
