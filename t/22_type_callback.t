@@ -136,7 +136,8 @@ subtest wchar_t => sub {
         Affix::Platform::FreeBSD()  ||
         Affix::Platform::OpenBSD()  ||
         Affix::Platform::NetBSD()   ||
-        Affix::Platform::DragonFlyBSD();
+        Affix::Platform::DragonFlyBSD() ||
+        Affix::Platform::ARM();
     build_and_test
         'typedef wchar_t cb(wchar_t)' => <<'', [ Callback [ [WChar] => WChar ] ], WChar, ['愛'], '絆', '絆';
 #include "std.h"

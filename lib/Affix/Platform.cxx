@@ -265,6 +265,14 @@ void boot_Affix_Platform(pTHX_ CV *cv) {
     register_constant("Affix::Platform", "Compiler", newSVpv(compiler, 0));
     register_constant("Affix::Platform", "Architecture", newSVpv(architecture, 0));
     register_constant("Affix::Platform", "MSVCRT", boolSV(msvcrt));
+        register_constant("Affix::Platform", "ARM", boolSV(// undocumented
+      #if defined(DC__Arch_ARM) || defined(DC__Arch_ARM64)
+1
+#else
+0
+#endif
+        ));
+
     register_constant("Affix::Platform", "ARM_Thumb", boolSV(arm_thumb));
     register_constant("Affix::Platform", "ARM_EABI", boolSV(arm_eabi));
     register_constant("Affix::Platform", "ARM_OABI", boolSV(arm_oabi));

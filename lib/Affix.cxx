@@ -357,6 +357,7 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
                     // dcArgChar(cvm, str[0]);
 #endif
                     dcArgLong(cvm, str[0]);
+                                    safefree(str);
                 }
                 else
                     dcArgInt(cvm, 0);
