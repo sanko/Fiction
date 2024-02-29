@@ -238,4 +238,14 @@ double fn(double i, double j) { return i * j;}
 #define CODEREF_FLAG '&'
 #define POINTER_FLAG 'P'
 #define SV_FLAG '?'
+subtest enum => sub {
+    typedef TV => Enum [ [ FOX => 11 ], [ CNN => 25 ], [ ESPN => 15 ], [ HBO => 22 ], [ NBC => 32 ] ];
+    build_and_test
+        'enum TV fn(enum TV)' => <<'', [ TV() ], Int, TV::FOX(), int TV::NBC();
+#include "std.h"
+// ext: .c
+enum TV { FOX = 11, CNN = 25, ESPN = 15, HBO = 22, MAX = 30, NBC = 32 };
+enum TV fn(enum TV chan) { return chan == FOX ? NBC : HBO; }
+
+};
 done_testing;

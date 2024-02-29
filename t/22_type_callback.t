@@ -284,4 +284,17 @@ double fn(cb *callback) {
 #define CODEREF_FLAG '&'
 #define POINTER_FLAG 'P'
 #define SV_FLAG '?'
+subtest enum => sub {
+    typedef TV => Enum [ [ FOX => 11 ], [ CNN => 25 ], [ ESPN => 15 ], [ HBO => 22 ], [ NBC => 32 ] ];
+    build_and_test
+        'typedef enum TV cb(enum TV)' => <<'', [ Callback [ [ TV() ] => TV() ] ], TV(), [ int TV::ESPN() ], int TV::HBO(), int TV::HBO();
+#include "std.h"
+// ext: .c
+enum TV { FOX = 11, CNN = 25, ESPN = 15, HBO = 22, MAX = 30, NBC = 32 };
+typedef enum TV cb(enum TV);
+enum TV fn(cb *callback) {
+    return callback(ESPN);
+}
+
+};
 done_testing;

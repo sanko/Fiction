@@ -8,83 +8,20 @@ package Affix::Type::Enum 0.5 {
         @Affix::Type::Enum::ISA    = 'Affix::Type';
         @Affix::Type::IntEnum::ISA = @Affix::Type::UIntEnum::ISA = @Affix::Type::CharEnum::ISA = 'Affix::Type::Enum';
     }
-    use overload
-        fallback => 1,
-
-        # https://perldoc.perl.org/overload#Minimal-Set-of-Overloaded-Operations
-        '+' => sub : prototype($$$) {
-        my ( $self, $a, $b ) = @_;
-        my $index = $self->[5] + $a;
-        warn $index;
-        $self->[5] = $index %= scalar @{ $self->[4] };
-        use Data::Dump;
-        ddx $self;
-        $self;
-        },
-        '++' => sub : prototype($$$) {
-        my ( $self, $a, $b ) = @_;
-        my $index = $self->[5] + 1;
-        $self->[5] = $index %= scalar @{ $self->[4] };
-        $self;
-        },
-        '--' => sub : prototype($$$) {
-        my ( $self, $a, $b ) = @_;
-        my $index = $self->[5] + 1;
-        $self->[5] = $index %= scalar @{ $self->[4] };
-        $self;
-        },
-        '*=' => sub : prototype($$$) {
-        my ( $self, $a, $b ) = @_;
-        my $index = $self->[5] *= $a;
-        $self->[5] = $index %= scalar @{ $self->[4] };
-        $self;
-        },
-        '-=' => sub : prototype($$$) {
-        my ( $self, $a, $b ) = @_;
-        my $index = $self->[5] -= $a;
-        $self->[5] = $index %= scalar @{ $self->[4] };
-        $self;
-        },
-        '+=' => sub : prototype($$$) {
-        my ( $self, $a, $b ) = @_;
-        my $index = $self->[5] += $a;
-        $self->[5] = $index %= scalar @{ $self->[4] };
-        $self;
-        },
-        #
-        '""' => sub : prototype($$$) {
-        my ( $self, $a, $b ) = @_;
-        $self->[4]->[ $self->[5] ][0];
-        },
-        'int' => sub : prototype($$$) {
-        my ( $self, $a, $b ) = @_;
-        $self->[4][ $self->[5] ][1];
-        },
-        '0+' => sub : prototype($$$) {
-        my ( $self, $a, $b ) = @_;
-        $self->[4][ $self->[5] ][1];
-        },
-        'bool' => sub : prototype($$$) {
-        my ( $self, $a, $b ) = @_;
-        !!$self->[4][ $self->[5] ][1];
-        },
-        #
-        '~~' => sub : prototype($$$) {
-        my ( $self, $a, $b ) = @_;
-        ...;
-        };
 
     sub _Enum : prototype($) {
         my (@elements) = @{ +shift };
         my $text;
         my $index = 0;
         my $enum;
+        my $tmp = {};
         for my $element (@elements) {
             ( $element, $index ) = @$element if ref $element eq 'ARRAY';
             if ( $index =~ /[+|-|\*|\/|^|%|\D]/ ) {
-                $index =~ s[(\w+)][$enum->{$1}//$1]xeg;
+                $index =~ s[(\w+)][$tmp->{$1}//$1]xeg;
                 $index = eval $index;
             }
+            $tmp->{$element} = $index;
             push @$enum, [ $element, $index ];
             push @$text, sprintf '%s => %s', $element, $index++;
         }
@@ -94,8 +31,11 @@ package Affix::Type::Enum 0.5 {
     sub Enum : prototype($) {
         my ( $text, $enum ) = &_Enum;
         bless(
-            [   sprintf( 'Enum[ %s ]', join ', ', @$text ), Affix::INT_FLAG(), Affix::Platform::SIZEOF_INT(), Affix::Platform::ALIGNOF_INT(), $enum,
-                0
+            [   sprintf( 'Enum[ %s ]', join ', ', @$text ),
+                Affix::INT_FLAG(),
+                Affix::Platform::SIZEOF_INT(),
+                Affix::Platform::ALIGNOF_INT(),
+                undef, $enum, 0
             ],
             'Affix::Type::Enum'
         );
@@ -108,7 +48,7 @@ package Affix::Type::Enum 0.5 {
                 Affix::INT_FLAG(),
                 Affix::Platform::SIZEOF_INT(),
                 Affix::Platform::ALIGNOF_INT(),
-                $enum, 0
+                undef, $enum, 0
             ],
             'Affix::Type::IntEnum'
         );
@@ -121,7 +61,7 @@ package Affix::Type::Enum 0.5 {
                 Affix::UINT_FLAG(),
                 Affix::Platform::SIZEOF_UINT(),
                 Affix::Platform::ALIGNOF_UINT(),
-                $enum, 0
+                undef, $enum, 0
             ],
             'Affix::Type::UIntEnum'
         );
@@ -147,7 +87,7 @@ package Affix::Type::Enum 0.5 {
                 Affix::CHAR_FLAG(),
                 Affix::Platform::SIZEOF_CHAR(),
                 Affix::Platform::ALIGNOF_CHAR(),
-                $enum, 0
+                undef, $enum, 0
             ],
             'Affix::Type::CharEnum'
         );
@@ -156,12 +96,82 @@ package Affix::Type::Enum 0.5 {
     sub typedef : prototype($$) {
         my ( $self, $name ) = @_;
         no strict 'refs';
-        for my $index ( 0 .. $#{ $self->[4] } ) {
-            *{ $name . '::' . $self->[4][$index][0] } = sub () {
-                bless [ ( map { $self->[$_] } 0 .. 4 ), $index ], ref $self;
+        for my $index ( 0 .. $#{ $self->[5] } ) {
+            *{ $name . '::' . $self->[5][$index][0] } = sub () {
+                bless [ ( map { $self->[$_] } 0 .. 5 ), $index ], 'Affix::Type::Enum::Magic';
             };
         }
         1;
+    }
+
+    sub magic : prototype($) {
+        $_[0] = bless shift, 'Affix::Type::Enum::Magic';
+    }
+
+    package Affix::Type::Enum::Magic {
+        use overload
+            fallback => 1,
+
+            # https://perldoc.perl.org/overload#Minimal-Set-of-Overloaded-Operations
+            '+' => sub : prototype($$$) {
+            my ( $self, $a, $b ) = @_;
+            my $index = $self->[6] + $a;
+            warn $index;
+            $self->[6] = $index %= scalar @{ $self->[5] };
+            $self;
+            },
+            '++' => sub : prototype($$$) {
+            my ( $self, $a, $b ) = @_;
+            my $index = $self->[6] + 1;
+            $self->[6] = $index %= scalar @{ $self->[5] };
+            $self;
+            },
+            '--' => sub : prototype($$$) {
+            my ( $self, $a, $b ) = @_;
+            my $index = $self->[6] + 1;
+            $self->[6] = $index %= scalar @{ $self->[5] };
+            $self;
+            },
+            '*=' => sub : prototype($$$) {
+            my ( $self, $a, $b ) = @_;
+            my $index = $self->[6] *= $a;
+            $self->[6] = $index %= scalar @{ $self->[5] };
+            $self;
+            },
+            '-=' => sub : prototype($$$) {
+            my ( $self, $a, $b ) = @_;
+            my $index = $self->[6] -= $a;
+            $self->[6] = $index %= scalar @{ $self->[5] };
+            $self;
+            },
+            '+=' => sub : prototype($$$) {
+            my ( $self, $a, $b ) = @_;
+            my $index = $self->[6] += $a;
+            $self->[6] = $index %= scalar @{ $self->[5] };
+            $self;
+            },
+            #
+            '""' => sub : prototype($$$) {
+            my ( $self, $a, $b ) = @_;
+            $self->[5]->[ $self->[6] ][0];
+            },
+            'int' => sub : prototype($$$) {
+            my ( $self, $a, $b ) = @_;
+            $self->[5][ $self->[6] ][1];
+            },
+            '0+' => sub : prototype($$$) {
+            my ( $self, $a, $b ) = @_;
+            $self->[5][ $self->[6] ][1];
+            },
+            'bool' => sub : prototype($$$) {
+            my ( $self, $a, $b ) = @_;
+            !!$self->[5][ $self->[6] ][1];
+            },
+            #
+            '~~' => sub : prototype($$$) {
+            my ( $self, $a, $b ) = @_;
+            ...;
+            };
     }
 };
 1;

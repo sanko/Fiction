@@ -224,7 +224,7 @@ XS_INTERNAL(Affix_fiction) {
             else if (SvROK(xsub_tmp_sv) && SvTYPE(SvRV(xsub_tmp_sv)) == SVt_PVAV) {
                 ret->argtypes = MUTABLE_AV(SvREFCNT_inc(SvRV(xsub_tmp_sv)));
                 size_t sig_len = av_count(ret->argtypes);
-                Newxz(ret->signature, sig_len + 1, char);
+                Newxz(ret->signature, sig_len * 2, char); // extra room
                 Newxz(prototype, sig_len + 1, char);
                 char c_type;
                 char scalar = '$';
@@ -236,6 +236,7 @@ XS_INTERNAL(Affix_fiction) {
                     // TODO: Generate a valid prototype w/ Array, Callbacks, etc.
                     Copy(&scalar, prototype + i, 1, char);
                 }
+                //~ warn("ret->signature: %s", ret->signature);
             }
 
         } break;
