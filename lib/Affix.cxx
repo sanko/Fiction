@@ -357,7 +357,7 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
                     // dcArgChar(cvm, str[0]);
 #endif
                     dcArgLong(cvm, str[0]);
-                                    safefree(str);
+                    safefree(str);
                 }
                 else
                     dcArgInt(cvm, 0);
@@ -420,6 +420,22 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
                 dcArgPointer(cvm, sv2ptr(aTHX_ * av_fetch(a->argtypes, st_pos, 0), ST(st_pos)));
                 break;
             }
+
+                //~ #define STRING_FLAG 'z'
+                //~ #define WSTRING_FLAG '<'
+                //~ #define STDSTRING_FLAG 'Y'
+                //~ #define STRUCT_FLAG 'A'
+                //~ #define CPPSTRUCT_FLAG 'B'
+                //~ #define UNION_FLAG 'u'
+                //~ #define ARRAY_FLAG '@'
+                //~ #define CODEREF_FLAG '&'
+                //~ #define POINTER_FLAG 'P'
+
+            case POINTER_FLAG: {
+                dcArgPointer(cvm, sv2ptr(aTHX_ * av_fetch(a->argtypes, st_pos, 0), ST(st_pos)));
+                break;
+            }
+
             default:
                 croak("Unhandled type! %c", a->signature[sig_pos]);
             }
@@ -508,6 +524,19 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
         //~ #define ARRAY_FLAG '@'
         //~ #define CODEREF_FLAG '&'
         //~ #define POINTER_FLAG 'P'
+
+    case POINTER_FLAG: {
+        sv_setsv(a->res, ptr2sv(aTHX_
+
+                                    dcCallPointer(cvm, a->entry_point)
+
+                                        ,
+                                a->restype
+
+                                ));
+
+    } break;
+
         //~ #define SV_FLAG '?'
     default:
         croak("Unknown or unhandled return type: %c", a->restype_c);

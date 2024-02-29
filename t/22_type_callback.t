@@ -131,13 +131,7 @@ unsigned char fn(cb *callback) {
 
 };
 subtest wchar_t => sub {
-    my $todo = todo 'wchar_t is a mess on *BSD and macOS. See https://www.gnu.org/software/libunistring/manual/html_node/The-wchar_005ft-mess.html'
-        if Affix::Platform::macOS() ||
-        Affix::Platform::FreeBSD()  ||
-        Affix::Platform::OpenBSD()  ||
-        Affix::Platform::NetBSD()   ||
-        Affix::Platform::DragonFlyBSD() ||
-        Affix::Platform::ARM();
+    my $todo = todo 'wchar_t is a mess on *BSD and macOS. See https://www.gnu.org/software/libunistring/manual/html_node/The-wchar_005ft-mess.html';
     build_and_test
         'typedef wchar_t cb(wchar_t)' => <<'', [ Callback [ [WChar] => WChar ] ], WChar, ['愛'], '絆', '絆';
 #include "std.h"

@@ -229,6 +229,26 @@ double fn(double i, double j) { return i * j;}
 };
 
 #define STRING_FLAG 'z'
+subtest string => sub {
+    build_and_test
+        'const char * fn(const char *)' => <<'', [String], String, 'Hi', 'Hi.';
+#include "std.h"
+// ext: .c
+const char * fn(const char * i) {
+    char * ret = malloc(strlen(i) + 1);
+    warn("In: %s", i);
+    sprintf(ret, "%s.", i); // sneaky
+    return ret;
+}
+
+
+    #~ build_and_test
+    #~ 'double fn(double, double)' => <<'', [ Double, Double ], Double, [ 1.5, 2.3 ], float( ( 1.5 * 2.3 ), tolerance => 0.03 );
+    #~ #include "std.h"
+    #~ // ext: .c
+    #~ double fn(double i, double j) { return i * j;}
+};
+
 #define WSTRING_FLAG '<'
 #define STDSTRING_FLAG 'Y'
 #define STRUCT_FLAG 'A'

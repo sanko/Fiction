@@ -88,21 +88,15 @@ SV *ptr2sv(pTHX_ DCpointer ptr, SV *type) {
         case CHAR_FLAG:
         case SCHAR_FLAG: {
             retval = newSV(0);
-            sv_setsv(retval, newSVpv((char *)ptr, 1));
-            (void)SvUPGRADE(retval, SVt_PVIV);
-            SvIV_set(retval, ((IV) * (char *)ptr));
-            SvIOK_on(retval);
+            sv_setsv(retval, newSVpv((char *)ptr, strlen((char *)ptr)));
         } break;
         case UCHAR_FLAG: {
             retval = newSV(0);
-            sv_setsv(retval, newSVpv((char *)(unsigned char *)ptr, 1));
-            (void)SvUPGRADE(retval, SVt_PVIV);
-            SvIV_set(retval, ((UV) * (unsigned char *)ptr));
-            SvIOK_on(retval);
+            sv_setsv(retval, newSVpv((char *)(unsigned char *)ptr, strlen((char *)ptr)));
         } break;
         case WCHAR_FLAG: {
             if (wcslen((wchar_t *)ptr)) {
-                retval = wchar2utf(aTHX_(wchar_t *) ptr, 1 /*wcslen((wchar_t *)ptr)*/);
+                retval = wchar2utf(aTHX_(wchar_t *) ptr, wcslen((wchar_t *)ptr));
             }
         } break;
         case SHORT_FLAG: {
@@ -254,8 +248,11 @@ SV *ptr2sv(pTHX_ DCpointer ptr, SV *type) {
                     #define AFFIX_TYPE_STD_STRING 50
                     #define AFFIX_TYPE_INSTANCE_OF 52
                     */
+        case CONST_FLAG:
+            retval = ptr2sv(aTHX_ ptr, AXT_SUBTYPE(type));
+            break;
         default:
-            croak("Unhandled type: %s", AXT_STRINGIFY(type));
+            croak("Unhandled type: %s in ptr2sv", AXT_STRINGIFY(type));
         }
     }
     PING;
@@ -687,6 +684,22 @@ void *sv2ptr(pTHX_ SV *type, SV *data) {
             Copy(&value, ret, 1, intptr_t);
             //~ DD(data);
         }
+    } break;
+    case CONST_FLAG: {
+        warn("CONST");
+        PING;
+        SV *subtype = AXT_SUBTYPE(type);
+        if (!SvOK(data)) { ret = safecalloc(AXT_SIZEOF(SvRV(subtype)), 1); }
+        else if (SvROK(data) && SvTYPE(SvRV(data)) == SVt_PVAV) {
+            ret = av2ptr(aTHX_ subtype, MUTABLE_AV(SvRV(data)));
+        }
+        else {
+            DCpointer block = sv2ptr(aTHX_ subtype, data);
+            ret = safemalloc(SIZEOF_INTPTR_T);
+            Copy(block, ret, 1, intptr_t);
+            safefree(block);
+        }
+
     } break;
     default: {
         croak("%c is not a known type in sv2ptr(...)", type_c);
