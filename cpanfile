@@ -5,6 +5,7 @@ requires 'XSLoader';
 requires 'Sub::Util';
 requires 'Attribute::Handlers';
 requires 'File::Temp';          # Used in Affix::Platform::Unix::_findLib_gcc(...)
+requires 'Scalar::Util';
 
 # TODO: remove this!!!!
 requires 'Data::Dump';
@@ -13,8 +14,6 @@ on 'test' => sub {
     requires 'Test2::V0';
     requires 'Test2::Tools::Compare';
     requires 'Test2::Plugin::UTF8';
-    requires 'Data::Dumper';
-    requires 'Math::BigInt';
     requires 'Devel::CheckBin';
 };
 on 'configure' => sub {

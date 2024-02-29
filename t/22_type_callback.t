@@ -287,7 +287,7 @@ double fn(cb *callback) {
 subtest enum => sub {
     typedef TV => Enum [ [ FOX => 11 ], [ CNN => 25 ], [ ESPN => 15 ], [ HBO => 22 ], [ NBC => 32 ] ];
     build_and_test
-        'typedef enum TV cb(enum TV)' => <<'', [ Callback [ [ TV() ] => TV() ] ], TV(), [ int TV::ESPN() ], int TV::HBO(), int TV::HBO();
+        'typedef enum TV cb(enum TV)' => <<'', [ Callback [ [ TV() ] => TV() ] ], TV(), [ int TV::ESPN() ], TV::HBO(), int TV::HBO();
 #include "std.h"
 // ext: .c
 enum TV { FOX = 11, CNN = 25, ESPN = 15, HBO = 22, MAX = 30, NBC = 32 };

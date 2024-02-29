@@ -75,6 +75,7 @@
             "Data::Dump" : "0",
             "File::Spec" : "0",
             "File::Temp" : "0",
+            "Scalar::Util" : "0",
             "Sub::Util" : "0",
             "XSLoader" : "0",
             "perl" : "5.038000"
@@ -82,9 +83,7 @@
       },
       "test" : {
          "requires" : {
-            "Data::Dumper" : "0",
             "Devel::CheckBin" : "0",
-            "Math::BigInt" : "0",
             "Test2::Plugin::UTF8" : "0",
             "Test2::Tools::Compare" : "0",
             "Test2::V0" : "0"
