@@ -490,7 +490,9 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
     case ULONGLONG_FLAG:
         sv_setuv(a->res, dcCallLongLong(cvm, a->entry_point));
         break;
-        //~ #define FLOAT_FLAG 'f'
+    case FLOAT_FLAG:
+        sv_setnv(a->res, dcCallFloat(cvm, a->entry_point));
+        break;
     case DOUBLE_FLAG:
         sv_setnv(a->res, dcCallDouble(cvm, a->entry_point));
         break;
@@ -2151,7 +2153,6 @@ XS_EXTERNAL(boot_Affix) {
     export_constant("Affix", "LONGLONG_FLAG", "flags", LONGLONG_FLAG);
     export_constant("Affix", "ULONGLONG_FLAG", "flags", ULONGLONG_FLAG);
     export_constant("Affix", "SIZE_T_FLAG", "flags", SIZE_T_FLAG);
-    export_constant("Affix", "SSIZE_T_FLAG", "flags", SSIZE_T_FLAG);
     export_constant("Affix", "FLOAT_FLAG", "flags", FLOAT_FLAG);
     export_constant("Affix", "DOUBLE_FLAG", "flags", DOUBLE_FLAG);
     export_constant("Affix", "STRING_FLAG", "flags", STRING_FLAG);

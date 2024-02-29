@@ -226,9 +226,9 @@ long long fn(cb *callback) {
 }
 
 };
-subtest ulong => sub {
+subtest ulonglong => sub {
     build_and_test
-        'typedef unsigned long cb(unsigned long, unsigned long)' =>
+        'typedef unsigned long cb(unsigned long long, unsigned long long)' =>
         <<'', [ Callback [ [ ULongLong, ULongLong ] => ULongLong ] ], ULongLong, [ 100, 200 ], 600, 600;
 #include "std.h"
 // ext: .c
@@ -249,8 +249,18 @@ size_t fn(cb *callback) {
 }
 
 };
+subtest float => sub {
+    build_and_test
+        'typedef float cb(float, float)' =>
+        <<'', [ Callback [ [ Float, Float ] => Float ] ], Float, [ float( 1.5, tolerance => 0.01 ), float( 3.98, tolerance => 0.01 ) ], 4.3, float( 4.3, tolerance => 0.01 );
+#include "std.h"
+// ext: .c
+typedef float cb(float, float);
+float fn(cb *callback) {
+    return callback(1.5, 3.98);
+}
 
-#define FLOAT_FLAG 'f'
+};
 subtest double => sub {
     build_and_test
         'typedef double cb(double, double)' =>

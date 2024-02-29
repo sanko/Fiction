@@ -299,8 +299,6 @@ operator.
 
 =item C<SIZEOF_SIZE_T>
 
-=item C<SIZEOF_SSIZE_T>
-
 =item C<SIZEOF_INTPTR_T>
 
 =back
@@ -347,8 +345,6 @@ Platform-dependant memory alignment size. Use this to calculate offsets and padd
 =item C<ALIGNOF_DOUBLE>
 
 =item C<ALIGNOF_SIZE_T>
-
-=item C<ALIGNOF_SSIZE_T>
 
 =item C<ALIGNOF_INTPTR_T>
 

@@ -80,8 +80,6 @@ Affix::Type - A Revew of the Affix 'Type' System
 
 <tr> <td>Double</td> <td>double</td> <td>f64</td> <td>d</td>  <td>num64</td>        <td></td> </tr>
 
-<tr> <td>SSize_t</td> <td>SSize_t</td> <td>SSize_t</td> <td></td> <td></td>       <td></td>     </tr>
-
 <tr> <td>Size_t</td> <td>size_t</td> <td>size_t</td>      <td></td>   <td></td> <td></td>       </tr>
 
 <tr> <td>Str</td> <td>char *</td> <td></td> <td></td>         <td></td> <td></td> </tr>
@@ -169,10 +167,6 @@ L<Single precision floating-point type|https://en.wikipedia.org/wiki/Single-prec
 =head2 C<Double>
 
 L<Double precision floating-point type|https://en.wikipedia.org/wiki/Double-precision_floating-point_format>.
-
-=head2 C<SSize_t>
-
-Signed integer type.
 
 =head2 C<Size_t>
 

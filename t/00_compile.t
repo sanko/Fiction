@@ -45,7 +45,7 @@ subtest 'API' => sub {
             Long ULong
             LongLong ULongLong
             Float Double
-            Size_t SSize_t
+            Size_t
             String WString
             Struct Array
             Pointer
@@ -56,8 +56,8 @@ subtest 'API' => sub {
             UIntEnum
             CharEnum];
         isa_ok $_, ['Affix::Type']
-            for Void, Bool, Char, UChar, SChar, WChar, Short, UShort, Int, UInt, Long, ULong, LongLong, ULongLong, Float, Double, Size_t, SSize_t,
-            String, WString, Struct [], Struct [ a => Int, b => Double ], SV, Pointer [Void], Array [Int], Callback [ [ Int, Float, Int ] => Void ];
+            for Void, Bool, Char, UChar, SChar, WChar, Short, UShort, Int, UInt, Long, ULong, LongLong, ULongLong, Float, Double, Size_t, String,
+            WString, Struct [], Struct [ a => Int, b => Double ], SV, Pointer [Void], Array [Int], Callback [ [ Int, Float, Int ] => Void ];
         Affix::Type::Enum::Enum( [qw[a b c]] );
     };
     subtest 'core' => sub {
@@ -70,7 +70,5 @@ subtest 'API' => sub {
         can_ok 'Affix', $_ for qw[find_library load_library free_library find_symbol];
     }
 };
-#
-diag 'SIZEOF_WCHAR: ' . Affix::Platform::SIZEOF_WCHAR();
 #
 done_testing;

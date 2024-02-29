@@ -302,7 +302,6 @@ void boot_Affix_Platform(pTHX_ CV *cv) {
     export_constant("Affix::Platform", "SIZEOF_FLOAT", "sizeof", SIZEOF_FLOAT);
     export_constant("Affix::Platform", "SIZEOF_DOUBLE", "sizeof", SIZEOF_DOUBLE);
     export_constant("Affix::Platform", "SIZEOF_SIZE_T", "sizeof", SIZEOF_SIZE_T);
-    export_constant("Affix::Platform", "SIZEOF_SSIZE_T", "sizeof", SIZEOF_SSIZE_T);
     export_constant("Affix::Platform", "SIZEOF_INTPTR_T", "sizeof", SIZEOF_INTPTR_T);
 
     // to calculate offsetof and padding inside structs
@@ -323,7 +322,6 @@ void boot_Affix_Platform(pTHX_ CV *cv) {
     export_constant("Affix::Platform", "ALIGNOF_FLOAT", "all", ALIGNOF_FLOAT);
     export_constant("Affix::Platform", "ALIGNOF_DOUBLE", "all", ALIGNOF_DOUBLE);
     export_constant("Affix::Platform", "ALIGNOF_SIZE_T", "all", ALIGNOF_SIZE_T);
-    export_constant("Affix::Platform", "ALIGNOF_SSIZE_T", "all", ALIGNOF_SSIZE_T);
     export_constant("Affix::Platform", "ALIGNOF_INTPTR_T", "all", ALIGNOF_INTPTR_T);
 
     // Undocumented

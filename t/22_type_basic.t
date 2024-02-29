@@ -12,7 +12,7 @@ sub build_and_test {
         plan 3;
         ok my $lib    = compile_test_lib($c), 'build test lib';
         isa_ok my $fn = Affix::wrap( $lib, 'fn', $arg_types, $ret_type ), [qw[Affix]], 'my $fn = ...';
-        is $fn->( $arg1 // () ), $ret_check, 'return from $fn->(...) is correct';
+        is $fn->( defined $arg1 ? ref $arg1 eq 'ARRAY' ? @$arg1 : $arg1 : () ), $ret_check, 'return from $fn->(...) is correct';
     }
 }
 #
@@ -185,11 +185,49 @@ subtest ulonglong => sub {
 unsigned long long fn(unsigned long long i) { return 46 + i;}
 
 };
+subtest size_t => sub {
+    build_and_test
+        'size_t fn(size_t)' => <<'', [Size_t], Size_t, 3, 46;
+#include "std.h"
+// ext: .c
+size_t fn(size_t i) { return 46 + (i * .01);}
 
-#define SSIZE_T_FLAG LONGLONG_FLAG
-#define SIZE_T_FLAG ULONGLONG_FLAG
-#define FLOAT_FLAG 'f'
-#define DOUBLE_FLAG 'd'
+    build_and_test
+        'size_t fn(size_t, size_t)' => <<'', [ Size_t, Size_t ], Size_t, [ 1.5, 2.3 ], 2;
+#include "std.h"
+// ext: .c
+size_t fn(size_t i, size_t j) { return i * j;}
+
+};
+subtest float => sub {
+    build_and_test
+        'float fn(float)' => <<'', [Float], Float, 3, float( 46, tolerance => 0.03 );
+#include "std.h"
+// ext: .c
+float fn(float i) { return 46 + (i * .01);}
+
+    build_and_test
+        'float fn(float, float)' => <<'', [ Float, Float ], Float, [ 1.5, 2.3 ], float( ( 1.5 * 2.3 ), tolerance => 0.03 );
+#include "std.h"
+// ext: .c
+float fn(float i, float j) { return i * j;}
+
+};
+subtest double => sub {
+    build_and_test
+        'double fn(float)' => <<'', [Double], Double, 3, float( 46, tolerance => 0.031 );
+#include "std.h"
+// ext: .c
+double fn(double i) { return 46 + (i * .01);}
+
+    build_and_test
+        'double fn(double, double)' => <<'', [ Double, Double ], Double, [ 1.5, 2.3 ], float( ( 1.5 * 2.3 ), tolerance => 0.03 );
+#include "std.h"
+// ext: .c
+double fn(double i, double j) { return i * j;}
+
+};
+
 #define STRING_FLAG 'z'
 #define WSTRING_FLAG '<'
 #define STDSTRING_FLAG 'Y'

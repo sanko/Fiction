@@ -90,7 +90,9 @@ DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointe
                 case ULONGLONG_FLAG:
                     PUSHs(sv_2mortal(newSVuv(dcbArgLongLong(args))));
                     break;
-                    //~ #define FLOAT_FLAG 'f'
+                case FLOAT_FLAG:
+                    PUSHs(sv_2mortal(newSVnv(dcbArgFloat(args))));
+                    break;
                 case DOUBLE_FLAG:
                     PUSHs(sv_2mortal(newSVnv(dcbArgDouble(args))));
                     break;
@@ -191,14 +193,14 @@ DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointe
                 result->L = POPi;
                 ret = 'L';
                 break;
-            //~ #define LONGLONG_FLAG 'x'
-            //~ #define ULONGLONG_FLAG 'y'
-
-            //~ #define FLOAT_FLAG 'f'
+            case FLOAT_FLAG:
+                result->f = POPn;
+                ret = 'f';
+                break;
             case DOUBLE_FLAG:
                 result->d = POPn;
+                ret = 'd';
                 break;
-                //~ #define DOUBLE_FLAG 'd'
                 //~ #define STRING_FLAG 'z'
                 //~ #define WSTRING_FLAG '<'
                 //~ #define STDSTRING_FLAG 'Y'

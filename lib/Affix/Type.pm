@@ -6,7 +6,7 @@ package Affix::Type 0.5 {
     $EXPORT_TAGS{all} = [
         @EXPORT_OK = qw[
             Void Bool Char UChar SChar WChar Short UShort Int UInt Long ULong LongLong ULongLong Float Double
-            Size_t SSize_t
+            Size_t
             String WString StdString
             Struct Union Array
             Callback
@@ -124,13 +124,8 @@ package Affix::Type 0.5 {
     }
 
     sub Size_t () {
-        bless( [ 'Size_t', Affix::SSIZE_T_FLAG(), Affix::Platform::SIZEOF_SIZE_T(), Affix::Platform::ALIGNOF_SIZE_T(), undef ],
+        bless( [ 'Size_t', Affix::SIZE_T_FLAG(), Affix::Platform::SIZEOF_SIZE_T(), Affix::Platform::ALIGNOF_SIZE_T(), undef ],
             'Affix::Type::Size_t' );
-    }
-
-    sub SSize_t () {
-        bless( [ 'SSize_t', Affix::SSIZE_T_FLAG(), Affix::Platform::SIZEOF_SSIZE_T(), Affix::Platform::ALIGNOF_SSIZE_T(), undef ],
-            'Affix::Type::SSize_t' );
     }
 
     sub String() {

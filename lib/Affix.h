@@ -124,16 +124,12 @@ static const char *dlerror(void) {
 #define LONGLONG_FLAG 'x'
 #define ULONGLONG_FLAG 'y'
 #if SIZEOF_SIZE_T == INTSIZE
-#define SSIZE_T_FLAG INT_FLAG
 #define SIZE_T_FLAG UINT_FLAG
 #elif SIZEOF_SIZE_T == LONGSIZE
-#define SSIZE_T_FLAG LONG_FLAG
 #define SIZE_T_FLAG ULONG_FLAG
 #elif SIZEOF_SIZE_T == LONGLONGSIZE
-#define SSIZE_T_FLAG LONGLONG_FLAG
 #define SIZE_T_FLAG ULONGLONG_FLAG
 #else // quadmath is broken
-#define SSIZE_T_FLAG LONGLONG_FLAG
 #define SIZE_T_FLAG ULONGLONG_FLAG
 #endif
 #define FLOAT_FLAG 'f'
@@ -260,7 +256,6 @@ following address will be aligned to `alignment`. */
 #define ALIGNOF_DOUBLE ALIGNOF(double)
 #define ALIGNOF_INTPTR_T ALIGNOF(intptr_t)
 #define ALIGNOF_SIZE_T ALIGNOF(size_t)
-#define ALIGNOF_SSIZE_T ALIGNOF(ssize_t)
 
 // [ text, id, size, align, offset, subtype, length, aggregate, typedef ]
 #define SLOT_STRINGIFY 0

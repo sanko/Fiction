@@ -32,7 +32,7 @@ package Affix 0.50 {    # 'FFI' is my middle name!
             Long ULong
             LongLong ULongLong
             Float Double
-            Size_t SSize_t
+            Size_t
             String WString
             Struct Array
             Pointer
@@ -114,11 +114,11 @@ package Affix 0.50 {    # 'FFI' is my middle name!
         @Affix::Type::Void::ISA = @Affix::Type::SV::ISA
 
             # Numerics
-            = @Affix::Type::Bool::ISA   = @Affix::Type::Char::ISA     = @Affix::Type::SChar::ISA = @Affix::Type::UChar::ISA = @Affix::Type::WChar::ISA
-            = @Affix::Type::Short::ISA  = @Affix::Type::UShort::ISA   = @Affix::Type::Int::ISA   = @Affix::Type::UInt::ISA = @Affix::Type::Long::ISA
-            = @Affix::Type::ULong::ISA  = @Affix::Type::LongLong::ISA = @Affix::Type::ULongLong::ISA = @Affix::Type::Float::ISA
-            = @Affix::Type::Double::ISA = @Affix::Type::Size_t::ISA
-            = @Affix::Type::SSize_t::ISA
+            = @Affix::Type::Bool::ISA  = @Affix::Type::Char::ISA     = @Affix::Type::SChar::ISA = @Affix::Type::UChar::ISA = @Affix::Type::WChar::ISA
+            = @Affix::Type::Short::ISA = @Affix::Type::UShort::ISA   = @Affix::Type::Int::ISA   = @Affix::Type::UInt::ISA = @Affix::Type::Long::ISA
+            = @Affix::Type::ULong::ISA = @Affix::Type::LongLong::ISA = @Affix::Type::ULongLong::ISA = @Affix::Type::Float::ISA
+            = @Affix::Type::Double::ISA
+            = @Affix::Type::Size_t::ISA
 
             # Enumerations (subclasses handled in Affix::Type::Enum)
             = @Affix::Type::Enum::ISA
