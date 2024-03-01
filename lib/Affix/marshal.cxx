@@ -357,17 +357,27 @@ void *av2ptr(pTHX_ SV *type, AV *av_data) {
 }
 
 void *sv2ptr(pTHX_ SV *type, SV *data) {
-    DD(data);
     DD(type);
+    DD(data);
     PING;
+    warn("Here %d", __LINE__);
     DCpointer ret = NULL;
     PING;
+    warn("Here %d", __LINE__);
 
-    int type_c = AXT_NUMERIC(type);
+    //~ while (SvROK(type))
+        //~ type = SvRV(type);
+
+    sv_dump(type);
+    sv_dump(data);
+
+    char type_c = AXT_NUMERIC(type);
+    warn("Here %d", __LINE__);
+
     warn("type: %d/%c", type_c, type_c);
     PING;
     size_t size = AXT_SIZEOF(type);
-    //~ warn("after size: %d", size);
+    warn("after size: %d", size);
     PING;
 #if DEBUG
     warn("sv2ptr(%s, ...) at %s line %d", AXT_STRINGIFY(type), __FILE__, __LINE__);
@@ -693,6 +703,7 @@ void *sv2ptr(pTHX_ SV *type, SV *data) {
         warn("CONST");
         PING;
         SV *subtype = AXT_SUBTYPE(type);
+        /*
         if (!SvOK(data)) { ret = safecalloc(AXT_SIZEOF(SvRV(subtype)), 1); }
         else if (SvROK(data) && SvTYPE(SvRV(data)) == SVt_PVAV) {
             ret = av2ptr(aTHX_ subtype, MUTABLE_AV(SvRV(data)));
@@ -702,7 +713,8 @@ void *sv2ptr(pTHX_ SV *type, SV *data) {
             ret = safemalloc(SIZEOF_INTPTR_T);
             Copy(block, ret, 1, intptr_t);
             safefree(block);
-        }
+        }*/
+        ret = sv2ptr(aTHX_ subtype, data);
 
     } break;
     default: {

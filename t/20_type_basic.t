@@ -231,13 +231,13 @@ double fn(double i, double j) { return i * j;}
 #define STRING_FLAG 'z'
 subtest string => sub {
     build_and_test
-        'const char * fn(const char *)' => <<'', [String], Pointer [Char], 'Hi', 'Hi.';
+        'const char * fn(const char *)' => <<'', [String], String, 'Hi', 'This is just a friendly hello. So, yeah, hi. Hi.';
 #include "std.h"
 // ext: .c
-char * fn(const char * i) {
+const char * fn(const char * i) {
     char * ret = malloc(strlen(i) + 1);
     warn("In: %s", i);
-    sprintf(ret, "%s.", i); // sneaky
+    sprintf(ret, "This is just a friendly hello. So, yeah, hi. %s.", i); // sneaky
     return ret;
 }
 

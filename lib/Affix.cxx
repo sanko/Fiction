@@ -432,7 +432,12 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
                 //~ #define POINTER_FLAG 'P'
 
             case POINTER_FLAG: {
-                dcArgPointer(cvm, sv2ptr(aTHX_ * av_fetch(a->argtypes, st_pos, 0), ST(st_pos)));
+sv_dump(*av_fetch(a->argtypes, st_pos, 0));
+                sv_dump(AXT_SUBTYPE(*av_fetch(a->argtypes, st_pos, 0)));
+
+                dcArgPointer(
+                    cvm, sv2ptr(aTHX_
+                AXT_SUBTYPE(*av_fetch(a->argtypes, st_pos, 0)), ST(st_pos)));
                 break;
             }
 
@@ -527,18 +532,25 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
 
     case POINTER_FLAG: {
         DCpointer ret = dcCallPointer(cvm, a->entry_point);
-        if(ret == NULL) sv_set_undef(a->res);
-        else if (SvOK(MUTABLE_SV(ret))) {
+
+        if (ret == NULL)
+            sv_set_undef(a->res);
+        else if (0 && SvOK(MUTABLE_SV(ret))) {
             DumpHex(ret, 16);
             sv_dump(MUTABLE_SV(ret));
             warn("Pointer %p is an SV*", ret);
             sv_setsv(a->res, MUTABLE_SV(ret));
+            sv_dump(a->res);
         }
         else {
             warn("Pointer %p is not an SV*", ret);
             DumpHex(ret, 32);
-            sv_setsv(a->res, ptr2sv(aTHX_ ret, a->restype));
+            DD(a->restype);
+            DD(AXT_SUBTYPE(a->restype));
+            sv_setsv(a->res, ptr2sv(aTHX_ ret, AXT_SUBTYPE(a->restype)));
         }
+        //~ if (SvOK(MUTABLE_SV(ret)))
+        //~ sv_setsv(a->res, sv_2mortal(MUTABLE_SV(ret)));
     } break;
 
         //~ #define SV_FLAG '?'

@@ -217,7 +217,7 @@ DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointe
                 //~ #define CODEREF_FLAG '&'
                 //~ #define POINTER_FLAG 'P'
             case POINTER_FLAG: {
-                result->p = SvREFCNT_inc(POPs);
+                result->p = sv2ptr(aTHX_ AXT_SUBTYPE(c->restype), POPs);
                 ret = 'p';
             } break;
                 //~ #define SV_FLAG '?'

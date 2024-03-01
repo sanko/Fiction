@@ -271,12 +271,12 @@ double fn(cb *callback) {
 subtest string => sub {
     build_and_test
         'typedef const char * cb(const char *, const char *)' =>
-        <<'', [ Callback [ [ String, String ] => String ] ], String, [ 'Hey', 'Hello' ], 'Return a long line of text', 'Return a long line of text';
+        <<'', [ Callback [ [ String, String ] => String ] ], String, [ 'Hey this is not working but it also is not broken yet', 'Hello' ], 'Return a long line of text that should wrap around and test the length is correct.', 'Return a long line of text that should wrap around and test the length is correct.';
 #include "std.h"
 // ext: .c
 typedef const char * cb(const char *, const char *);
 const char * fn(cb *callback) {
-    return callback("Hey", "Hello");
+    return callback("Hey this is not working but it also is not broken yet", "Hello");
 }
 
 };
