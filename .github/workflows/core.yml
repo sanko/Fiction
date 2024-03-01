@@ -66,7 +66,9 @@ jobs:
           ~/perl5/perlbrew/perls/cache-${{ inputs.os }}${{ inputs.perl }}${{ inputs.flags }}/bin/perl -V
           
           curl -L https://cpanmin.us | ~/perl5/perlbrew/perls/cache-${{ inputs.os }}${{ inputs.perl }}${{ inputs.flags }}/bin/perl - --installdeps --notest .
-          curl -L https://cpanmin.us | ~/perl5/perlbrew/perls/cache-${{ inputs.os }}${{ inputs.perl }}${{ inputs.flags }}/bin/perl - -v --test-only .
+          #curl -L https://cpanmin.us | ~/perl5/perlbrew/perls/cache-${{ inputs.os }}${{ inputs.perl }}${{ inputs.flags }}/bin/perl - -v --test-only .
+          ~/perl5/perlbrew/perls/cache-${{ inputs.os }}${{ inputs.perl }}${{ inputs.flags }}/bin/perl Build.PL
+          ./Build test --verbose
           
           ~/perl5/perlbrew/perls/cache-${{ inputs.os }}${{ inputs.perl }}${{ inputs.flags }}/bin/perl -e 'print $^V' > test-output-${{ inputs.os }}-${{ inputs.perl }}${{ inputs.flags }}.txt
           

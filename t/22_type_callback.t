@@ -268,8 +268,19 @@ double fn(cb *callback) {
 }
 
 };
+subtest string => sub {
+    build_and_test
+        'typedef const char * cb(const char *, const char *)' =>
+        <<'', [ Callback [ [ String, String ] => String ] ], String, [ 'Hey', 'Hello' ], 'Return a long line of text', 'Return a long line of text';
+#include "std.h"
+// ext: .c
+typedef const char * cb(const char *, const char *);
+const char * fn(cb *callback) {
+    return callback("Hey", "Hello");
+}
 
-#define STRING_FLAG 'z'
+};
+
 #define WSTRING_FLAG '<'
 #define STDSTRING_FLAG 'Y'
 #define STRUCT_FLAG 'A'

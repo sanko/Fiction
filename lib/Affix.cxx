@@ -526,15 +526,19 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
         //~ #define POINTER_FLAG 'P'
 
     case POINTER_FLAG: {
-        sv_setsv(a->res, ptr2sv(aTHX_
-
-                                    dcCallPointer(cvm, a->entry_point)
-
-                                        ,
-                                a->restype
-
-                                ));
-
+        DCpointer ret = dcCallPointer(cvm, a->entry_point);
+        if(ret == NULL) sv_set_undef(a->res);
+        else if (SvOK(MUTABLE_SV(ret))) {
+            DumpHex(ret, 16);
+            sv_dump(MUTABLE_SV(ret));
+            warn("Pointer %p is an SV*", ret);
+            sv_setsv(a->res, MUTABLE_SV(ret));
+        }
+        else {
+            warn("Pointer %p is not an SV*", ret);
+            DumpHex(ret, 32);
+            sv_setsv(a->res, ptr2sv(aTHX_ ret, a->restype));
+        }
     } break;
 
         //~ #define SV_FLAG '?'

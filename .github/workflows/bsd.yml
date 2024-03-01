@@ -27,7 +27,8 @@ jobs:
             /usr/local/bin/perl${{inputs.perl}}${{ inputs.os == 'freebsd' && '.2' }} -v
             curl -L https://cpanmin.us | sudo /usr/local/bin/perl${{inputs.perl}}${{ inputs.os == 'freebsd' && '.2' || ''}} - --notest App::cpanminus Module::Build::Tiny
             sudo cpanm --installdeps --notest .
-            sudo cpanm -v --test-only .
+            sudo /usr/local/bin/perl${{inputs.perl}}${{ inputs.os == 'freebsd' && '.2' || ''}} Build.PL
+            sudo ./Build test --verbose
           shell: bash
           version: '${{ inputs.version }}'
 name: bsd module

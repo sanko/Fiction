@@ -421,7 +421,7 @@ my %actions;
         my %opt = @_;
 
         #~ die "Must run `./Build build` first\n" if not -d 'blib';
-        $actions{build}->(%opt);
+        $actions{build}->(%opt) if not -d 'blib';
         require TAP::Harness::Env;
         my %test_args = (
             ( verbosity => $opt{verbose} ) x !!exists $opt{verbose},
@@ -436,7 +436,7 @@ my %actions;
         my %opt = @_;
 
         #~ die "Must run `./Build build` first\n" if not -d 'blib';
-        $actions{build}->(%opt);
+        $actions{build}->(%opt) if not -d 'blib';
         install( $opt{install_paths}->install_map, @opt{qw/verbose dry_run uninst/} );
         return 0;
     },

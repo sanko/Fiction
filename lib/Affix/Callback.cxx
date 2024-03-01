@@ -96,16 +96,22 @@ DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointe
                 case DOUBLE_FLAG:
                     PUSHs(sv_2mortal(newSVnv(dcbArgDouble(args))));
                     break;
-                //~ #define STRING_FLAG 'z'
-                //~ #define WSTRING_FLAG '<'
-                //~ #define STDSTRING_FLAG 'Y'
-                //~ #define STRUCT_FLAG 'A'
-                //~ #define CPPSTRUCT_FLAG 'B'
-                //~ #define UNION_FLAG 'u'
-                //~ #define ARRAY_FLAG '@'
-                //~ #define CODEREF_FLAG '&'
-                //~ #define POINTER_FLAG 'P'
-                //~ #define SV_FLAG '?'
+                    //~ #define STRING_FLAG 'z'
+                    //~ #define WSTRING_FLAG '<'
+                    //~ #define STDSTRING_FLAG 'Y'
+                    //~ #define STRUCT_FLAG 'A'
+                    //~ #define CPPSTRUCT_FLAG 'B'
+                    //~ #define UNION_FLAG 'u'
+                    //~ #define ARRAY_FLAG '@'
+                    //~ #define CODEREF_FLAG '&'
+                    //~ #define POINTER_FLAG 'P'
+
+                case POINTER_FLAG:
+                    PUSHs(sv_2mortal(
+                        ptr2sv(aTHX_ dcbArgPointer(args), *av_fetch(c->argtypes, st_pos, 0)
+
+                                   )));
+                    break;
                 default:
                     croak("Attempt to pass unknown or unhandled type to callback: %c",
                           c->signature[sig_pos]);
@@ -210,6 +216,10 @@ DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointe
                 //~ #define ARRAY_FLAG '@'
                 //~ #define CODEREF_FLAG '&'
                 //~ #define POINTER_FLAG 'P'
+            case POINTER_FLAG: {
+                result->p = SvREFCNT_inc(POPs);
+                ret = 'p';
+            } break;
                 //~ #define SV_FLAG '?'
             default:
                 croak("Attempt to return unknown or unhandled type from callback: %c",

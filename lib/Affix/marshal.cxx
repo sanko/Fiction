@@ -405,14 +405,17 @@ void *sv2ptr(pTHX_ SV *type, SV *data) {
         Copy(&value, ret, 1, bool);
     } break;
     case CHAR_FLAG: {
+        warn("CHAR");
         PING;
         if (!SvOK(data)) { ret = safecalloc(SIZEOF_CHAR, 1); }
         else if (SvPOK(data)) {
             STRLEN len;
             DCpointer value = (DCpointer)SvPV(data, len);
             if (len) {
+                warn("len: %d", len);
                 ret = safecalloc(SIZEOF_CHAR, len + 1);
                 Copy(value, ret, len + 1, char);
+                DumpHex(ret, len + 1);
             }
             else
                 ret = safecalloc(SIZEOF_CHAR, 1);
@@ -695,7 +698,7 @@ void *sv2ptr(pTHX_ SV *type, SV *data) {
             ret = av2ptr(aTHX_ subtype, MUTABLE_AV(SvRV(data)));
         }
         else {
-            DCpointer block = sv2ptr(aTHX_ subtype, data);
+            const DCpointer block = sv2ptr(aTHX_ subtype, data);
             ret = safemalloc(SIZEOF_INTPTR_T);
             Copy(block, ret, 1, intptr_t);
             safefree(block);

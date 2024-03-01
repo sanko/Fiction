@@ -355,6 +355,7 @@ typedef struct {
     SV *cv;
     AV *argtypes;
     SV *retval;
+    SV *restype;
     dTHXfield(perl)
 } Callback;
 
