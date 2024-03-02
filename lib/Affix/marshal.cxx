@@ -1,5 +1,67 @@
 #include "../Affix.h"
 
+void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
+    DD(type);
+    DD(data);
+
+    switch (AXT_NUMERIC(type)) {
+    /*case VOID_FLAG: {
+        if(!SvOK(data)){
+            Newxz(ret, 1, DCpointer);
+        }
+    }break;*/
+    case INT_FLAG: {
+        if (SvOK(data)) {
+            if (SvTYPE(data) == SVt_PVIV) {
+                if (ret == NULL) Newxz(ret, 1, int);
+                int i = SvIV(data);
+                Copy(&i, ret, 1, int);
+            }
+            else if (SvROK(data) && SvTYPE(SvRV(data)) == SVt_PVAV) {
+                AV *array = MUTABLE_AV(SvRV(data));
+                size_t len = av_count(array);
+                if (ret == NULL) Newxz(ret, len, int);
+                int i;
+                for (size_t x = 0; x < len; ++x) {
+                    i = SvIV(*av_fetch(array, x, 0));
+                    Copy(&i, INT2PTR(int *, PTR2IV(ret) + (x * SIZEOF_INT)), 1, int);
+                }
+            }
+            else
+                croak("Data type mismatch for Pointer[%s] [%d]", AXT_STRINGIFY(type), SvTYPE(data));
+        }
+        else if (ret == NULL)
+            Newxz(ret, 1, DCpointer); // HMM: void pointer?
+    } break;
+    default:
+        croak("Attempt to marshal unknown/unhandled type in sv2ptr: [%c] Pointer[%s]",
+              (char)AXT_NUMERIC(type), AXT_STRINGIFY(type));
+        break;
+    }
+
+    return ret;
+}
+
+SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
+    if (ptr == NULL) return sv_2mortal(newSV(0)); // Don't waste any time on NULL pointers
+    SV *ret;
+    DD(type);
+    switch (AXT_NUMERIC(type)) {
+    /*case VOID_FLAG: {
+        if(!SvOK(data)){
+            Newxz(ret, 1, DCpointer);
+        }
+    }break;*/
+    case INT_FLAG: {
+        ret = newSViv(*(int *)ptr);
+    } break;
+    default:
+        croak("Attempt to marshal unknown/unhandled type in sv2ptr: [%c] Pointer[%s]",
+              (char)AXT_NUMERIC(type), AXT_STRINGIFY(type));
+    };
+    return ret;
+}
+
 SV *ptr2av(pTHX_ DCpointer ptr, SV *type) {
     // #if DEBUG
     warn("ptr2av(%p, %s)) at %s line %d", ptr, AXT_STRINGIFY(type), __FILE__, __LINE__);
@@ -37,14 +99,14 @@ SV *ptr2av(pTHX_ DCpointer ptr, SV *type) {
 
             void **_ptr = (void **)ptr;
             for (size_t i = 0; i < size; ++i) {
-                av_push(RETVAL_, newRV(ptr2sv(aTHX_ _ptr[i], subtype)));
+                av_push(RETVAL_, newRV(ptr2sv(aTHX_ subtype, _ptr[i])));
             }
         } break;
         default: {
             PING;
 
             for (size_t i = 0; i < size; ++i) {
-                av_push(RETVAL_, ptr2sv(aTHX_ INT2PTR(DCpointer, PTR2IV(ptr) + pos), subtype));
+                av_push(RETVAL_, ptr2sv(aTHX_ subtype, INT2PTR(DCpointer, PTR2IV(ptr) + pos)));
                 pos += el_len;
             }
         }
@@ -62,7 +124,7 @@ SV *ptr2av(pTHX_ DCpointer ptr, SV *type) {
 #endif
     return retval;
 }
-SV *ptr2sv(pTHX_ DCpointer ptr, SV *type) {
+SV *ptr2svx(pTHX_ DCpointer ptr, SV *type) {
     PING;
     // #if DEBUG
     warn("ptr2sv(%p, %s) at %s line %d", ptr, AXT_STRINGIFY(type), __FILE__, __LINE__);
@@ -165,7 +227,7 @@ SV *ptr2sv(pTHX_ DCpointer ptr, SV *type) {
                 SV *subtype = *av_fetch(field, 1, 0);
                 (void)hv_store_ent(
                     RETVAL_, name,
-                    ptr2sv(aTHX_ INT2PTR(DCpointer, PTR2IV(ptr) + AXT_OFFSET(subtype)), subtype),
+                    ptr2sv(aTHX_ subtype, INT2PTR(DCpointer, PTR2IV(ptr) + AXT_OFFSET(subtype))),
                     0);
             }
             SvSetSV(retval, newRV(MUTABLE_SV(RETVAL_)));
@@ -216,7 +278,7 @@ SV *ptr2sv(pTHX_ DCpointer ptr, SV *type) {
             //~ retval = ptr2sv(aTHX_ *(void**)ptr, subtype);
             //~ }break;
             default: {
-                retval = ptr2sv(aTHX_ ptr, subtype);
+                retval = ptr2sv(aTHX_ subtype, ptr);
             } break;
             }
         } break;
@@ -249,7 +311,7 @@ SV *ptr2sv(pTHX_ DCpointer ptr, SV *type) {
                     #define AFFIX_TYPE_INSTANCE_OF 52
                     */
         case CONST_FLAG:
-            retval = ptr2sv(aTHX_ ptr, AXT_SUBTYPE(type));
+            retval = ptr2sv(aTHX_ AXT_SUBTYPE(type), ptr);
             break;
         default:
             croak("Unhandled type: %s in ptr2sv", AXT_STRINGIFY(type));
@@ -356,7 +418,7 @@ void *av2ptr(pTHX_ SV *type, AV *av_data) {
     return ret;
 }
 
-void *sv2ptr(pTHX_ SV *type, SV *data) {
+void *sv2ptrx(pTHX_ SV *type, SV *data) {
     DD(type);
     DD(data);
     PING;
@@ -366,7 +428,7 @@ void *sv2ptr(pTHX_ SV *type, SV *data) {
     warn("Here %d", __LINE__);
 
     //~ while (SvROK(type))
-        //~ type = SvRV(type);
+    //~ type = SvRV(type);
 
     sv_dump(type);
     sv_dump(data);

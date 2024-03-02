@@ -108,9 +108,7 @@ DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointe
 
                 case POINTER_FLAG:
                     PUSHs(sv_2mortal(
-                        ptr2sv(aTHX_ dcbArgPointer(args), *av_fetch(c->argtypes, st_pos, 0)
-
-                                   )));
+                        ptr2sv(aTHX_ * av_fetch(c->argtypes, st_pos, 0), dcbArgPointer(args))));
                     break;
                 default:
                     croak("Attempt to pass unknown or unhandled type to callback: %c",

@@ -10,7 +10,7 @@ typedef struct { // Used in CUnion and pin()
 
 int get_pin(pTHX_ SV *sv, MAGIC *mg) {
     var_ptr *ptr = (var_ptr *)mg->mg_ptr;
-    SV *val = ptr2sv(aTHX_ ptr->ptr, ptr->type_sv);
+    SV *val = ptr2sv(aTHX_ ptr->type_sv, ptr->ptr);
     sv_setsv((sv), val);
     return 0;
 }

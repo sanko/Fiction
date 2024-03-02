@@ -115,7 +115,7 @@ XS_INTERNAL(Affix_Aggregate_FETCH) {
         if (strcmp(key, SvPV(*name, PL_na)) == 0) {
             SV *_type = *av_fetch(MUTABLE_AV(SvRV(*elm)), 1, 0);
             size_t offset = AXT_OFFSET(_type); // meaningless for union
-            sv_setsv(RETVAL, sv_2mortal(ptr2sv(aTHX_ INT2PTR(DCpointer, tmp + offset), _type)));
+            sv_setsv(RETVAL, sv_2mortal(ptr2sv(aTHX_ _type, INT2PTR(DCpointer, tmp + offset))));
             break;
         }
     }

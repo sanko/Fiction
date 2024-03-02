@@ -432,12 +432,11 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
                 //~ #define POINTER_FLAG 'P'
 
             case POINTER_FLAG: {
-sv_dump(*av_fetch(a->argtypes, st_pos, 0));
+                sv_dump(*av_fetch(a->argtypes, st_pos, 0));
                 sv_dump(AXT_SUBTYPE(*av_fetch(a->argtypes, st_pos, 0)));
 
                 dcArgPointer(
-                    cvm, sv2ptr(aTHX_
-                AXT_SUBTYPE(*av_fetch(a->argtypes, st_pos, 0)), ST(st_pos)));
+                    cvm, sv2ptr(aTHX_ AXT_SUBTYPE(*av_fetch(a->argtypes, st_pos, 0)), ST(st_pos)));
                 break;
             }
 
@@ -547,7 +546,7 @@ sv_dump(*av_fetch(a->argtypes, st_pos, 0));
             DumpHex(ret, 32);
             DD(a->restype);
             DD(AXT_SUBTYPE(a->restype));
-            sv_setsv(a->res, ptr2sv(aTHX_ ret, AXT_SUBTYPE(a->restype)));
+            sv_setsv(ptr2sv(aTHX_ AXT_SUBTYPE(a->restype), ret), a->res);
         }
         //~ if (SvOK(MUTABLE_SV(ret)))
         //~ sv_setsv(a->res, sv_2mortal(MUTABLE_SV(ret)));
@@ -1080,7 +1079,7 @@ extern "C" void Affix_trigger(pTHX_ CV *cv) {
         if (affix->ret_ptr == NULL) affix->ret_ptr = safemalloc(AXT_SIZEOF(affix->ret_info));
         dcCallAggr(cvm, affix->entry_point, affix->ret_aggregate, affix->ret_ptr);
         PING;
-        RETVAL = sv_2mortal(ptr2sv(aTHX_ affix->ret_ptr, affix->ret_info));
+        RETVAL = sv_2mortal(ptr2sv(aTHX_ affix->ret_info, affix->ret_ptr));
         PING;
     } break;
     case CODEREF_FLAG: {
@@ -1096,7 +1095,7 @@ extern "C" void Affix_trigger(pTHX_ CV *cv) {
         PING;
 
         if (sv_derived_from(subtype, "Affix::Type::Char")) {
-            RETVAL = ptr2sv(aTHX_ ptr, affix->ret_info);
+            RETVAL = ptr2sv(aTHX_ affix->ret_info, ptr);
         }
         else {
             RETVAL = newSV(1);
@@ -1123,8 +1122,8 @@ extern "C" void Affix_trigger(pTHX_ CV *cv) {
 #endif
                 //~ warn("st_pos: %d", st_pos);
 
-                sv_setsv_mg(ST(st_pos), ptr2sv(aTHX_ affix->temp_ptrs[st_pos],
-                                               MUTABLE_SV(affix->arg_info[st_pos])));
+                sv_setsv_mg(ST(st_pos), ptr2sv(aTHX_ MUTABLE_SV(affix->arg_info[st_pos]),
+                                               affix->temp_ptrs[st_pos]));
                 SvSETMAGIC(ST(st_pos));
                 //~ DD(ST(st_pos));
             }
@@ -2250,7 +2249,7 @@ XS_EXTERNAL(boot_Affix) {
     //
     //~ boot_Affix_Aggregate(aTHX_ cv);
     //~ boot_Affix_pin(aTHX_ cv);
-    //~ boot_Affix_Pointer(aTHX_ cv);
+    boot_Affix_Pointer(aTHX_ cv);
     boot_Affix_Lib(aTHX_ cv);
     boot_Affix_Platform(aTHX_ cv);
 

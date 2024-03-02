@@ -134,6 +134,9 @@ package Affix 0.50 {    # 'FFI' is my middle name!
             #
             = @Affix::Type::Parameterized::ISA = 'Affix::Type';
 
+        # Pointers
+        @Affix::Type::Pointer::Unmanaged::ISA = 'Affix::Pointer';
+
         # Aggregates
         @Affix::Type::Struct::ISA = @Affix::Type::Array::ISA = @Affix::Type::Union::ISA
 
