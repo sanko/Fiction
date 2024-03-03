@@ -23,7 +23,7 @@ subtest 'Pointer[Int]' => sub {
     };
     subtest array => sub {
         isa_ok my $ptr = Affix::sv2ptr( Pointer [Int], [ 150 .. 170 ] ), ['Affix::Pointer'], '[150..170]';
-        $ptr->dump(40);
+        $ptr->dump(88);
         is $ptr->at(0),         150,  '$ptr->at(0) == 150';
         is $ptr->at(8),         158,  '$ptr->at(8) == 158';
         is $ptr->at( 0, 2000 ), 2000, '$ptr->at(0, 2000) == 2000';
@@ -31,6 +31,8 @@ subtest 'Pointer[Int]' => sub {
         #~ ddx Affix::ptr2sv(Pointer[Int], $ptr);
         #~ $ptr->plus( 1, 1 )->dump(10);
         $ptr->dump(40);
+        is [ unpack 'i*', $ptr->raw( 21 * Affix::Platform::SIZEOF_INT() ) ], [ 2000, 151 .. 170 ],
+            '$ptr->raw( ' . 21 * Affix::Platform::SIZEOF_INT() . ' )';
         free $ptr;
         is $ptr, U(), '$ptr is now free';
     };

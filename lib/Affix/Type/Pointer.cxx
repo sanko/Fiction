@@ -98,6 +98,36 @@ XS_INTERNAL(Affix_Pointer_at) {
     XSRETURN(1);
 }
 
+XS_INTERNAL(Affix_Pointer_raw) {
+    dVAR;
+    dXSARGS;
+    if (items < 2 || items > 3) croak_xs_usage(cv, "ptr, size[, utf8]");
+    {
+        SV *RETVAL;
+        size_t size = (size_t)SvUV(ST(1));
+        bool utf8 = items < 3 ? false : SvTRUE(ST(2));
+        {
+            SV *const xsub_tmp_sv = ST(0);
+            SvGETMAGIC(xsub_tmp_sv);
+
+            if (!(SvROK(xsub_tmp_sv) && SvTYPE(SvRV(xsub_tmp_sv)) == SVt_PVAV &&
+                  sv_derived_from(xsub_tmp_sv, "Affix::Pointer")))
+                croak("ptr is not of type Affix::Pointer");
+            size_t size = (size_t)SvUV(ST(1));
+            {
+                SV *ptr_sv = AXT_POINTER_ADDR(xsub_tmp_sv);
+                IV tmp = SvIV(MUTABLE_SV(SvRV(ptr_sv)));
+                DCpointer ptr;
+                ptr = INT2PTR(DCpointer, tmp);
+                RETVAL = newSVpvn_utf8((const char *)ptr, size, utf8 ? 1 : 0);
+            }
+        }
+        RETVAL = sv_2mortal(RETVAL);
+        ST(0) = RETVAL;
+    }
+    XSRETURN(1);
+}
+
 XS_INTERNAL(Affix_Pointer_DESTROY) {
     dVAR;
     dXSARGS;
@@ -473,136 +503,6 @@ XS_INTERNAL(Affix_strdup) {
     XSRETURN(1);
 }
 
-XS_INTERNAL(Affix_Pointer_as_string) {
-    dVAR;
-    dXSARGS;
-    PING;
-
-    if (items < 1) croak_xs_usage(cv, "ptr, ...");
-    {
-        char *RETVAL;
-        dXSTARG;
-        DCpointer ptr;
-
-        if (sv_derived_from(ST(0), "Affix::Pointer")) {
-            IV tmp = SvIV((SV *)SvRV(ST(0)));
-            ptr = INT2PTR(DCpointer, tmp);
-        }
-        else
-            croak("ptr is not of type Affix::Pointer");
-        RETVAL = (char *)ptr;
-        sv_setpv(TARG, RETVAL);
-        XSprePUSH;
-        PUSHTARG;
-    }
-    XSRETURN(1);
-}
-
-XS_INTERNAL(Affix_Pointer_as_double) {
-    dVAR;
-    dXSARGS;
-    PING;
-
-    if (items < 1) croak_xs_usage(cv, "ptr, ...");
-
-    double RETVAL;
-    dXSTARG;
-    DCpointer ptr;
-
-    if (sv_derived_from(ST(0), "Affix::Pointer")) {
-        IV tmp = SvIV((SV *)SvRV(ST(0)));
-        ptr = INT2PTR(DCpointer, tmp);
-    }
-    else
-        croak("ptr is not of type Affix::Pointer");
-    RETVAL = *(double *)ptr;
-    sv_setnv_mg(TARG, RETVAL);
-    XSprePUSH;
-    PUSHTARG;
-
-    XSRETURN(1);
-}
-
-XS_INTERNAL(Affix_Pointer_as_int) {
-    dVAR;
-    dXSARGS;
-    PING;
-
-    if (items < 1) croak_xs_usage(cv, "ptr, ...");
-
-    int RETVAL;
-    dXSTARG;
-    DCpointer ptr;
-
-    if (sv_derived_from(ST(0), "Affix::Pointer")) {
-        IV tmp = SvIV((SV *)SvRV(ST(0)));
-        ptr = INT2PTR(DCpointer, tmp);
-    }
-    else
-        croak("ptr is not of type Affix::Pointer");
-    RETVAL = *(int *)ptr;
-    sv_setiv_mg(TARG, RETVAL);
-    XSprePUSH;
-    PUSHTARG;
-
-    XSRETURN(1);
-}
-
-XS_INTERNAL(Affix_Pointer_deref_scalar) {
-    dVAR;
-    dXSARGS;
-    PING;
-
-    if (items < 1) croak_xs_usage(cv, "ptr, ...");
-
-    int RETVAL;
-    DCpointer ptr;
-
-    if (sv_derived_from(ST(0), "Affix::Pointer")) {
-        IV tmp = SvIV((SV *)SvRV(ST(0)));
-        ptr = INT2PTR(DCpointer, tmp);
-    }
-    else
-        croak("ptr is not of type Affix::Pointer");
-    RETVAL = *(int *)ptr;
-    ST(0) = newRV(newSViv(RETVAL));
-    XSRETURN(1);
-}
-
-XS_INTERNAL(Affix_Pointer_raw) {
-    dVAR;
-    dXSARGS;
-    PING;
-
-    if (items < 2 || items > 3) croak_xs_usage(cv, "ptr, size[, utf8]");
-    {
-        SV *RETVAL;
-        size_t size = (size_t)SvUV(ST(1));
-        bool utf8;
-
-        if (items < 3)
-            utf8 = false;
-        else { utf8 = (bool)SvTRUE(ST(2)); }
-        {
-            DCpointer ptr;
-            if (sv_derived_from(ST(0), "Affix::Pointer")) {
-                IV tmp = SvIV((SV *)SvRV(ST(0)));
-                ptr = INT2PTR(DCpointer, tmp);
-            }
-            else if (SvIOK(ST(0))) {
-                IV tmp = SvIV((SV *)(ST(0)));
-                ptr = INT2PTR(DCpointer, tmp);
-            }
-            else
-                croak("dest is not of type Affix::Pointer");
-            RETVAL = newSVpvn_utf8((const char *)ptr, size, utf8 ? 1 : 0);
-        }
-        RETVAL = sv_2mortal(RETVAL);
-        ST(0) = RETVAL;
-    }
-    XSRETURN(1);
-}
-
 void boot_Affix_Pointer(pTHX_ CV *cv) {
     PERL_UNUSED_VAR(cv);
     {
@@ -630,42 +530,14 @@ void boot_Affix_Pointer(pTHX_ CV *cv) {
 
     (void)newXSproto_portable("Affix::sv2ptr", Affix_sv2ptr, __FILE__, "$$");
     (void)newXSproto_portable("Affix::ptr2sv", Affix_ptr2sv, __FILE__, "$$");
-
-    //(void)newXSproto_portable("Affix::Type::Pointer::(|", Affix_Type_Pointer, __FILE__, "");
-    /* The magic for overload gets a GV* via gv_fetchmeth as */
-    /* mentioned above, and looks in the SV* slot of it for */
-    /* the "fallback" status. */
-    sv_setsv(get_sv("Affix::Pointer::()", TRUE), &PL_sv_yes);
-    /* Making a sub named "Affix::Pointer::()" allows the package */
-    /* to be findable via fetchmethod(), and causes */
-    /* overload::Overloaded("Affix::Pointer") to return true. */
-    //~ (void)newXS_deffile("Affix::Pointer::()", Affix_Pointer_as_string);
-    (void)newXSproto_portable("Affix::Pointer::plus", Affix_Pointer_plus, __FILE__, "$$$");
-    (void)newXSproto_portable("Affix::Pointer::(+", Affix_Pointer_plus, __FILE__, "$$$");
-    (void)newXSproto_portable("Affix::Pointer::minus", Affix_Pointer_minus, __FILE__, "$$$");
-    (void)newXSproto_portable("Affix::Pointer::(-", Affix_Pointer_minus, __FILE__, "$$$");
-    (void)newXSproto_portable("Affix::Pointer::as_string", Affix_Pointer_as_string, __FILE__,
-                              "$;@");
-    (void)newXSproto_portable("Affix::Pointer::(\"\"", Affix_Pointer_as_string, __FILE__, "$;@");
-    (void)newXSproto_portable("Affix::Pointer::as_double", Affix_Pointer_as_double, __FILE__,
-                              "$;@");
-    (void)newXSproto_portable("Affix::Pointer::as_int", Affix_Pointer_as_int, __FILE__, "$;@");
-
-    (void)newXSproto_portable("Affix::Pointer::(0+", Affix_Pointer_as_int, __FILE__, "$;@");
-    (void)newXSproto_portable("Affix::Pointer::(${}", Affix_Pointer_deref_scalar, __FILE__, "$;@");
-    (void)newXSproto_portable("Affix::Pointer::deref_scalar", Affix_Pointer_deref_scalar, __FILE__,
-                              "$;@");
+    (void)newXSproto_portable("Affix::Pointer::at", Affix_Pointer_at, __FILE__, "$$;$");
     (void)newXSproto_portable("Affix::Pointer::raw", Affix_Pointer_raw, __FILE__, "$$;$");
     (void)newXSproto_portable("Affix::Pointer::dump", Affix_Pointer_DumpHex, __FILE__, "$$");
     (void)newXSproto_portable("Affix::DumpHex", Affix_Pointer_DumpHex, __FILE__, "$$");
     (void)newXSproto_portable("Affix::Pointer::DESTROY", Affix_Pointer_DESTROY, __FILE__, "$");
-    // $ptr->free or Affix::free($ptr)
     (void)newXSproto_portable("Affix::Pointer::free", Affix_free, __FILE__, "$");
 
-    (void)newXSproto_portable("Affix::Pointer::at", Affix_Pointer_at, __FILE__, "$$;$");
-
     set_isa("Affix::Pointer::Unmanaged", "Affix::Pointer");
-
     set_isa("Affix::Type::Ref", "Affix::Type::Pointer");
     set_isa("Affix::Ref", "Affix::Pointer");
 }
