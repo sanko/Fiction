@@ -23,13 +23,13 @@ if ( Affix::Platform::OS() =~ /Win32/ ) {
     diag '                MinGW: ' . ( Affix::Platform::MS_MinGW()  ? 'yes' : 'no' );
     diag '               MSVCRT: ' . ( Affix::Platform::MS_CRT()    ? 'yes' : 'no' );
 }
-if ( Affix::Platform::Architecture() =~ /ARM/ ) {
+if ( Affix::Platform::ARCH_ARM() ) {
     diag '                    Thumb: ' . ( Affix::Platform::ARM_Thumb() ? 'yes' : 'no' );
     diag '               Hard Float: ' . ( Affix::Platform::HardFloat() ? 'yes' : 'no' );
     diag '                     EABI: ' . ( Affix::Platform::ARM_EABI()  ? 'yes' : 'no' );
     diag '                     OABI: ' . ( Affix::Platform::ARM_OABI()  ? 'yes' : 'no' );
 }
-elsif ( Affix::Platform::Architecture() =~ /MIPS/ ) {
+elsif ( Affix::Platform::ARCH_MIPS() ) {
     diag '                   o32 CC: ' . ( Affix::Platform::MIPS_O32()  ? 'yes' : 'no' );
     diag '               Hard Float: ' . ( Affix::Platform::HardFloat() ? 'yes' : 'no' );
     diag '                     EABI: ' . ( Affix::Platform::MIPS_EABI() ? 'yes' : 'no' );

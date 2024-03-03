@@ -1,5 +1,9 @@
 #include "../Affix.h"
 
+#define _eval(x) #x // extra round of macroexpansion
+#define _is_defined(x, y) strcmp(x, y)
+#define is_defined(x) _is_defined(#x, _eval(x))
+
 void boot_Affix_Platform(pTHX_ CV *cv) {
     PERL_UNUSED_VAR(cv);
 
@@ -17,7 +21,7 @@ void boot_Affix_Platform(pTHX_ CV *cv) {
 
     // https://dyncall.org/pub/dyncall/dyncall/file/tip/dyncall/dyncall_macros.h
     const char *os =
-#ifdef DC__OS_Win64
+#if defined DC__OS_Win64
         "Win64"
 #elif defined DC__OS_Win32
         "Win32"
@@ -51,29 +55,9 @@ void boot_Affix_Platform(pTHX_ CV *cv) {
         "Unknown"
 #endif
         ;
-    bool cygwin =
-#ifdef DC__OS_Cygwin
-        1
-#else
-        0
-#endif
-        ;
-    bool mingw =
-#ifdef DC__OS_MinGW
-        1
-#else
-        0
-#endif
-        ;
-    bool msvcrt =
-#ifdef DC__RT_MSVCRT
-        1
-#else
-        0
-#endif
-        ;
+
     const char *compiler =
-#ifdef DC__C_Intel
+#if defined DC__C_Intel
         "Intel"
 #elif defined DC__C_MSVC
         "MSVC"
@@ -92,11 +76,12 @@ void boot_Affix_Platform(pTHX_ CV *cv) {
 #endif
         ;
     const char *architecture =
-
-#ifdef DC__Arch_AMD64
+#if (defined(__arm64__) || defined(__arm64e__) || defined(__aarch64__)) && defined(DC__OS_MacOSX)
+        "Apple Silicon"
+#elif defined DC__Arch_AMD64
         "x86_64"
 #elif defined DC__Arch_Intel_x86
-        "Intelx86"
+        "x86"
 #elif defined DC__Arch_Itanium
         "Itanium"
 #elif defined DC__Arch_PPC64
@@ -121,126 +106,6 @@ void boot_Affix_Platform(pTHX_ CV *cv) {
         "Unknown"
 #endif
         ;
-    bool arm_thumb =
-#ifdef DC__Arch_ARM_THUMB
-        1
-#else
-        0
-#endif
-        ;
-
-    bool arm_eabi =
-#ifdef DC__ABI_ARM_EABI
-        1
-#else
-        0
-#endif
-        ;
-    bool arm_oabi =
-#ifdef DC__ABI_ARM_OABI
-        1
-#else
-        0
-#endif
-        ;
-
-    bool mips_o32 =
-#ifdef DC__ABI_MIPS_O32
-        1
-#else
-        0
-#endif
-        ;
-    bool mips_n64 =
-#ifdef DC__ABI_MIPS_N64
-        1
-#else
-        0
-#endif
-        ;
-    bool mips_n32 =
-#ifdef DC__ABI_MIPS_N32
-        1
-#else
-        0
-#endif
-        ;
-
-    bool mips_eabi =
-#ifdef DC__ABI_MIPS_EABI
-        1
-#else
-        0
-#endif
-        ;
-    bool hardfloat =
-#if defined(DC__ABI_ARM_HF) || defined(DC__ABI_HARDFLOAT)
-        1
-#else
-        0
-#endif
-        ;
-    bool big_endian =
-#ifdef DC__Endian_BIG
-        1
-#else
-        0
-#endif
-        ;
-    bool aggr_by_value =
-#ifdef DC__Feature_AggrByVal
-        1
-#else
-        0
-#endif
-        ;
-    bool syscall =
-#ifdef DC__Feature_Syscall
-        1
-#else
-        0
-#endif
-        ;
-
-    bool obj_pe =
-#ifdef DC__Obj_PE
-        1
-#else
-        0
-#endif
-        ;
-
-    bool obj_mach =
-#ifdef DC__Obj_Mach
-        1
-#else
-        0
-#endif
-        ;
-
-    bool obj_elf =
-#ifdef DC__Obj_ELF
-        1
-#else
-        0
-#endif
-        ;
-
-    bool obj_elf64 =
-#ifdef DC__Obj_ELF64
-        1
-#else
-        0
-#endif
-        ;
-
-    bool obj_elf32 =
-#ifdef DC__Obj_ELF32
-        1
-#else
-        0
-#endif
-        ;
 
     const char *obj =
 #ifdef DC__Obj_PE
@@ -260,38 +125,53 @@ void boot_Affix_Platform(pTHX_ CV *cv) {
 
     // Basics
     register_constant("Affix::Platform", "OS", newSVpv(os, 0));
-    register_constant("Affix::Platform", "Cygwin", boolSV(cygwin));
-    register_constant("Affix::Platform", "MinGW", boolSV(mingw));
+    register_constant("Affix::Platform", "Cygwin", boolSV(is_defined(DC__OS_Cygwin)));
+    register_constant("Affix::Platform", "MinGW", boolSV(is_defined(DC__OS_MinGW)));
     register_constant("Affix::Platform", "Compiler", newSVpv(compiler, 0));
     register_constant("Affix::Platform", "Architecture", newSVpv(architecture, 0));
-    register_constant("Affix::Platform", "MSVCRT", boolSV(msvcrt));
-    register_constant("Affix::Platform", "ARM",
-                      boolSV( // undocumented
-#if defined(DC__Arch_ARM) || defined(DC__Arch_ARM64)
-                          1
-#else
-                          0
-#endif
-                          ));
 
-    register_constant("Affix::Platform", "ARM_Thumb", boolSV(arm_thumb));
-    register_constant("Affix::Platform", "ARM_EABI", boolSV(arm_eabi));
-    register_constant("Affix::Platform", "ARM_OABI", boolSV(arm_oabi));
-    register_constant("Affix::Platform", "MIPS_O32", boolSV(mips_o32));
-    register_constant("Affix::Platform", "MIPS_N64", boolSV(mips_n64));
-    register_constant("Affix::Platform", "MIPS_N32", boolSV(mips_n32));
-    register_constant("Affix::Platform", "MIPS_EABI", boolSV(mips_eabi));
-    register_constant("Affix::Platform", "HardFloat", boolSV(hardfloat));
-    register_constant("Affix::Platform", "BigEndian", boolSV(big_endian));
-    register_constant("Affix::Platform", "Syscall", boolSV(syscall));
-    register_constant("Affix::Platform", "AggrByValue", boolSV(aggr_by_value));
+    // Architecture types - undocumented
+    register_constant(
+        "Affix::Platform", "ARCH_Apple_Silicon",
+        boolSV((is_defined(__arm64__) || is_defined(__arm64e__) || is_defined(__aarch64__)) &&
+               is_defined(DC__OS_MacOSX)));
+    register_constant("Affix::Platform", "ARCH_x86_64", boolSV(is_defined(DC__Arch_AMD64)));
+    register_constant("Affix::Platform", "ARCH_x86", boolSV(is_defined(DC__Arch_Intel_x86)));
+    register_constant("Affix::Platform", "ARCH_Itanium", boolSV(is_defined(DC__Arch_Itanium)));
+    register_constant("Affix::Platform", "ARCH_PPC64", boolSV(is_defined(DC__Arch_PPC64)));
+    register_constant("Affix::Platform", "ARCH_PPC32", boolSV(is_defined(DC__Arch_PPC32)));
+    register_constant("Affix::Platform", "ARCH_MIPS64", boolSV(is_defined(DC__Arch_MIPS64)));
+    register_constant("Affix::Platform", "ARCH_MIPS", boolSV(is_defined(DC__Arch_MIPS)));
+    register_constant("Affix::Platform", "ARCH_ARM", boolSV(is_defined(DC__Arch_ARM)));
+    register_constant("Affix::Platform", "ARCH_ARM64", boolSV(is_defined(DC__Arch_ARM64)));
+    register_constant("Affix::Platform", "ARCH_SuperH", boolSV(is_defined(DC__Arch_SuperH)));
+    register_constant("Affix::Platform", "ARCH_Sparc64", boolSV(is_defined(DC__Arch_Sparc64)));
+    register_constant("Affix::Platform", "ARCH_Sparc", boolSV(is_defined(DC__Arch_Sparc)));
+
+    // Architecture
+    register_constant("Affix::Platform", "ARM_Thumb", boolSV(is_defined(DC__Arch_ARM_THUMB)));
+    register_constant("Affix::Platform", "ARM_EABI", boolSV(is_defined(DC__ABI_ARM_EABI)));
+    register_constant("Affix::Platform", "ARM_OABI", boolSV(is_defined(DC__ABI_ARM_OABI)));
+    register_constant("Affix::Platform", "MIPS_O32", boolSV(is_defined(DC__ABI_MIPS_O32)));
+    register_constant("Affix::Platform", "MIPS_N64", boolSV(is_defined(DC__ABI_MIPS_N64)));
+    register_constant("Affix::Platform", "MIPS_N32", boolSV(is_defined(DC__ABI_MIPS_N32)));
+    register_constant("Affix::Platform", "MIPS_EABI", boolSV(is_defined(DC__ABI_MIPS_EABI)));
+
+    //
+    register_constant("Affix::Platform", "HardFloat",
+                      boolSV(is_defined(DC__ABI_ARM_HF) || is_defined(DC__ABI_HARDFLOAT)));
+    register_constant("Affix::Platform", "BigEndian", boolSV(is_defined(DC__Endian_BIG)));
+
+    // Features
+    register_constant("Affix::Platform", "Syscall", boolSV(is_defined(DC__Feature_Syscall)));
+    register_constant("Affix::Platform", "AggrByValue", boolSV(is_defined(DC__Feature_AggrByVal)));
 
     // OBJ types
-    register_constant("Affix::Platform", "OBJ_PE", boolSV(obj_pe));
-    register_constant("Affix::Platform", "OBJ_Mach", boolSV(obj_mach));
-    register_constant("Affix::Platform", "OBJ_ELF", boolSV(obj_elf));
-    register_constant("Affix::Platform", "OBJ_ELF64", boolSV(obj_elf64));
-    register_constant("Affix::Platform", "OBJ_ELF32", boolSV(obj_elf32));
+    register_constant("Affix::Platform", "OBJ_PE", boolSV(is_defined(DC__Obj_PE)));
+    register_constant("Affix::Platform", "OBJ_Mach", boolSV(is_defined(DC__Obj_Mach)));
+    register_constant("Affix::Platform", "OBJ_ELF", boolSV(is_defined(DC__Obj_ELF)));
+    register_constant("Affix::Platform", "OBJ_ELF64", boolSV(is_defined(DC__Obj_ELF64)));
+    register_constant("Affix::Platform", "OBJ_ELF32", boolSV(is_defined(DC__Obj_ELF32)));
     register_constant("Affix::Platform", "OBJ", newSVpv(obj, 0));
 
     // sizeof
@@ -334,126 +214,19 @@ void boot_Affix_Platform(pTHX_ CV *cv) {
     export_constant("Affix::Platform", "ALIGNOF_INTPTR_T", "all", ALIGNOF_INTPTR_T);
 
     // Undocumented
-    register_constant("Affix::Platform", "Win64",
-                      boolSV(
-#ifdef DC__OS_Win64
-                          1
-#else
-                          0
-#endif
-                          ));
-
-    register_constant("Affix::Platform", "Win32",
-                      boolSV(
-#ifdef DC__OS_Win32
-                          1
-#else
-                          0
-#endif
-                          ));
-
-    register_constant("Affix::Platform", "macOS",
-                      boolSV(
-#ifdef DC__OS_MacOSX
-                          1
-#else
-                          0
-#endif
-                          ));
-    register_constant("Affix::Platform", "iPhone",
-                      boolSV(
-#ifdef DC__OS_IPhone
-                          1
-#else
-                          0
-#endif
-                          ));
-    register_constant("Affix::Platform", "linux",
-                      boolSV(
-#ifdef DC__OS_Linux
-                          1
-#else
-                          0
-#endif
-                          ));
-    register_constant("Affix::Platform", "FreeBSD",
-                      boolSV(
-#ifdef DC__OS_FreeBSD
-                          1
-#else
-                          0
-#endif
-                          ));
-    register_constant("Affix::Platform", "OpenBSD",
-                      boolSV(
-#ifdef DC__OS_OpenBSD
-                          1
-#else
-                          0
-#endif
-                          ));
-    register_constant("Affix::Platform", "NetBSD",
-                      boolSV(
-#ifdef DC__OS_NetBSD
-                          1
-#else
-                          0
-#endif
-                          ));
-    register_constant("Affix::Platform", "DragonFlyBSD",
-                      boolSV(
-#ifdef DC__OS_DragonFlyBSD
-                          1
-#else
-                          0
-#endif
-                          ));
-    register_constant("Affix::Platform", "NintendoDS",
-                      boolSV(
-#ifdef DC__OS_NDS
-                          1
-#else
-                          0
-#endif
-                          ));
-    register_constant("Affix::Platform", "PlayStationPortable",
-                      boolSV(
-#ifdef DC__OS_PSP
-                          1
-#else
-                          0
-#endif
-                          ));
-    register_constant("Affix::Platform", "BeOS",
-                      boolSV(
-#ifdef DC__OS_BeOS
-                          1
-#else
-                          0
-#endif
-                          ));
-    register_constant("Affix::Platform", "Plan9",
-                      boolSV(
-#ifdef DC__OS_Plan9
-                          1
-#else
-                          0
-#endif
-                          ));
-    register_constant("Affix::Platform", "VMS",
-                      boolSV(
-#ifdef DC__OS_VMS
-                          1
-#else
-                          0
-#endif
-                          ));
-    register_constant("Affix::Platform", "Minix",
-                      boolSV(
-#ifdef DC__OS_Minix
-                          1
-#else
-                          0
-#endif
-                          ));
+    register_constant("Affix::Platform", "Win64", boolSV(is_defined(DC__OS_Win64)));
+    register_constant("Affix::Platform", "Win32", boolSV(is_defined(DC__OS_Win32)));
+    register_constant("Affix::Platform", "macOS", boolSV(is_defined(DC__OS_MacOSX)));
+    register_constant("Affix::Platform", "iPhone", boolSV(is_defined(DC__OS_IPhone)));
+    register_constant("Affix::Platform", "Linux", boolSV(is_defined(DC__OS_Linux)));
+    register_constant("Affix::Platform", "FreeBSD", boolSV(is_defined(DC__OS_FreeBSD)));
+    register_constant("Affix::Platform", "OpenBSD", boolSV(is_defined(DC__OS_OpenBSD)));
+    register_constant("Affix::Platform", "NetBSD", boolSV(is_defined(DC__OS_NetBSD)));
+    register_constant("Affix::Platform", "DragonFlyBSD", boolSV(is_defined(DC__OS_DragonFlyBSD)));
+    register_constant("Affix::Platform", "NintendoDS", boolSV(is_defined(DC__OS_NDS)));
+    register_constant("Affix::Platform", "SonyPSP", boolSV(is_defined(DC__OS_PSP)));
+    register_constant("Affix::Platform", "BeOS", boolSV(is_defined(DC__OS_BeOS)));
+    register_constant("Affix::Platform", "Plan9", boolSV(is_defined(DC__OS_Plan9)));
+    register_constant("Affix::Platform", "VMS", boolSV(is_defined(DC__OS_VMS)));
+    register_constant("Affix::Platform", "Minix", boolSV(is_defined(DC__OS_Minix)));
 }

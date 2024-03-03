@@ -1,7 +1,7 @@
 ---
 jobs:
-  freebsd:
-    name: '*BSD/v${{matrix.perl}}'
+  etc:
+    name: 'Other Platforms/v${{matrix.perl}}'
     needs:
       - setup
     strategy:
@@ -9,7 +9,12 @@ jobs:
       matrix:
         os:
           - architecture: x86-64
-            host: macos-12
+            host: ubuntu-20.04
+            name: freebsd
+            pkg: pkg install -y
+            version: 13.2
+          - architecture: arm64
+            host: ubuntu-20.04
             name: freebsd
             pkg: pkg install -y
             version: 13.2
@@ -33,7 +38,7 @@ jobs:
       matrix:
         flags: '${{ fromJSON(needs.setup.outputs.matrix).flags }}'
         os:
-          - ubuntu-latest
+          - ubuntu-22.04
         perl: '${{ fromJSON(needs.setup.outputs.matrix).perl }}'
       max-parallel: 25
     uses: sanko/Fiction/.github/workflows/core.yml@main
@@ -42,7 +47,7 @@ jobs:
       os: '${{ matrix.os }}'
       perl: '${{ matrix.perl }}'
   macos:
-    name: 'macOS/v${{matrix.perl}}'
+    name: "[${{ matrix.os == 'macos-14' && 'M1' || 'Intel' }}] macOS/v${{matrix.perl}}"
     needs:
       - setup
     strategy:
@@ -50,11 +55,10 @@ jobs:
       matrix:
         exclude:
           - flags: -Dusequadmath
-            os: macos-latest
           - flags: -Dusethreads
-            os: macos-latest
         flags: '${{ fromJSON(needs.setup.outputs.matrix).flags }}'
         os:
+          - macos-14
           - macos-latest
         perl: '${{ fromJSON(needs.setup.outputs.matrix).perl }}'
       max-parallel: 25
@@ -69,7 +73,7 @@ jobs:
       - macos
       - win32
       - linux
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Do something
         run: echo "Do something"
@@ -83,7 +87,7 @@ jobs:
     name: Generate Testing Matrix
     outputs:
       matrix: '${{ steps.matrix.outputs.matrix }}'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - env:
           DATA: |
@@ -102,7 +106,7 @@ jobs:
       matrix:
         flags: '${{ fromJSON(needs.setup.outputs.matrix).flags }}'
         os:
-          - windows-2019
+          - windows-2022
         perl: '${{ fromJSON(needs.setup.outputs.matrix).perl }}'
       max-parallel: 25
     uses: sanko/Fiction/.github/workflows/core.yml@main
@@ -110,7 +114,7 @@ jobs:
       flags: '${{ matrix.flags }}'
       os: '${{ matrix.os }}'
       perl: '${{ matrix.perl }}'
-name: Mega Matrix CI
+name: CI Matrix
 on:
   pull_request: ~
   push: ~

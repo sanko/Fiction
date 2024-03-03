@@ -67,143 +67,69 @@ sub alien {
         my ($kid) = Path::Tiny->cwd->child('dyncall');
         my $cwd = Path::Tiny->cwd->absolute;
         chdir $kid->absolute->stringify;
-        if (1) {
-            my $make = $opt{config}->get('make');
-            my $configure
-                = 'sh ./configure --prefix=' .
-                $pre->absolute .
-                ' CFLAGS="-fPIC ' .
-                ( $opt{config}->get('osname') =~ /bsd/ ? '' : $CFLAGS ) .
-                '" LDFLAGS="' .
-                ( $opt{config}->get('osname') =~ /bsd/ ? '' : $LDFLAGS ) . '"';
-            if ( $opt{config}->get('osname') eq 'MSWin32' ) {
-                require Devel::CheckBin;
-                for my $exe ( $make, qw[make nmake mingw32-make] ) {
-                    next unless Devel::CheckBin::check_bin($exe);
-                    $make      = $exe;
-                    $configure = '.\configure.bat /tool-' . $opt{config}->get('cc') . ' /make-';
-                    if ( $exe eq 'nmake' ) {
-                        $configure .= 'nmake';
-                        $make      .= ' -f Nmakefile';
-                    }
-                    else {
-                        $configure .= 'make';
-                        $make      .= ' CC=gcc VPATH=. PREFIX="' . $pre->absolute . '"';
-                    }
-                    last;
+        my $make = $opt{config}->get('make');
+        my $configure
+            = 'sh ./configure --prefix=' .
+            $pre->absolute .
+            ' CFLAGS="-fPIC ' .
+            ( $opt{config}->get('osname') =~ /bsd/ ? '' : $CFLAGS ) .
+            '" LDFLAGS="' .
+            ( $opt{config}->get('osname') =~ /bsd/ ? '' : $LDFLAGS ) . '"';
+        if ( $opt{config}->get('osname') eq 'MSWin32' ) {
+            require Devel::CheckBin;
+            for my $exe ( $make, qw[make nmake mingw32-make] ) {
+                next unless Devel::CheckBin::check_bin($exe);
+                $make      = $exe;
+                $configure = '.\configure.bat /tool-' . $opt{config}->get('cc') . ' /make-';
+                if ( $exe eq 'nmake' ) {
+                    $configure .= 'nmake';
+                    $make      .= ' -f Nmakefile';
                 }
-                warn($_) && system($_) for $configure, $make;
-                my %libs = (
-                    dyncall => [
-                        qw[dyncall_version.h dyncall_macros.h dyncall_config.h
-                            dyncall_types.h dyncall.h dyncall_signature.h
-                            dyncall_value.h dyncall_callf.h dyncall_alloc.h
-                        ]
-                    ],
-                    dyncallback => [
-                        qw[dyncall_thunk.h dyncall_thunk_x86.h
-                            dyncall_thunk_ppc32.h dyncall_thunk_x64.h
-                            dyncall_thunk_arm32.h dyncall_thunk_arm64.h
-                            dyncall_thunk_mips.h dyncall_thunk_mips64.h
-                            dyncall_thunk_ppc64.h dyncall_thunk_sparc32.h
-                            dyncall_thunk_sparc64.h dyncall_args.h
-                            dyncall_callback.h
-                        ]
-                    ],
-                    dynload => [qw[dynload.h]],
-                );
-                $pre->child('include')->mkdir;
-                $pre->child('lib')->mkdir;
-                for my $lib ( keys %libs ) {
-
-                    #chdir $kid->child($lib)->absolute;
-                    #warn $kid->child( $lib, 'lib' . $lib . '_s' . $opt{config}->get('_a') );
-                    $kid->child( $lib, 'lib' . $lib . '_s' . $opt{config}->get('_a') )->copy( $pre->child('lib')->absolute );
-                    for ( @{ $libs{$lib} } ) {
-
-                        #warn sprintf '%s => %s', $kid->child( $lib, $_ ),
-                        #    $pre->child( 'include', $_ )->absolute;
-                        #warn
-                        $kid->child( $lib, $_ )->copy( $pre->child( 'include', $_ )->absolute );
-                    }
+                else {
+                    $configure .= 'make';
+                    $make      .= ' CC=gcc VPATH=. PREFIX="' . $pre->absolute . '"';
                 }
+                last;
             }
-            else {
-                $make = $opt{config}->get('make');
-                system($_) for $configure, $make, $make . ' install';
+            warn($_) && system($_) for $configure, $make;
+            my %libs = (
+                dyncall => [
+                    qw[dyncall_version.h dyncall_macros.h dyncall_config.h
+                        dyncall_types.h dyncall.h dyncall_signature.h
+                        dyncall_value.h dyncall_callf.h dyncall_alloc.h
+                    ]
+                ],
+                dyncallback => [
+                    qw[dyncall_thunk.h dyncall_thunk_x86.h
+                        dyncall_thunk_ppc32.h dyncall_thunk_x64.h
+                        dyncall_thunk_arm32.h dyncall_thunk_arm64.h
+                        dyncall_thunk_mips.h dyncall_thunk_mips64.h
+                        dyncall_thunk_ppc64.h dyncall_thunk_sparc32.h
+                        dyncall_thunk_sparc64.h dyncall_args.h
+                        dyncall_callback.h
+                    ]
+                ],
+                dynload => [qw[dynload.h]],
+            );
+            $pre->child('include')->mkdir;
+            $pre->child('lib')->mkdir;
+            for my $lib ( keys %libs ) {
+
+                #chdir $kid->child($lib)->absolute;
+                #warn $kid->child( $lib, 'lib' . $lib . '_s' . $opt{config}->get('_a') );
+                $kid->child( $lib, 'lib' . $lib . '_s' . $opt{config}->get('_a') )->copy( $pre->child('lib')->absolute );
+                for ( @{ $libs{$lib} } ) {
+
+                    #warn sprintf '%s => %s', $kid->child( $lib, $_ ),
+                    #    $pre->child( 'include', $_ )->absolute;
+                    #warn
+                    $kid->child( $lib, $_ )->copy( $pre->child( 'include', $_ )->absolute );
+                }
             }
         }
-        else {    # Future, maybe...
-            require ExtUtils::CBuilder;
-            my $builder = ExtUtils::CBuilder->new( config => ( $opt{config}->values_set ) );
-            $pre->child('lib')->mkdir;
-            $pre->child('include')->mkdir;
-            my %libs = (
-                dyncall => {
-                    c => [
-                        qw[dyncall_vector.c dyncall_api.c dyncall_callvm.c
-                            dyncall_callvm_base.c dyncall_call.S dyncall_callf.c
-                            dyncall_aggregate.c]
-                    ],
-                    h => [
-                        qw[dyncall_version.h dyncall_macros.h dyncall_config.h
-                            dyncall_types.h dyncall.h dyncall_signature.h
-                            dyncall_value.h dyncall_callf.h dyncall_alloc.h
-                        ]
-                    ]
-                },
-                dyncallback => {
-                    c => [
-                        qw[dyncall_alloc_wx.c dyncall_args.c dyncall_callback.c
-                            dyncall_callback_arch.S dyncall_thunk.c]
-                    ],
-                    h => [
-                        qw[dyncall_thunk.h dyncall_thunk_x86.h
-                            dyncall_thunk_ppc32.h dyncall_thunk_x64.h
-                            dyncall_thunk_arm32.h dyncall_thunk_arm64.h
-                            dyncall_thunk_mips.h dyncall_thunk_mips64.h
-                            dyncall_thunk_ppc64.h dyncall_thunk_sparc32.h
-                            dyncall_thunk_sparc64.h dyncall_args.h
-                            dyncall_callback.h
-                        ]
-                    ]
-                },
-                dynload => { c => [qw[dynload.c dynload_syms.c]], h => [qw[dynload.h]] },
-            );
-            #
-            for my $lib (qw[dyncall dyncallback dynload]) {
-                my @objs;
-                chdir $kid->child($lib)->absolute;
-                for my $c ( @{ $libs{$lib}{c} } ) {
-                    my $ob_file = $builder->compile(
-                        source => $c,
-
-                        #defines      => { VERSION => qq/"$version"/, XS_VERSION => qq/"$version"/ },
-                        include_dirs => [ curdir, $kid->child('dyncall')->stringify, $pre->child('include')->stringify, ],
-
-                        #extra_compiler_flags => (
-                        #    '-fPIC ' . ( $opt{config}->get('osname') =~ /bsd/ ? '' : $CFLAGS ) .
-                        #        ( $DEBUG ? ' -ggdb3 ' : '' )
-                        #)
-                    );
-                    push @objs, $ob_file;
-                }
-                $builder->link(
-
-                    #extra_linker_flags => (
-                    #    ( $opt{config}->get('osname') =~ /bsd/ ? '' : $LDFLAGS ) . ' -L' .
-                    #        dirname($source) . ' -L' . $pre->child( $opt{meta}->name, 'lib' )->stringify .
-                    #        ' -ldyncall_s -ldyncallback_s -ldynload_s'
-                    #),
-                    objects  => [@objs],
-                    lib_file => $pre->child( 'lib', 'lib' . $lib . '_s' . $opt{config}->get('_a') )->stringify
-                );
-                for ( @{ $libs{$lib}{h} } ) {
-                    warn sprintf '%s => %s', $kid->child( $lib, $_ ), $pre->child( 'include', $_ )->absolute;
-                    warn $kid->child( $lib, $_ )->copy( $pre->child( 'include', $_ )->absolute );
-                }
-            }
-            #
+        else {
+            $make = $opt{config}->get('make');
+            system($_) for $configure, $make, $make . ' install';
         }
         chdir $cwd->stringify;
     }
@@ -353,8 +279,9 @@ sub process_cxx {
             source               => $source,
             defines              => { VERSION => qq/"$version"/, XS_VERSION => qq/"$version"/ },
             include_dirs         => [ curdir, dirname($source), $pre->child( $opt{meta}->name, 'include' )->stringify ],
-            extra_compiler_flags =>
-                ( '-fPIC ' . ( $opt{config}->get('osname') =~ /bsd/ ? '' : $CFLAGS ) . ( $DEBUG ? ' -ggdb3 -g -Wall -Wextra -pedantic' : '' ) )
+            extra_compiler_flags => (
+                '-fPIC -std=c++14 ' . ( $opt{config}->get('osname') =~ /bsd/ ? '' : $CFLAGS ) . ( $DEBUG ? ' -ggdb3 -g -Wall -Wextra -pedantic' : '' )
+            )
             ) :
             $obj;
 

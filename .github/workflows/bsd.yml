@@ -1,7 +1,7 @@
 ---
 jobs:
   build:
-    name: "${{ inputs.os == 'freebsd' && 'FreeBSD' ||  inputs.os == 'openbsd' && 'OpenBSD' || inputs.os }} ${{ inputs.version }}"
+    name: "[${{ inputs.arch }}] ${{ inputs.os == 'freebsd' && 'FreeBSD' ||  inputs.os == 'openbsd' && 'OpenBSD' || inputs.os }} ${{ inputs.version }}"
     runs-on: '${{ inputs.host }}'
     steps:
       - uses: actions/checkout@v4

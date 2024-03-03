@@ -83,7 +83,7 @@ XS_INTERNAL(Affix_Pointer_DumpHex) {
 XS_INTERNAL(Affix_Pointer_at) {
     dVAR;
     dXSARGS;
-    if (2 < items > 3) croak_xs_usage(cv, "ptr, index, [value]");
+    if (items < 2 || items > 3) croak_xs_usage(cv, "ptr, index, [value]");
 
     SV *const xsub_tmp_sv = ST(0);
     SvGETMAGIC(xsub_tmp_sv);
