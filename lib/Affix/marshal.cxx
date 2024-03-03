@@ -42,7 +42,7 @@ void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
     return ret;
 }
 
-SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
+SV *ptr2sv(pTHX_ SV *type, DCpointer ptr, size_t len) {
     if (ptr == NULL) return sv_2mortal(newSV(0)); // Don't waste any time on NULL pointers
     SV *ret;
     DD(type);
@@ -53,7 +53,15 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
         }
     }break;*/
     case INT_FLAG: {
-        ret = newSViv(*(int *)ptr);
+        if (len == 1)
+            ret = newSViv(*(int *)ptr);
+        else {
+            AV *ret_av = newAV();
+            DCpointer tmp = ptr;
+            for (size_t x = 0; x < len; ++x)
+                av_push(ret_av, newSViv(*(int *)INT2PTR(int *, PTR2IV(ptr) + (x * SIZEOF_INT))));
+            ret = newRV_noinc(MUTABLE_SV(ret_av));
+        }
     } break;
     default:
         croak("Attempt to marshal unknown/unhandled type in sv2ptr: [%c] Pointer[%s]",

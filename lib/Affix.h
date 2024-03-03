@@ -273,6 +273,7 @@ following address will be aligned to `alignment`. */
 #define SLOT_CODEREF_SIG 7
 #define SLOT_POINTER_SUBTYPE SLOT_SUBTYPE
 #define SLOT_POINTER_ADDR 6
+#define SLOT_POINTER_COUNT 7
 
 #define AXT_STRINGIFY(t) SvPV_nolen(*av_fetch(MUTABLE_AV(SvRV(t)), SLOT_STRINGIFY, 0))
 #define AXT_NUMERIC(t) SvIV(*av_fetch(MUTABLE_AV(SvRV(t)), SLOT_NUMERIC, 0))
@@ -289,10 +290,11 @@ following address will be aligned to `alignment`. */
 #define AXT_CODEREF_SIG(t) *av_fetch(MUTABLE_AV(SvRV(t)), SLOT_CODEREF_SIG, 0)
 #define AXT_POINTER_ADDR(t) *av_fetch(MUTABLE_AV(SvRV(t)), SLOT_POINTER_ADDR, 0)
 #define AXT_POINTER_SUBTYPE(t) *av_fetch(MUTABLE_AV(SvRV(t)), SLOT_POINTER_SUBTYPE, 0)
+#define AXT_POINTER_COUNT(t) SvIV(*av_fetch(MUTABLE_AV(SvRV(t)), SLOT_POINTER_COUNT, 0))
 
 // marshal.cxx
 size_t padding_needed_for(size_t offset, size_t alignment);
-SV *ptr2sv(pTHX_ SV *type_sv, DCpointer ptr);
+SV *ptr2sv(pTHX_ SV *type_sv, DCpointer ptr, size_t len = 1);
 DCpointer sv2ptr(pTHX_ SV *type_sv, SV *data, DCpointer ptr = NULL);
 size_t _alignof(pTHX_ SV *type);
 size_t _sizeof(pTHX_ SV *type);

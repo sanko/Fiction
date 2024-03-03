@@ -10,7 +10,11 @@ XS_INTERNAL(Affix_sv2ptr) {
     SV *subtype = AXT_SUBTYPE(ST(0));
     if (UNLIKELY(!sv_derived_from(subtype, "Affix::Type")))
         croak("subtype is not of type Affix::Type");
-    DCpointer RETVAL = sv2ptr(aTHX_ subtype, ST(1));
+
+    SV *const xsub_tmp_sv = ST(1);
+    SvGETMAGIC(xsub_tmp_sv);
+
+    DCpointer RETVAL = sv2ptr(aTHX_ subtype, xsub_tmp_sv);
     {
         AV *RETVALAV = newAV();
         {
@@ -18,7 +22,10 @@ XS_INTERNAL(Affix_sv2ptr) {
             sv_setref_pv(TMP, NULL, RETVAL);
             av_store(RETVALAV, SLOT_POINTER_ADDR, TMP);
             av_store(RETVALAV, SLOT_SUBTYPE, newSVsv(subtype));
-            // HMM: Store the length? Say, data is a list, we might want to know that.
+            av_store(RETVALAV, SLOT_POINTER_COUNT,
+                     newSViv(SvROK(xsub_tmp_sv) && SvTYPE(SvRV(xsub_tmp_sv)) == SVt_PVAV
+                                 ? av_count(MUTABLE_AV(SvRV(xsub_tmp_sv)))
+                                 : 1));
         }
         SV *RETVAL = newRV_noinc(MUTABLE_SV(RETVALAV)); // Create a reference to the AV
         sv_bless(RETVAL, gv_stashpvn("Affix::Pointer::Unmanaged", 25, GV_ADD));
@@ -94,6 +101,28 @@ XS_INTERNAL(Affix_Pointer_at) {
         ptr = INT2PTR(DCpointer, tmp + (index * AXT_SIZEOF(subtype)));
         if (items == 3) sv2ptr(aTHX_ subtype, ST(2), ptr);
         ST(0) = sv_2mortal(ptr2sv(aTHX_ subtype, ptr));
+    }
+    XSRETURN(1);
+}
+
+XS_INTERNAL(Affix_Pointer_sv) {
+    dVAR;
+    dXSARGS;
+    if (1 != items) croak_xs_usage(cv, "ptr");
+
+    SV *const xsub_tmp_sv = ST(0);
+    SvGETMAGIC(xsub_tmp_sv);
+
+    if (!(SvROK(xsub_tmp_sv) && SvTYPE(SvRV(xsub_tmp_sv)) == SVt_PVAV &&
+          sv_derived_from(xsub_tmp_sv, "Affix::Pointer")))
+        croak("ptr is not of type Affix::Pointer");
+    {
+        SV *subtype = AXT_POINTER_SUBTYPE(xsub_tmp_sv);
+        SV *ptr_sv = AXT_POINTER_ADDR(xsub_tmp_sv);
+        IV tmp = SvIV(MUTABLE_SV(SvRV(ptr_sv)));
+        DCpointer ptr;
+        ptr = INT2PTR(DCpointer, tmp);
+        ST(0) = sv_2mortal(ptr2sv(aTHX_ subtype, ptr, AXT_POINTER_COUNT(xsub_tmp_sv)));
     }
     XSRETURN(1);
 }
@@ -531,6 +560,7 @@ void boot_Affix_Pointer(pTHX_ CV *cv) {
     (void)newXSproto_portable("Affix::sv2ptr", Affix_sv2ptr, __FILE__, "$$");
     (void)newXSproto_portable("Affix::ptr2sv", Affix_ptr2sv, __FILE__, "$$");
     (void)newXSproto_portable("Affix::Pointer::at", Affix_Pointer_at, __FILE__, "$$;$");
+    (void)newXSproto_portable("Affix::Pointer::sv", Affix_Pointer_sv, __FILE__, "$");
     (void)newXSproto_portable("Affix::Pointer::raw", Affix_Pointer_raw, __FILE__, "$$;$");
     (void)newXSproto_portable("Affix::Pointer::dump", Affix_Pointer_DumpHex, __FILE__, "$$");
     (void)newXSproto_portable("Affix::DumpHex", Affix_Pointer_DumpHex, __FILE__, "$$");
