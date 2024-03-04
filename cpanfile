@@ -12,9 +12,7 @@ requires 'Data::Dump';
 #
 on 'test' => sub {
     requires 'Test2::V0';
-    requires 'Test2::Tools::Compare';
-    requires 'Test2::Plugin::UTF8';
-    requires 'Devel::CheckBin';
+    requires 'File::Temp';    # Used in tests that compile short C/CPP files
 };
 on 'configure' => sub {
     requires 'Archive::Tar';
@@ -56,4 +54,5 @@ on 'develop' => sub {
     requires 'Pod::Markdown::Github';
     requires 'Software::License::Artistic_2_0';
     requires 'Minilla';
+    recommends 'Benchmark';
 };

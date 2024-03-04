@@ -1,4 +1,5 @@
-use Test2::V0;
+use Test2::V0 '!subtest';
+use Test2::Util::Importer 'Test2::Tools::Subtest' => ( subtest_streamed => { -as => 'subtest' } );
 use lib '../lib', 'lib', '../blib/arch', '../blib/lib', 'blib/arch', 'blib/lib', '../../', '.';
 use Affix qw[:types dlerror find_library load_library find_symbol affix wrap];
 BEGIN { chdir '../' if !-d 't'; }

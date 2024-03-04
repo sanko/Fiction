@@ -2,6 +2,7 @@ package t::lib::helper {
     use strict;
     use warnings;
     use Test2::V0;
+    use Test2::Plugin::UTF8;
     use experimental 'signatures';
     use Path::Tiny qw[path tempdir tempfile];
     use Exporter 'import';

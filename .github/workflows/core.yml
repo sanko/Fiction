@@ -54,7 +54,10 @@ jobs:
       - name: Install prereqs
         run: "curl -L https://cpanmin.us | ~/perl5/perlbrew/perls/cache-${{ inputs.os }}${{ inputs.perl }}${{ inputs.flags }}/bin/perl - --installdeps --notest .\n"
         shell: bash
-      - id: version
+      - env:
+          AUTHOR_TESTING: 1
+          AUTOMATED_TESTING: 1
+        id: test
         name: Run test suite
         run: |
           ~/perl5/perlbrew/perls/cache-${{ inputs.os }}${{ inputs.perl }}${{ inputs.flags }}/bin/perl -V

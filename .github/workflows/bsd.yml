@@ -6,14 +6,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - env:
-          MY_ENV1: MY_ENV1
-          MY_ENV2: MY_ENV2
+          AUTHOR_TESTING: 1
+          AUTOMATED_TESTING: 1
         name: 'Test on ${{ inputs.os }}'
         uses: cross-platform-actions/action@v0.22.0
         with:
           architecture: '${{ inputs.arch }}'
           cpu_count: 4
-          environment_variables: MY_ENV1 MY_ENV2
+          environment_variables: AUTHOR_TESTING AUTOMATED_TESTING
           memory: 5G
           operating_system: '${{ inputs.os }}'
           run: |
@@ -28,7 +28,7 @@ jobs:
             curl -L https://cpanmin.us | sudo /usr/local/bin/perl${{inputs.perl}}${{ inputs.os == 'freebsd' && '.2' || ''}} - --notest App::cpanminus Module::Build::Tiny
             sudo cpanm --installdeps --notest .
             sudo /usr/local/bin/perl${{inputs.perl}}${{ inputs.os == 'freebsd' && '.2' || ''}} Build.PL
-            sudo ./Build test --verbose
+            ./Build test --verbose
           shell: bash
           version: '${{ inputs.version }}'
 name: bsd module

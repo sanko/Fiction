@@ -68,7 +68,6 @@ eg/Cookbook/_*
 
 t/src/85_affix_mangle_rust/Cargo.lock
 t/src/85_affix_mangle_rust/target/
-t/_*
 t/*bench*
 
 dyncall/test/*/*

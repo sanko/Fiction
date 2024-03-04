@@ -49,6 +49,9 @@
          }
       },
       "develop" : {
+         "recommends" : {
+            "Benchmark" : "0"
+         },
          "requires" : {
             "CPAN::Uploader" : "0",
             "Code::TidyAll" : "0",
@@ -83,9 +86,7 @@
       },
       "test" : {
          "requires" : {
-            "Devel::CheckBin" : "0",
-            "Test2::Plugin::UTF8" : "0",
-            "Test2::Tools::Compare" : "0",
+            "File::Temp" : "0",
             "Test2::V0" : "0"
          }
       }
