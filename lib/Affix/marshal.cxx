@@ -5,11 +5,29 @@ void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
     DD(data);
 
     switch (AXT_NUMERIC(type)) {
-    /*case VOID_FLAG: {
-        if(!SvOK(data)){
-            Newxz(ret, 1, DCpointer);
+    case VOID_FLAG: {
+        if (SvOK(data)) {
+            if (SvTYPE(data) != SVt_NULL) {
+                if (ret == NULL) Newxz(ret, 1, int);
+                STRLEN len;
+                DCpointer ptr = SvPVbyte(data, len);
+                Copy(ptr, ret, len, char);
+            }
+            else if (SvROK(data) && SvTYPE(SvRV(data)) == SVt_PVAV) {
+                AV *array = MUTABLE_AV(SvRV(data));
+                size_t len = av_count(array);
+                if (ret == NULL) Newxz(ret, len, char);
+                DCpointer ptr;
+                STRLEN len_;
+                for (size_t x = 0; x < len; ++x) {
+                    ptr = SvPVbyte(*av_fetch(array, x, 0), len_);
+                    Copy(ptr, INT2PTR(int *, PTR2IV(ret) + (x * SIZEOF_INT)), len_, char);
+                }
+            }
+            else
+                croak("Data type mismatch for Pointer[%s] [%d]", AXT_STRINGIFY(type), SvTYPE(data));
         }
-    }break;*/
+    } break;
     case INT_FLAG: {
         if (SvOK(data)) {
             if (SvTYPE(data) == SVt_PVIV) {
@@ -47,11 +65,17 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr, size_t len) {
     SV *ret;
     DD(type);
     switch (AXT_NUMERIC(type)) {
-    /*case VOID_FLAG: {
-        if(!SvOK(data)){
-            Newxz(ret, 1, DCpointer);
+    case VOID_FLAG: {
+        if (len == 1)
+            ret = newSVpv((char *)ptr, len);
+        else {
+            AV *ret_av = newAV();
+            DCpointer tmp = ptr;
+            for (size_t x = 0; x < len; ++x)
+                av_push(ret_av, newSVpv((char *)INT2PTR(int *, PTR2IV(ptr) + (x * SIZEOF_INT)), 0));
+            ret = newRV_noinc(MUTABLE_SV(ret_av));
         }
-    }break;*/
+    } break;
     case INT_FLAG: {
         if (len == 1)
             ret = newSViv(*(int *)ptr);
