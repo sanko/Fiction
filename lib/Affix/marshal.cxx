@@ -17,6 +17,24 @@ void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
                 croak("Data type mismatch for Pointer[%s] [%d]", AXT_STRINGIFY(type), SvTYPE(data));
         }
     } break;
+    case BOOL_FLAG: {
+        if (SvROK(data) && SvTYPE(SvRV(data)) == SVt_PVAV) {
+            AV *array = MUTABLE_AV(SvRV(data));
+            size_t len = av_count(array);
+            if (ret == NULL) Newxz(ret, len, bool);
+            bool i;
+            for (size_t x = 0; x < len; ++x) {
+                i = SvTRUE(*av_fetch(array, x, 0));
+                Copy(&i, INT2PTR(bool *, PTR2IV(ret) + (x * SIZEOF_BOOL)), 1, bool);
+            }
+        }
+        else {
+            if (ret == NULL) Newxz(ret, 1, bool);
+            bool i = SvTRUE(data);
+            Copy(&i, ret, 1, bool);
+        }
+    } break;
+
     case INT_FLAG: {
         if (SvOK(data)) {
             if (SvTYPE(data) == SVt_PVIV) {
@@ -57,6 +75,18 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr, size_t len) {
     case VOID_FLAG:
         ret = newSVpv((char *)ptr, len);
         break;
+    case BOOL_FLAG: {
+        if (len == 1)
+            ret = newSVbool(*(bool *)ptr);
+        else {
+            AV *ret_av = newAV();
+            DCpointer tmp = ptr;
+            for (size_t x = 0; x < len; ++x)
+                av_push(ret_av,
+                        newSVbool(*(bool *)INT2PTR(bool *, PTR2IV(ptr) + (x * SIZEOF_BOOL))));
+            ret = newRV_noinc(MUTABLE_SV(ret_av));
+        }
+    } break;
     case INT_FLAG: {
         if (len == 1)
             ret = newSViv(*(int *)ptr);

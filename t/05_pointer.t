@@ -25,6 +25,41 @@ subtest 'Pointer[Void]' => sub {
             is $ptr, U(), '$ptr is now free';
         };
     };
+
+    # TODO: CStruct
+};
+subtest 'Pointer[Bool]' => sub {
+    subtest undef => sub {
+        isa_ok my $ptr = Affix::sv2ptr( Pointer [Bool], undef ), ['Affix::Pointer'], 'undef';
+        $ptr->dump(16);
+        is $ptr->sv, F(), '$ptr->sv is false';
+        free $ptr;
+        is $ptr, U(), '$ptr is now free';
+    };
+    subtest true => sub {
+        isa_ok my $ptr = Affix::sv2ptr( Pointer [Bool], 1 ), ['Affix::Pointer'], 'true';
+        $ptr->dump( Affix::Platform::SIZEOF_BOOL() );
+        is $ptr->sv,                                    T(),   '$ptr->sv is true';
+        is $ptr->raw( Affix::Platform::SIZEOF_BOOL() ), chr 1, '$ptr->raw( ' . Affix::Platform::SIZEOF_BOOL() . ' )';
+        free $ptr;
+        is $ptr, U(), '$ptr is now free';
+    };
+    subtest false => sub {
+        isa_ok my $ptr = Affix::sv2ptr( Pointer [Bool], 0 ), ['Affix::Pointer'], 'false';
+        $ptr->dump( Affix::Platform::SIZEOF_BOOL() );
+        is $ptr->sv,                                    F(),   '$ptr->sv is false';
+        is $ptr->raw( Affix::Platform::SIZEOF_BOOL() ), chr 0, '$ptr->raw( ' . Affix::Platform::SIZEOF_BOOL() . ' )';
+        free $ptr;
+        is $ptr, U(), '$ptr is now free';
+    };
+    subtest list => sub {
+        isa_ok my $ptr = Affix::sv2ptr( Pointer [Bool], [ 1, 1, 0, 1, 0, 0 ] ), ['Affix::Pointer'], 'false';
+        $ptr->dump( Affix::Platform::SIZEOF_BOOL() * 6 );
+        is $ptr->sv,                                        [ T(), T(), F(), T(), F(), F() ], '$ptr->sv';
+        is $ptr->raw( Affix::Platform::SIZEOF_BOOL() * 6 ), pack( 'c6', 1, 1, 0, 1, 0, 0 ),   '$ptr->raw( ' . Affix::Platform::SIZEOF_BOOL() . ' )';
+        free $ptr;
+        is $ptr, U(), '$ptr is now free';
+    };
 };
 subtest 'Pointer[Int]' => sub {
     subtest 5 => sub {
