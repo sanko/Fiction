@@ -38,7 +38,6 @@ XS_INTERNAL(Affix_ptr2sv) {
     dVAR;
     dXSARGS;
     if (UNLIKELY(items != 2)) croak_xs_usage(cv, "type, ptr");
-    DCpointer ptr;
     if (UNLIKELY(!sv_derived_from(ST(0), "Affix::Type"))) croak("type is not of type Affix::Type");
     {
         SV *const xsub_tmp_sv = ST(1);
@@ -50,11 +49,16 @@ XS_INTERNAL(Affix_ptr2sv) {
         {
             AV *array = MUTABLE_AV(SvRV(xsub_tmp_sv));
             SV *ptr_sv = AXT_POINTER_ADDR(array);
-            IV tmp = SvIV(MUTABLE_SV(SvRV(ptr_sv)));
-            ptr = INT2PTR(DCpointer, tmp);
+            if (SvOK(ptr_sv)) {
+                IV tmp = SvIV(MUTABLE_SV(SvRV(ptr_sv)));
+                DCpointer ptr;
+                ptr = INT2PTR(DCpointer, tmp);
+                ST(0) = sv_2mortal(newRV(ptr2sv(aTHX_ ST(0), ptr)));
+            }
+            else
+                ST(0) = sv_2mortal(newSV(0));
         }
     }
-    ST(0) = sv_2mortal(newRV(ptr2sv(aTHX_ ST(0), ptr)));
     XSRETURN(1);
 }
 
@@ -72,10 +76,12 @@ XS_INTERNAL(Affix_Pointer_DumpHex) {
     size_t size = (size_t)SvUV(ST(1));
     {
         SV *ptr_sv = AXT_POINTER_ADDR(xsub_tmp_sv);
-        IV tmp = SvIV(MUTABLE_SV(SvRV(ptr_sv)));
-        DCpointer ptr;
-        ptr = INT2PTR(DCpointer, tmp);
-        _DumpHex(aTHX_ ptr, size, OutCopFILE(PL_curcop), CopLINE(PL_curcop));
+        if (SvOK(ptr_sv)) {
+            IV tmp = SvIV(MUTABLE_SV(SvRV(ptr_sv)));
+            DCpointer ptr;
+            ptr = INT2PTR(DCpointer, tmp);
+            _DumpHex(aTHX_ ptr, size, OutCopFILE(PL_curcop), CopLINE(PL_curcop));
+        }
     }
     XSRETURN_EMPTY;
 }
@@ -93,14 +99,18 @@ XS_INTERNAL(Affix_Pointer_at) {
         croak("ptr is not of type Affix::Pointer");
     size_t index = (size_t)SvUV(ST(1));
     {
-        SV *subtype = AXT_POINTER_SUBTYPE(xsub_tmp_sv);
-
         SV *ptr_sv = AXT_POINTER_ADDR(xsub_tmp_sv);
-        IV tmp = SvIV(MUTABLE_SV(SvRV(ptr_sv)));
-        DCpointer ptr;
-        ptr = INT2PTR(DCpointer, tmp + (index * AXT_SIZEOF(subtype)));
-        if (items == 3) sv2ptr(aTHX_ subtype, ST(2), ptr);
-        ST(0) = sv_2mortal(ptr2sv(aTHX_ subtype, ptr));
+        if (SvOK(ptr_sv)) {
+            SV *subtype = AXT_POINTER_SUBTYPE(xsub_tmp_sv);
+
+            IV tmp = SvIV(MUTABLE_SV(SvRV(ptr_sv)));
+            DCpointer ptr;
+            ptr = INT2PTR(DCpointer, tmp + (index * AXT_SIZEOF(subtype)));
+            if (items == 3) sv2ptr(aTHX_ subtype, ST(2), ptr);
+            ST(0) = sv_2mortal(ptr2sv(aTHX_ subtype, ptr));
+        }
+        else
+            ST(0) = sv_2mortal(newSV(0));
     }
     XSRETURN(1);
 }
@@ -117,12 +127,16 @@ XS_INTERNAL(Affix_Pointer_sv) {
           sv_derived_from(xsub_tmp_sv, "Affix::Pointer")))
         croak("ptr is not of type Affix::Pointer");
     {
-        SV *subtype = AXT_POINTER_SUBTYPE(xsub_tmp_sv);
         SV *ptr_sv = AXT_POINTER_ADDR(xsub_tmp_sv);
-        IV tmp = SvIV(MUTABLE_SV(SvRV(ptr_sv)));
-        DCpointer ptr;
-        ptr = INT2PTR(DCpointer, tmp);
-        ST(0) = sv_2mortal(ptr2sv(aTHX_ subtype, ptr, AXT_POINTER_COUNT(xsub_tmp_sv)));
+        if (SvOK(ptr_sv)) {
+            SV *subtype = AXT_POINTER_SUBTYPE(xsub_tmp_sv);
+            IV tmp = SvIV(MUTABLE_SV(SvRV(ptr_sv)));
+            DCpointer ptr;
+            ptr = INT2PTR(DCpointer, tmp);
+            ST(0) = sv_2mortal(ptr2sv(aTHX_ subtype, ptr, AXT_POINTER_COUNT(xsub_tmp_sv)));
+        }
+        else
+            ST(0) = sv_2mortal(newSV(0));
     }
     XSRETURN(1);
 }
@@ -145,10 +159,14 @@ XS_INTERNAL(Affix_Pointer_raw) {
             size_t size = (size_t)SvUV(ST(1));
             {
                 SV *ptr_sv = AXT_POINTER_ADDR(xsub_tmp_sv);
-                IV tmp = SvIV(MUTABLE_SV(SvRV(ptr_sv)));
-                DCpointer ptr;
-                ptr = INT2PTR(DCpointer, tmp);
-                RETVAL = newSVpvn_utf8((const char *)ptr, size, utf8 ? 1 : 0);
+                if (SvOK(ptr_sv)) {
+                    IV tmp = SvIV(MUTABLE_SV(SvRV(ptr_sv)));
+                    DCpointer ptr;
+                    ptr = INT2PTR(DCpointer, tmp);
+                    RETVAL = newSVpvn_utf8((const char *)ptr, size, utf8 ? 1 : 0);
+                }
+                else
+                    RETVAL = newSV(0);
             }
         }
         RETVAL = sv_2mortal(RETVAL);
@@ -170,11 +188,13 @@ XS_INTERNAL(Affix_Pointer_DESTROY) {
     {
         DCpointer ptr;
         SV *ptr_sv = AXT_POINTER_ADDR(xsub_tmp_sv);
-        IV tmp = SvIV(MUTABLE_SV(SvRV(ptr_sv)));
-        ptr = INT2PTR(DCpointer, tmp);
-        if (ptr != NULL) {
-            // safefree(ptr);
-            ptr = NULL;
+        if (SvOK(ptr_sv)) {
+            IV tmp = SvIV(MUTABLE_SV(SvRV(ptr_sv)));
+            ptr = INT2PTR(DCpointer, tmp);
+            if (ptr != NULL) {
+                // safefree(ptr);
+                ptr = NULL;
+            }
         }
     }
 
@@ -193,13 +213,16 @@ XS_INTERNAL(Affix_free) {
           sv_derived_from(xsub_tmp_sv, "Affix::Pointer")))
         croak("ptr is not of type Affix::Pointer");
     {
-        DCpointer ptr;
         SV *ptr_sv = AXT_POINTER_ADDR(xsub_tmp_sv);
-        IV tmp = SvIV(MUTABLE_SV(SvRV(ptr_sv)));
-        ptr = INT2PTR(DCpointer, tmp);
-        if (ptr != NULL) {
-            safefree(ptr);
-            ptr = NULL;
+        if (SvOK(ptr_sv)) {
+            DCpointer ptr;
+            IV tmp = SvIV(MUTABLE_SV(SvRV(ptr_sv)));
+
+            ptr = INT2PTR(DCpointer, tmp);
+            if (ptr != NULL) {
+                safefree(ptr);
+                ptr = NULL;
+            }
         }
     }
 

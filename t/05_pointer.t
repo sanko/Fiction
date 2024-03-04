@@ -8,6 +8,13 @@ use t::lib::helper;
 $|++;
 #
 subtest 'Pointer[Int]' => sub {
+    subtest undef => sub {
+        isa_ok my $ptr = Affix::sv2ptr( Pointer [Int], undef ), ['Affix::Pointer'], 'undef';
+        $ptr->dump(16);
+        is $ptr->sv, U(), '$ptr->sv is undef';
+        free $ptr;
+        is $ptr, U(), '$ptr is now free';
+    };
     subtest int => sub {
         isa_ok my $ptr = Affix::sv2ptr( Pointer [Int], 5 ), ['Affix::Pointer'], '5';
         is $ptr->sv,                                                  5, '$ptr->sv';

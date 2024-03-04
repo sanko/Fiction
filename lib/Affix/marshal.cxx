@@ -30,8 +30,8 @@ void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
             else
                 croak("Data type mismatch for Pointer[%s] [%d]", AXT_STRINGIFY(type), SvTYPE(data));
         }
-        else if (ret == NULL)
-            Newxz(ret, 1, DCpointer); // HMM: void pointer?
+        // else if (ret == NULL)
+        // Newxz(ret, 0, DCpointer); // HMM: void pointer?
     } break;
     default:
         croak("Attempt to marshal unknown/unhandled type in sv2ptr: [%c] Pointer[%s]",
@@ -76,9 +76,10 @@ SV *ptr2av(pTHX_ DCpointer ptr, SV *type) {
     // #endif
     PING;
 
-    SV *retval = NULL;
-    if (ptr == NULL) { retval = newSV(0); }
-    else {
+    if (ptr == NULL) return newSV(0);
+
+    SV *retval;
+    {
         PING;
 
 #if DEBUG > 1
