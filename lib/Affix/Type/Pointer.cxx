@@ -14,18 +14,28 @@ XS_INTERNAL(Affix_sv2ptr) {
     SV *const xsub_tmp_sv = ST(1);
     SvGETMAGIC(xsub_tmp_sv);
 
-    DCpointer RETVAL = sv2ptr(aTHX_ subtype, xsub_tmp_sv);
     {
         AV *RETVALAV = newAV();
         {
             SV *TMP = newSV(0);
-            sv_setref_pv(TMP, NULL, RETVAL);
+            DCpointer ptr = sv2ptr(aTHX_ subtype, xsub_tmp_sv);
+            sv_setref_pv(TMP, NULL, ptr);
             av_store(RETVALAV, SLOT_POINTER_ADDR, TMP);
             av_store(RETVALAV, SLOT_SUBTYPE, newSVsv(subtype));
-            av_store(RETVALAV, SLOT_POINTER_COUNT,
-                     newSViv(SvROK(xsub_tmp_sv) && SvTYPE(SvRV(xsub_tmp_sv)) == SVt_PVAV
-                                 ? av_count(MUTABLE_AV(SvRV(xsub_tmp_sv)))
-                                 : 1));
+
+            switch (SvIV(subtype)) {
+            case VOID_FLAG: {
+                STRLEN len = 0;
+                if (SvOK(xsub_tmp_sv)) (void)SvPV(xsub_tmp_sv, len);
+                av_store(RETVALAV, SLOT_POINTER_COUNT, newSViv(len));
+            } break;
+            default:
+                av_store(RETVALAV, SLOT_POINTER_COUNT,
+                         newSViv(SvROK(xsub_tmp_sv) && SvTYPE(SvRV(xsub_tmp_sv)) == SVt_PVAV
+                                     ? av_count(MUTABLE_AV(SvRV(xsub_tmp_sv)))
+                                     : 1));
+                break;
+            }
         }
         SV *RETVAL = newRV_noinc(MUTABLE_SV(RETVALAV)); // Create a reference to the AV
         sv_bless(RETVAL, gv_stashpvn("Affix::Pointer::Unmanaged", 25, GV_ADD));
