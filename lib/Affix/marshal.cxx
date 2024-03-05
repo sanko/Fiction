@@ -17,11 +17,11 @@ void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
         }
     } break;
     case BOOL_FLAG: {
+        bool i;
         if (SvROK(data) && SvTYPE(SvRV(data)) == SVt_PVAV) {
             AV *array = MUTABLE_AV(SvRV(data));
             size_t len = av_count(array);
             if (ret == NULL) Newxz(ret, len, bool);
-            bool i;
             for (size_t x = 0; x < len; ++x) {
                 i = SvTRUE(*av_fetch(array, x, 0));
                 Copy(&i, INT2PTR(bool *, PTR2IV(ret) + (x * SIZEOF_BOOL)), 1, bool);
@@ -29,7 +29,7 @@ void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
         }
         else {
             if (ret == NULL) Newxz(ret, 1, bool);
-            bool i = SvTRUE(data);
+            i = SvTRUE(data);
             Copy(&i, ret, 1, bool);
         }
     } break;
@@ -93,16 +93,16 @@ void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
     } break;
     case SHORT_FLAG: {
         if (SvOK(data)) {
+            short i;
             if (SvIOK(data)) {
                 if (ret == NULL) Newxz(ret, 1, short);
-                short i = SvIV(data);
+                i = SvIV(data);
                 Copy(&i, ret, 1, short);
             }
             else if (SvROK(data) && SvTYPE(SvRV(data)) == SVt_PVAV) {
                 AV *array = MUTABLE_AV(SvRV(data));
                 size_t len = av_count(array);
                 if (ret == NULL) Newxz(ret, len, short);
-                short i;
                 for (size_t x = 0; x < len; ++x) {
                     i = SvIV(*av_fetch(array, x, 0));
                     Copy(&i, INT2PTR(short *, PTR2IV(ret) + (x * SIZEOF_SHORT)), 1, short);
@@ -116,16 +116,16 @@ void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
     } break;
     case USHORT_FLAG: {
         if (SvOK(data)) {
+            unsigned short i;
             if (SvIOK(data)) {
                 if (ret == NULL) Newxz(ret, 1, unsigned short);
-                unsigned short i = SvUV(data);
+                i = SvUV(data);
                 Copy(&i, ret, 1, unsigned short);
             }
             else if (SvROK(data) && SvTYPE(SvRV(data)) == SVt_PVAV) {
                 AV *array = MUTABLE_AV(SvRV(data));
                 size_t len = av_count(array);
                 if (ret == NULL) Newxz(ret, len, unsigned short);
-                unsigned short i;
                 for (size_t x = 0; x < len; ++x) {
                     i = SvUV(*av_fetch(array, x, 0));
                     Copy(&i, INT2PTR(unsigned short *, PTR2IV(ret) + (x * SIZEOF_USHORT)), 1,
@@ -140,16 +140,16 @@ void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
     } break;
     case INT_FLAG: {
         if (SvOK(data)) {
+            int i;
             if (SvIOK(data)) {
                 if (ret == NULL) Newxz(ret, 1, int);
-                int i = SvIV(data);
+                i = SvIV(data);
                 Copy(&i, ret, 1, int);
             }
             else if (SvROK(data) && SvTYPE(SvRV(data)) == SVt_PVAV) {
                 AV *array = MUTABLE_AV(SvRV(data));
                 size_t len = av_count(array);
                 if (ret == NULL) Newxz(ret, len, int);
-                int i;
                 for (size_t x = 0; x < len; ++x) {
                     i = SvIV(*av_fetch(array, x, 0));
                     Copy(&i, INT2PTR(int *, PTR2IV(ret) + (x * SIZEOF_INT)), 1, int);
@@ -161,16 +161,16 @@ void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
     } break;
     case UINT_FLAG: {
         if (SvOK(data)) {
+            unsigned int i;
             if (SvIOK(data)) {
                 if (ret == NULL) Newxz(ret, 1, unsigned int);
-                unsigned int i = SvUV(data);
+                i = SvUV(data);
                 Copy(&i, ret, 1, unsigned int);
             }
             else if (SvROK(data) && SvTYPE(SvRV(data)) == SVt_PVAV) {
                 AV *array = MUTABLE_AV(SvRV(data));
                 size_t len = av_count(array);
                 if (ret == NULL) Newxz(ret, len, unsigned int);
-                unsigned int i;
                 for (size_t x = 0; x < len; ++x) {
                     i = SvUV(*av_fetch(array, x, 0));
                     Copy(&i, INT2PTR(unsigned int *, PTR2IV(ret) + (x * SIZEOF_UINT)), 1,
@@ -183,16 +183,16 @@ void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
     } break;
     case LONG_FLAG: {
         if (SvOK(data)) {
+            long i;
             if (SvIOK(data)) {
                 if (ret == NULL) Newxz(ret, 1, long);
-                long i = SvIV(data);
+                i = SvIV(data);
                 Copy(&i, ret, 1, long);
             }
             else if (SvROK(data) && SvTYPE(SvRV(data)) == SVt_PVAV) {
                 AV *array = MUTABLE_AV(SvRV(data));
                 size_t len = av_count(array);
                 if (ret == NULL) Newxz(ret, len, long);
-                long i;
                 for (size_t x = 0; x < len; ++x) {
                     i = SvIV(*av_fetch(array, x, 0));
                     Copy(&i, INT2PTR(long *, PTR2IV(ret) + (x * SIZEOF_LONG)), 1, long);
@@ -204,20 +204,64 @@ void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
     } break;
     case ULONG_FLAG: {
         if (SvOK(data)) {
+            unsigned long i;
             if (SvIOK(data)) {
                 if (ret == NULL) Newxz(ret, 1, unsigned long);
-                unsigned long i = SvIV(data);
+                i = SvIV(data);
                 Copy(&i, ret, 1, unsigned long);
             }
             else if (SvROK(data) && SvTYPE(SvRV(data)) == SVt_PVAV) {
                 AV *array = MUTABLE_AV(SvRV(data));
                 size_t len = av_count(array);
                 if (ret == NULL) Newxz(ret, len, unsigned long);
-                unsigned long i;
                 for (size_t x = 0; x < len; ++x) {
                     i = SvIV(*av_fetch(array, x, 0));
                     Copy(&i, INT2PTR(unsigned long *, PTR2IV(ret) + (x * SIZEOF_ULONG)), 1,
                          unsigned long);
+                }
+            }
+            else
+                croak("Data type mismatch for Pointer[%s] [%d]", AXT_STRINGIFY(type), SvTYPE(data));
+        }
+    } break;
+    case LONGLONG_FLAG: {
+        if (SvOK(data)) {
+            long long i;
+            if (SvIOK(data)) {
+                if (ret == NULL) Newxz(ret, 1, long long);
+                i = SvIV(data);
+                Copy(&i, ret, 1, long long);
+            }
+            else if (SvROK(data) && SvTYPE(SvRV(data)) == SVt_PVAV) {
+                AV *array = MUTABLE_AV(SvRV(data));
+                size_t len = av_count(array);
+                if (ret == NULL) Newxz(ret, len, long long);
+                for (size_t x = 0; x < len; ++x) {
+                    i = SvIV(*av_fetch(array, x, 0));
+                    Copy(&i, INT2PTR(long long *, PTR2IV(ret) + (x * SIZEOF_LONGLONG)), 1,
+                         long long);
+                }
+            }
+            else
+                croak("Data type mismatch for Pointer[%s] [%d]", AXT_STRINGIFY(type), SvTYPE(data));
+        }
+    } break;
+    case ULONGLONG_FLAG: {
+        if (SvOK(data)) {
+            unsigned long long i;
+            if (SvIOK(data)) {
+                if (ret == NULL) Newxz(ret, 1, unsigned long long);
+                i = SvIV(data);
+                Copy(&i, ret, 1, unsigned long long);
+            }
+            else if (SvROK(data) && SvTYPE(SvRV(data)) == SVt_PVAV) {
+                AV *array = MUTABLE_AV(SvRV(data));
+                size_t len = av_count(array);
+                if (ret == NULL) Newxz(ret, len, unsigned long long);
+                for (size_t x = 0; x < len; ++x) {
+                    i = SvIV(*av_fetch(array, x, 0));
+                    Copy(&i, INT2PTR(unsigned long long *, PTR2IV(ret) + (x * SIZEOF_ULONGLONG)), 1,
+                         unsigned long long);
                 }
             }
             else
@@ -325,6 +369,30 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr, size_t len) {
             for (size_t x = 0; x < len; ++x)
                 av_push(ret_av, newSViv(*(unsigned long *)INT2PTR(
                                     unsigned long *, PTR2IV(ptr) + (x * SIZEOF_ULONG))));
+            ret = newRV_noinc(MUTABLE_SV(ret_av));
+        }
+    } break;
+    case LONGLONG_FLAG: {
+        if (len == 1)
+            ret = newSViv(*(long long *)ptr);
+        else {
+            AV *ret_av = newAV();
+            DCpointer tmp = ptr;
+            for (size_t x = 0; x < len; ++x)
+                av_push(ret_av, newSViv(*(long long *)INT2PTR(
+                                    long long *, PTR2IV(ptr) + (x * SIZEOF_LONGLONG))));
+            ret = newRV_noinc(MUTABLE_SV(ret_av));
+        }
+    } break;
+    case ULONGLONG_FLAG: {
+        if (len == 1)
+            ret = newSViv(*(unsigned long long *)ptr);
+        else {
+            AV *ret_av = newAV();
+            DCpointer tmp = ptr;
+            for (size_t x = 0; x < len; ++x)
+                av_push(ret_av, newSViv(*(unsigned long long *)INT2PTR(
+                                    unsigned long long *, PTR2IV(ptr) + (x * SIZEOF_ULONGLONG))));
             ret = newRV_noinc(MUTABLE_SV(ret_av));
         }
     } break;
