@@ -110,6 +110,51 @@ subtest 'Pointer[Char]' => sub {
         free $ptr;
         is $ptr, U(), '$ptr is now free';
     };
+    subtest utf8 => sub {
+        subtest 'emoji' => sub {
+            isa_ok my $ptr = Affix::sv2ptr( Pointer [Char], '😀🫠☝🏽🫱🏽‍🫲🏼 This works.' ), ['Affix::Pointer'], '😀🫠☝🏽🫱🏽‍🫲🏼 This works.';
+            $ptr->dump(16);
+            is $ptr->sv, '😀🫠☝🏽🫱🏽‍🫲🏼 This works.', '$ptr->sv';
+            free $ptr;
+            is $ptr, U(), '$ptr is now free';
+        };
+        subtest 'korean' => sub {
+            isa_ok my $ptr = Affix::sv2ptr( Pointer [Char], '안녕하세요' ), ['Affix::Pointer'], '안녕하세요';
+            $ptr->dump(16);
+            is $ptr->sv, '안녕하세요', '$ptr->sv';
+            free $ptr;
+            is $ptr, U(), '$ptr is now free';
+        };
+        subtest 'japanese' => sub {
+            isa_ok my $ptr = Affix::sv2ptr( Pointer [Char], 'こんにちは' ), ['Affix::Pointer'], 'こんにちは';
+            $ptr->dump(16);
+            is $ptr->sv, 'こんにちは', '$ptr->sv';
+            free $ptr;
+            is $ptr, U(), '$ptr is now free';
+        };
+        subtest 'russian' => sub {
+            isa_ok my $ptr = Affix::sv2ptr( Pointer [Char], 'Здравствуйте' ), ['Affix::Pointer'], 'Здравствуйте';
+            $ptr->dump(16);
+            is $ptr->sv, 'Здравствуйте', '$ptr->sv';
+            free $ptr;
+            is $ptr, U(), '$ptr is now free';
+        };
+        subtest 'hebrew' => sub {
+            isa_ok my $ptr = Affix::sv2ptr( Pointer [Char], 'תקן בבקשה את הטעויות שלי בעברית.' ), ['Affix::Pointer'],
+                'תקן בבקשה את הטעויות שלי בעברית.';
+            $ptr->dump(16);
+            is $ptr->sv, 'תקן בבקשה את הטעויות שלי בעברית.', '$ptr->sv';
+            free $ptr;
+            is $ptr, U(), '$ptr is now free';
+        };
+        subtest 'arabic' => sub {
+            isa_ok my $ptr = Affix::sv2ptr( Pointer [Char], 'انا لا اتكلم العربية' ), ['Affix::Pointer'], 'انا لا اتكلم العربية';
+            $ptr->dump(16);
+            is $ptr->sv, 'انا لا اتكلم العربية', '$ptr->sv';
+            free $ptr;
+            is $ptr, U(), '$ptr is now free';
+        };
+    };
 };
 subtest 'Pointer[UChar]' => sub {
     subtest 97 => sub {
@@ -320,4 +365,22 @@ subtest 'Pointer[UInt]' => sub {
         };
     };
 };
+
+#define WCHAR_FLAG 'w'
+#define LONG_FLAG 'l'
+#define ULONG_FLAG 'm'
+#define LONGLONG_FLAG 'x'
+#define ULONGLONG_FLAG 'y'
+#define FLOAT_FLAG 'f'
+#define DOUBLE_FLAG 'd'
+#define STRING_FLAG 'z'
+#define WSTRING_FLAG '<'
+#define STDSTRING_FLAG 'Y'
+#define STRUCT_FLAG 'A'
+#define CPPSTRUCT_FLAG 'B'
+#define UNION_FLAG 'u'
+#define ARRAY_FLAG '@'
+#define CODEREF_FLAG '&'
+#define POINTER_FLAG 'P'
+#define SV_FLAG '?'
 done_testing;

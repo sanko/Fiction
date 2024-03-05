@@ -1,8 +1,8 @@
 #include "../Affix.h"
 
 void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
-    DD(type);
-    DD(data);
+    //~ DD(type);
+    //~ DD(data);
     switch (AXT_NUMERIC(type)) {
     case VOID_FLAG: {
         if (SvOK(data)) {
@@ -93,7 +93,7 @@ void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
     } break;
     case SHORT_FLAG: {
         if (SvOK(data)) {
-            if (SvTYPE(data) == SVt_PVIV) {
+            if (SvIOK(data)) {
                 if (ret == NULL) Newxz(ret, 1, short);
                 short i = SvIV(data);
                 Copy(&i, ret, 1, short);
@@ -116,7 +116,7 @@ void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
     } break;
     case USHORT_FLAG: {
         if (SvOK(data)) {
-            if (SvTYPE(data) == SVt_PVIV) {
+            if (SvIOK(data)) {
                 if (ret == NULL) Newxz(ret, 1, unsigned short);
                 unsigned short i = SvUV(data);
                 Copy(&i, ret, 1, unsigned short);
@@ -140,7 +140,7 @@ void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
     } break;
     case INT_FLAG: {
         if (SvOK(data)) {
-            if (SvTYPE(data) == SVt_PVIV) {
+            if (SvIOK(data)) {
                 if (ret == NULL) Newxz(ret, 1, int);
                 int i = SvIV(data);
                 Copy(&i, ret, 1, int);
@@ -163,7 +163,7 @@ void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
     } break;
     case UINT_FLAG: {
         if (SvOK(data)) {
-            if (SvTYPE(data) == SVt_PVIV) {
+            if (SvIOK(data)) {
                 if (ret == NULL) Newxz(ret, 1, unsigned int);
                 unsigned int i = SvUV(data);
                 Copy(&i, ret, 1, unsigned int);
@@ -217,9 +217,8 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr, size_t len) {
     case CHAR_FLAG:
     case SCHAR_FLAG:
     case UCHAR_FLAG:
-        ret = newSVpv((char *)ptr, len);
+        ret = newSVpvn_utf8((char *)ptr, len, is_utf8_string((U8 *)ptr, len));
         break;
-
     case SHORT_FLAG: {
         if (len == 1)
             ret = newSViv(*(short *)ptr);
