@@ -160,13 +160,10 @@ subtest 'Pointer[UChar]' => sub {
         is $ptr, U(), '$ptr is now free';
     };
 };
-
-
-
 subtest 'Pointer[Short]' => sub {
     subtest 5 => sub {
         isa_ok my $ptr = Affix::sv2ptr( Pointer [Short], 5 ), ['Affix::Pointer'], '5';
-        is $ptr->sv,                                                  5, '$ptr->sv';
+        is $ptr->sv,                                                    5, '$ptr->sv';
         is unpack( 's', $ptr->raw( Affix::Platform::SIZEOF_SHORT() ) ), 5, '$ptr->raw( ' . Affix::Platform::SIZEOF_SHORT() . ' )';
         free $ptr;
         is $ptr, U(), '$ptr is now free';
@@ -203,12 +200,10 @@ subtest 'Pointer[Short]' => sub {
         };
     };
 };
-
-
 subtest 'Pointer[UShort]' => sub {
     subtest 5 => sub {
         isa_ok my $ptr = Affix::sv2ptr( Pointer [UShort], 5 ), ['Affix::Pointer'], '5';
-        is $ptr->sv,                                                  5, '$ptr->sv';
+        is $ptr->sv,                                                     5, '$ptr->sv';
         is unpack( 'S', $ptr->raw( Affix::Platform::SIZEOF_USHORT() ) ), 5, '$ptr->raw( ' . Affix::Platform::SIZEOF_USHORT() . ' )';
         free $ptr;
         is $ptr, U(), '$ptr is now free';
@@ -245,17 +240,6 @@ subtest 'Pointer[UShort]' => sub {
         };
     };
 };
-
-
-
-
-
-
-
-
-
-
-
 subtest 'Pointer[Int]' => sub {
     subtest 5 => sub {
         isa_ok my $ptr = Affix::sv2ptr( Pointer [Int], 5 ), ['Affix::Pointer'], '5';

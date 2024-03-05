@@ -3,7 +3,6 @@
 void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
     DD(type);
     DD(data);
-
     switch (AXT_NUMERIC(type)) {
     case VOID_FLAG: {
         if (SvOK(data)) {
@@ -92,8 +91,6 @@ void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
                 croak("Data type mismatch for Pointer[%s] [%d]", AXT_STRINGIFY(type), SvTYPE(data));
         }
     } break;
-
-
     case SHORT_FLAG: {
         if (SvOK(data)) {
             if (SvTYPE(data) == SVt_PVIV) {
@@ -117,12 +114,11 @@ void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
         // else if (ret == NULL)
         // Newxz(ret, 0, DCpointer); // HMM: void pointer?
     } break;
-
     case USHORT_FLAG: {
         if (SvOK(data)) {
             if (SvTYPE(data) == SVt_PVIV) {
                 if (ret == NULL) Newxz(ret, 1, unsigned short);
-               unsigned  short i = SvUV(data);
+                unsigned short i = SvUV(data);
                 Copy(&i, ret, 1, unsigned short);
             }
             else if (SvROK(data) && SvTYPE(SvRV(data)) == SVt_PVAV) {
@@ -132,7 +128,8 @@ void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
                 unsigned short i;
                 for (size_t x = 0; x < len; ++x) {
                     i = SvUV(*av_fetch(array, x, 0));
-                    Copy(&i, INT2PTR(unsigned short *, PTR2IV(ret) + (x * SIZEOF_USHORT)), 1, unsigned short);
+                    Copy(&i, INT2PTR(unsigned short *, PTR2IV(ret) + (x * SIZEOF_USHORT)), 1,
+                         unsigned short);
                 }
             }
             else
@@ -141,19 +138,6 @@ void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
         // else if (ret == NULL)
         // Newxz(ret, 0, DCpointer); // HMM: void pointer?
     } break;
-
-
-
-
-
-
-
-
-
-
-
-
-
     case INT_FLAG: {
         if (SvOK(data)) {
             if (SvTYPE(data) == SVt_PVIV) {
@@ -212,9 +196,6 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr, size_t len) {
         ret = newSVpv((char *)ptr, len);
         break;
 
-
-
-
     case SHORT_FLAG: {
         if (len == 1)
             ret = newSViv(*(short *)ptr);
@@ -222,11 +203,11 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr, size_t len) {
             AV *ret_av = newAV();
             DCpointer tmp = ptr;
             for (size_t x = 0; x < len; ++x)
-                av_push(ret_av, newSViv(*(short *)INT2PTR(short *, PTR2IV(ptr) + (x * SIZEOF_SHORT))));
+                av_push(ret_av,
+                        newSViv(*(short *)INT2PTR(short *, PTR2IV(ptr) + (x * SIZEOF_SHORT))));
             ret = newRV_noinc(MUTABLE_SV(ret_av));
         }
     } break;
-
     case USHORT_FLAG: {
         if (len == 1)
             ret = newSVuv(*(unsigned short *)ptr);
@@ -234,27 +215,11 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr, size_t len) {
             AV *ret_av = newAV();
             DCpointer tmp = ptr;
             for (size_t x = 0; x < len; ++x)
-                av_push(ret_av, newSVuv(*(unsigned short *)INT2PTR(unsigned short *, PTR2IV(ptr) + (x * SIZEOF_USHORT))));
+                av_push(ret_av, newSVuv(*(unsigned short *)INT2PTR(
+                                    unsigned short *, PTR2IV(ptr) + (x * SIZEOF_USHORT))));
             ret = newRV_noinc(MUTABLE_SV(ret_av));
         }
     } break;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     case INT_FLAG: {
         if (len == 1)
             ret = newSViv(*(int *)ptr);
