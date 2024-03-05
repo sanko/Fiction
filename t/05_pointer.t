@@ -61,22 +61,119 @@ subtest 'Pointer[Bool]' => sub {
         is $ptr, U(), '$ptr is now free';
     };
 };
+subtest 'Pointer[Char]' => sub {
+    subtest 97 => sub {
+        isa_ok my $ptr = Affix::sv2ptr( Pointer [Char], 97 ), ['Affix::Pointer'], '97';
+        $ptr->dump(1);
+        is $ptr->at(0), 'a', '$ptr->at(0) == a';
+        $ptr->dump(8);
+        is $ptr->sv,                                        'a',   '$ptr->sv';
+        is [ $ptr->raw( Affix::Platform::SIZEOF_CHAR() ) ], ['a'], '$ptr->raw( ' . Affix::Platform::SIZEOF_CHAR() . ' )';
+        free $ptr;
+        is $ptr, U(), '$ptr is now free';
+    };
+    subtest "'97'" => sub {
+        isa_ok my $ptr = Affix::sv2ptr( Pointer [Char], '97' ), ['Affix::Pointer'], "'97'";
+        $ptr->dump(1);
+        is $ptr->at(0), '9', '$ptr->at(0) == 9';
+        is $ptr->at(1), '7', '$ptr->at(0) == 7';
+        $ptr->dump(3);
+        use Data::Dump;
+        ddx $ptr->sv;
+        is $ptr->sv,                                            '97',   '$ptr->sv';
+        is [ $ptr->raw( Affix::Platform::SIZEOF_CHAR() * 2 ) ], ['97'], '$ptr->raw( ' . Affix::Platform::SIZEOF_CHAR() * 2 . ' )';
+        free $ptr;
+        is $ptr, U(), '$ptr is now free';
+    };
+    subtest 'a' => sub {
+        isa_ok my $ptr = Affix::sv2ptr( Pointer [Char], 'a' ), ['Affix::Pointer'], 'a';
+        $ptr->dump(1);
+        is $ptr->at(0), 'a', '$ptr->at(0) == a';
+        $ptr->dump(8);
+        is $ptr->sv,                                    'a', '$ptr->sv';
+        is $ptr->raw( Affix::Platform::SIZEOF_CHAR() ), 'a', '$ptr->raw( ' . Affix::Platform::SIZEOF_CHAR() . ' )';
+        free $ptr;
+        is $ptr, U(), '$ptr is now free';
+    };
+    subtest string => sub {
+        isa_ok my $ptr = Affix::sv2ptr( Pointer [Char], 'This is a string of text.' ), ['Affix::Pointer'], 'This is...';
+        use Data::Dump;
+        ddx $ptr;
+        $ptr->dump(30);
+        is $ptr->at(0),  'T', '$ptr->at(0) == T';
+        is $ptr->at(20), 't', '$ptr->at(20) == t';
+        $ptr->dump(40);
+        is $ptr->sv,                                         'This is a string of text.', '$ptr->sv';
+        is $ptr->raw( 25 * Affix::Platform::SIZEOF_CHAR() ), 'This is a string of text.', '$ptr->raw( ' . 25 * Affix::Platform::SIZEOF_CHAR() . ' )';
+        is $ptr->at( 24, '?' ),                              '?',                         '$ptr->at(24, "?") == ?';
+        is $ptr->sv,                                         'This is a string of text?', '$ptr->sv after update';
+        free $ptr;
+        is $ptr, U(), '$ptr is now free';
+    };
+};
+subtest 'Pointer[UChar]' => sub {
+    subtest 97 => sub {
+        isa_ok my $ptr = Affix::sv2ptr( Pointer [UChar], 97 ), ['Affix::Pointer'], '97';
+        $ptr->dump(1);
+        is $ptr->at(0), 'a', '$ptr->at(0) == a';
+        $ptr->dump(8);
+        is $ptr->sv,                                         'a',   '$ptr->sv';
+        is [ $ptr->raw( Affix::Platform::SIZEOF_UCHAR() ) ], ['a'], '$ptr->raw( ' . Affix::Platform::SIZEOF_UCHAR() . ' )';
+        free $ptr;
+        is $ptr, U(), '$ptr is now free';
+    };
+    subtest "'97'" => sub {
+        isa_ok my $ptr = Affix::sv2ptr( Pointer [UChar], '97' ), ['Affix::Pointer'], "'97'";
+        $ptr->dump(1);
+        is $ptr->at(0), '9', '$ptr->at(0) == 9';
+        is $ptr->at(1), '7', '$ptr->at(0) == 7';
+        $ptr->dump(3);
+        use Data::Dump;
+        ddx $ptr->sv;
+        is $ptr->sv,                                             '97',   '$ptr->sv';
+        is [ $ptr->raw( Affix::Platform::SIZEOF_UCHAR() * 2 ) ], ['97'], '$ptr->raw( ' . Affix::Platform::SIZEOF_UCHAR() * 2 . ' )';
+        free $ptr;
+        is $ptr, U(), '$ptr is now free';
+    };
+    subtest 'a' => sub {
+        isa_ok my $ptr = Affix::sv2ptr( Pointer [UChar], 'a' ), ['Affix::Pointer'], 'a';
+        $ptr->dump(1);
+        is $ptr->at(0), 'a', '$ptr->at(0) == a';
+        $ptr->dump(8);
+        is $ptr->sv,                                     'a', '$ptr->sv';
+        is $ptr->raw( Affix::Platform::SIZEOF_UCHAR() ), 'a', '$ptr->raw( ' . Affix::Platform::SIZEOF_UCHAR() . ' )';
+        free $ptr;
+        is $ptr, U(), '$ptr is now free';
+    };
+    subtest string => sub {
+        isa_ok my $ptr = Affix::sv2ptr( Pointer [UChar], 'This is a string of text.' ), ['Affix::Pointer'], 'This is...';
+        $ptr->dump(30);
+        is $ptr->at(0),  'T', '$ptr->at(0) == T';
+        is $ptr->at(20), 't', '$ptr->at(20) == t';
+        $ptr->dump(40);
+        is $ptr->sv, 'This is a string of text.', '$ptr->sv';
+        is $ptr->raw( 25 * Affix::Platform::SIZEOF_UCHAR() ), 'This is a string of text.',
+            '$ptr->raw( ' . 25 * Affix::Platform::SIZEOF_UCHAR() . ' )';
+        is $ptr->at( 24, '?' ), '?',                         '$ptr->at(24, "?") == ?';
+        is $ptr->sv,            'This is a string of text?', '$ptr->sv after update';
+        free $ptr;
+        is $ptr, U(), '$ptr is now free';
+    };
+};
 subtest 'Pointer[Int]' => sub {
     subtest 5 => sub {
-        subtest defined => sub {
-            isa_ok my $ptr = Affix::sv2ptr( Pointer [Int], 5 ), ['Affix::Pointer'], '5';
-            is $ptr->sv,                                                  5, '$ptr->sv';
-            is unpack( 'i', $ptr->raw( Affix::Platform::SIZEOF_INT() ) ), 5, '$ptr->raw( ' . Affix::Platform::SIZEOF_INT() . ' )';
-            free $ptr;
-            is $ptr, U(), '$ptr is now free';
-        };
-        subtest undef => sub {
-            isa_ok my $ptr = Affix::sv2ptr( Pointer [Int], undef ), ['Affix::Pointer'], 'undef';
-            $ptr->dump(16);
-            is $ptr->sv, U(), '$ptr->sv is undef';
-            free $ptr;
-            is $ptr, U(), '$ptr is now free';
-        };
+        isa_ok my $ptr = Affix::sv2ptr( Pointer [Int], 5 ), ['Affix::Pointer'], '5';
+        is $ptr->sv,                                                  5, '$ptr->sv';
+        is unpack( 'i', $ptr->raw( Affix::Platform::SIZEOF_INT() ) ), 5, '$ptr->raw( ' . Affix::Platform::SIZEOF_INT() . ' )';
+        free $ptr;
+        is $ptr, U(), '$ptr is now free';
+    };
+    subtest undef => sub {
+        isa_ok my $ptr = Affix::sv2ptr( Pointer [Int], undef ), ['Affix::Pointer'], 'undef';
+        $ptr->dump(16);
+        is $ptr->sv, U(), '$ptr->sv is undef';
+        free $ptr;
+        is $ptr, U(), '$ptr is now free';
     };
     subtest list => sub {
         subtest '[ 150 .. 170 ]' => sub {

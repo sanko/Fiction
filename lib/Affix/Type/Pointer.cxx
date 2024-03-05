@@ -29,6 +29,16 @@ XS_INTERNAL(Affix_sv2ptr) {
                 if (SvOK(xsub_tmp_sv)) (void)SvPV(xsub_tmp_sv, len);
                 av_store(RETVALAV, SLOT_POINTER_COUNT, newSViv(len));
             } break;
+            case CHAR_FLAG:
+            case SCHAR_FLAG:
+            case UCHAR_FLAG: {
+                STRLEN len = 0;
+                if (SvPOK(xsub_tmp_sv))
+                    (void)SvPV(xsub_tmp_sv, len);
+                else if (SvIOK(xsub_tmp_sv))
+                    len = 1;
+                av_store(RETVALAV, SLOT_POINTER_COUNT, newSViv(len));
+            } break;
             default:
                 av_store(RETVALAV, SLOT_POINTER_COUNT,
                          newSViv(SvROK(xsub_tmp_sv) && SvTYPE(SvRV(xsub_tmp_sv)) == SVt_PVAV
@@ -55,7 +65,6 @@ XS_INTERNAL(Affix_ptr2sv) {
         if (!(SvROK(xsub_tmp_sv) && SvTYPE(SvRV(xsub_tmp_sv)) == SVt_PVAV &&
               sv_derived_from(xsub_tmp_sv, "Affix::Pointer")))
             croak("ptr is not of type Affix::Pointer");
-        size_t size = (size_t)SvUV(ST(1));
         {
             AV *array = MUTABLE_AV(SvRV(xsub_tmp_sv));
             SV *ptr_sv = AXT_POINTER_ADDR(array);
@@ -63,7 +72,7 @@ XS_INTERNAL(Affix_ptr2sv) {
                 IV tmp = SvIV(MUTABLE_SV(SvRV(ptr_sv)));
                 DCpointer ptr;
                 ptr = INT2PTR(DCpointer, tmp);
-                ST(0) = sv_2mortal(newRV(ptr2sv(aTHX_ ST(0), ptr)));
+                ST(0) = sv_2mortal(newRV(ptr2sv(aTHX_ ST(0), ptr, AXT_POINTER_COUNT(array))));
             }
             else
                 ST(0) = sv_2mortal(newSV(0));
