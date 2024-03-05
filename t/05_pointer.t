@@ -683,4 +683,35 @@ subtest 'String' => sub {
 #define CODEREF_FLAG '&'
 #define POINTER_FLAG 'P'
 #define SV_FLAG '?'
+subtest 'Pointer[Pointer[Char]]' => sub {
+    isa_ok my $ptr = Affix::sv2ptr( Pointer [ Pointer [Char] ], [ 'This is a string of text.', 'More', 'And Even More', undef ] ),
+        ['Affix::Pointer'], 'load list of 3 strings';
+    {
+        my $todo = todo q[ptr2sv requires info for each field but we aren't storing that for multidimensional pointers yet];
+        is [ $ptr->sv ], [ 'This is a string of text.', 'More', 'And Even More' ], '$ptr->sv';
+    }
+    subtest 'compiled lib' => sub {
+        my $lib = compile_test_lib(<<'END');
+#include "std.h"
+// ext: .c
+
+DLLEXPORT int ptrptr(char ** lines) {
+    int i = 0;
+    while (lines[i] != NULL && i < 30) { // Fallback is 30
+        warn("    # [%d] %s", i, lines[i]);
+        i++;
+    }
+    return i;
+}
+
+END
+        diag '$lib: ' . $lib;
+        ok my $_lib = load_library($lib), 'lib is loaded [debugging]';
+        diag $_lib;
+        ok Affix::affix( $lib => 'ptrptr', [ Pointer [ Pointer [Char] ] ] => Int ), 'int ptrptr(char **)';
+        is ptrptr($ptr), 3, 'C understood we have 3 lines of text';
+
+        #~ is Nothing(), 99, 'Nothing()';
+    };
+};
 done_testing;

@@ -323,10 +323,33 @@ void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
     } break;
     case POINTER_FLAG: {
         SV *subtype = AXT_SUBTYPE(type);
-        if (UNLIKELY(!sv_derived_from(subtype, "Affix::Type")))
-            croak("subtype is not of type Affix::Type");
-        len = (SvROK(data) && SvTYPE(SvRV(data)) == SVt_PVAV) ? av_count(MUTABLE_AV(data)) : 1;
-        ret = sv2ptr(aTHX_ subtype, data, ret);
+        if (UNLIKELY(sv_derived_from(subtype, "Affix::Type::Pointer"))) {
+            if (SvOK(data)) {
+                DCpointer i;
+                if (SvROK(data) && SvTYPE(SvRV(data)) == SVt_PVAV) {
+                    AV *array = MUTABLE_AV(SvRV(data));
+                    len = av_count(array);
+                    if (ret == NULL) Newxz(ret, len, intptr_t);
+                    for (size_t x = 0; x < len; ++x) {
+                        i = sv2ptr(aTHX_ subtype, *av_fetch(array, x, 0));
+                        Copy(&i, INT2PTR(intptr_t *, PTR2IV(ret) + (x * SIZEOF_INTPTR_T)), 1,
+                             intptr_t);
+                    }
+                }
+                else {
+                    len = 1;
+                    if (ret == NULL) Newxz(ret, len, intptr_t);
+                    i = sv2ptr(aTHX_ subtype, data);
+                    Copy(&i, ret, len, intptr_t);
+                }
+            }
+        }
+        else {
+            if (UNLIKELY(!sv_derived_from(subtype, "Affix::Type")))
+                croak("subtype is not of type Affix::Type");
+            len = (SvROK(data) && SvTYPE(SvRV(data)) == SVt_PVAV) ? av_count(MUTABLE_AV(data)) : 1;
+            ret = sv2ptr(aTHX_ subtype, data);
+        }
     } break;
     case CONST_FLAG: { // Basically a no-op
         SV *subtype = AXT_SUBTYPE(type);
@@ -492,12 +515,29 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr, size_t len) {
         }
     } break;
 
-    case POINTER_FLAG:
-    case CONST_FLAG: {
+    case POINTER_FLAG: {
+        SV *subtype = AXT_SUBTYPE(type);
+        if (UNLIKELY(sv_derived_from(subtype, "Affix::Type::Pointer"))) {
+            if (len == 1)
+                ret = ptr2sv(aTHX_ subtype, *(DCpointer *)ptr);
+            else {
+                AV *ret_av = newAV();
+                DCpointer tmp = ptr;
+                for (size_t x = 0; x < len; ++x)
+                    av_push(ret_av, ptr2sv(aTHX_ subtype,
+                                           *(DCpointer *)INT2PTR(
+                                               intptr_t *, PTR2IV(ptr) + (x * SIZEOF_INTPTR_T))));
+                ret = newRV_noinc(MUTABLE_SV(ret_av));
+            }
+            break;
+        }
+    }
+        // fallthrough
+    case CONST_FLAG: { // No-Op
         SV *subtype = AXT_SUBTYPE(type);
         if (UNLIKELY(!sv_derived_from(subtype, "Affix::Type")))
             croak("subtype is not of type Affix::Type");
-        ret = len ? ptr2sv(aTHX_ subtype, ptr, (size_t) AXT_POINTER_COUNT(subtype))
+        ret = len ? ptr2sv(aTHX_ subtype, ptr, (size_t)AXT_POINTER_COUNT(subtype))
                   : ptr2sv(aTHX_ subtype, ptr);
     } break;
     default:

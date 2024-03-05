@@ -16,6 +16,7 @@ XS_INTERNAL(Affix_sv2ptr) {
         {
             SV *TMP = newSV(0);
             DCpointer ptr = sv2ptr(aTHX_ ST(0), xsub_tmp_sv);
+            if (ptr != NULL) DumpHex(ptr, 16);
             sv_setref_pv(TMP, NULL, ptr);
             av_store(RETVALAV, SLOT_POINTER_ADDR, TMP);
 
