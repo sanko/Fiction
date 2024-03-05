@@ -205,6 +205,47 @@ subtest 'Pointer[Short]' => sub {
 };
 
 
+subtest 'Pointer[UShort]' => sub {
+    subtest 5 => sub {
+        isa_ok my $ptr = Affix::sv2ptr( Pointer [UShort], 5 ), ['Affix::Pointer'], '5';
+        is $ptr->sv,                                                  5, '$ptr->sv';
+        is unpack( 'S', $ptr->raw( Affix::Platform::SIZEOF_USHORT() ) ), 5, '$ptr->raw( ' . Affix::Platform::SIZEOF_USHORT() . ' )';
+        free $ptr;
+        is $ptr, U(), '$ptr is now free';
+    };
+    subtest undef => sub {
+        isa_ok my $ptr = Affix::sv2ptr( Pointer [UShort], undef ), ['Affix::Pointer'], 'undef';
+        $ptr->dump(16);
+        is $ptr->sv, U(), '$ptr->sv is undef';
+        free $ptr;
+        is $ptr, U(), '$ptr is now free';
+    };
+    subtest list => sub {
+        subtest '[ 150 .. 170 ]' => sub {
+            isa_ok my $ptr = Affix::sv2ptr( Pointer [UShort], [ 150 .. 170 ] ), ['Affix::Pointer'], '[150..170]';
+            $ptr->dump(88);
+            is $ptr->at(0),         150,  '$ptr->at(0) == 150';
+            is $ptr->at(8),         158,  '$ptr->at(8) == 158';
+            is $ptr->at( 0, 2000 ), 2000, '$ptr->at(0, 2000) == 2000';
+            $ptr->dump(40);
+            is $ptr->sv, [ 2000, 151 .. 170 ], '$ptr->sv';
+            is [ unpack 'S*', $ptr->raw( 21 * Affix::Platform::SIZEOF_USHORT() ) ], [ 2000, 151 .. 170 ],
+                '$ptr->raw( ' . 21 * Affix::Platform::SIZEOF_USHORT() . ' )';
+            free $ptr;
+            is $ptr, U(), '$ptr is now free';
+        };
+        subtest '[]' => sub {
+            isa_ok my $ptr = Affix::sv2ptr( Pointer [UShort], [] ), ['Affix::Pointer'], '[]';
+            $ptr->dump(16);
+            use Data::Dump;
+            ddx $ptr->sv;
+            is $ptr->sv, [], '$ptr->sv is []';
+            free $ptr;
+            is $ptr, U(), '$ptr is now free';
+        };
+    };
+};
+
 
 
 
