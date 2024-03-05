@@ -8,9 +8,9 @@ void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
     case VOID_FLAG: {
         if (SvOK(data)) {
             if (SvTYPE(data) != SVt_NULL) {
-                if (ret == NULL) Newxz(ret, 1, int);
                 STRLEN len;
                 DCpointer ptr = SvPVbyte(data, len);
+                if (ret == NULL) Newxz(ret, len, char);
                 Copy(ptr, ret, len, char);
             }
             else
