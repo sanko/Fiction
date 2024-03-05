@@ -158,8 +158,6 @@ void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
             else
                 croak("Data type mismatch for Pointer[%s] [%d]", AXT_STRINGIFY(type), SvTYPE(data));
         }
-        // else if (ret == NULL)
-        // Newxz(ret, 0, DCpointer); // HMM: void pointer?
     } break;
     case UINT_FLAG: {
         if (SvOK(data)) {
@@ -182,8 +180,49 @@ void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
             else
                 croak("Data type mismatch for Pointer[%s] [%d]", AXT_STRINGIFY(type), SvTYPE(data));
         }
-        // else if (ret == NULL)
-        // Newxz(ret, 0, DCpointer); // HMM: void pointer?
+    } break;
+    case LONG_FLAG: {
+        if (SvOK(data)) {
+            if (SvIOK(data)) {
+                if (ret == NULL) Newxz(ret, 1, long);
+                long i = SvIV(data);
+                Copy(&i, ret, 1, long);
+            }
+            else if (SvROK(data) && SvTYPE(SvRV(data)) == SVt_PVAV) {
+                AV *array = MUTABLE_AV(SvRV(data));
+                size_t len = av_count(array);
+                if (ret == NULL) Newxz(ret, len, long);
+                long i;
+                for (size_t x = 0; x < len; ++x) {
+                    i = SvIV(*av_fetch(array, x, 0));
+                    Copy(&i, INT2PTR(long *, PTR2IV(ret) + (x * SIZEOF_LONG)), 1, long);
+                }
+            }
+            else
+                croak("Data type mismatch for Pointer[%s] [%d]", AXT_STRINGIFY(type), SvTYPE(data));
+        }
+    } break;
+    case ULONG_FLAG: {
+        if (SvOK(data)) {
+            if (SvIOK(data)) {
+                if (ret == NULL) Newxz(ret, 1, unsigned long);
+                unsigned long i = SvIV(data);
+                Copy(&i, ret, 1, unsigned long);
+            }
+            else if (SvROK(data) && SvTYPE(SvRV(data)) == SVt_PVAV) {
+                AV *array = MUTABLE_AV(SvRV(data));
+                size_t len = av_count(array);
+                if (ret == NULL) Newxz(ret, len, unsigned long);
+                unsigned long i;
+                for (size_t x = 0; x < len; ++x) {
+                    i = SvIV(*av_fetch(array, x, 0));
+                    Copy(&i, INT2PTR(unsigned long *, PTR2IV(ret) + (x * SIZEOF_ULONG)), 1,
+                         unsigned long);
+                }
+            }
+            else
+                croak("Data type mismatch for Pointer[%s] [%d]", AXT_STRINGIFY(type), SvTYPE(data));
+        }
     } break;
     default:
         croak("Attempt to marshal unknown/unhandled type in sv2ptr: [%c] Pointer[%s]",
@@ -263,6 +302,29 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr, size_t len) {
             for (size_t x = 0; x < len; ++x)
                 av_push(ret_av, newSViv(*(unsigned int *)INT2PTR(unsigned int *,
                                                                  PTR2IV(ptr) + (x * SIZEOF_UINT))));
+            ret = newRV_noinc(MUTABLE_SV(ret_av));
+        }
+    } break;
+    case LONG_FLAG: {
+        if (len == 1)
+            ret = newSViv(*(long *)ptr);
+        else {
+            AV *ret_av = newAV();
+            DCpointer tmp = ptr;
+            for (size_t x = 0; x < len; ++x)
+                av_push(ret_av, newSViv(*(long *)INT2PTR(long *, PTR2IV(ptr) + (x * SIZEOF_LONG))));
+            ret = newRV_noinc(MUTABLE_SV(ret_av));
+        }
+    } break;
+    case ULONG_FLAG: {
+        if (len == 1)
+            ret = newSViv(*(unsigned long *)ptr);
+        else {
+            AV *ret_av = newAV();
+            DCpointer tmp = ptr;
+            for (size_t x = 0; x < len; ++x)
+                av_push(ret_av, newSViv(*(unsigned long *)INT2PTR(
+                                    unsigned long *, PTR2IV(ptr) + (x * SIZEOF_ULONG))));
             ret = newRV_noinc(MUTABLE_SV(ret_av));
         }
     } break;
