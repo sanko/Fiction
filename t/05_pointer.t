@@ -525,10 +525,120 @@ subtest 'Pointer[ULongLong]' => sub {
         };
     };
 };
+subtest 'Pointer[Float]' => sub {
+    subtest 5.3 => sub {
+        isa_ok my $ptr = Affix::sv2ptr( Pointer [Float], 5.3 ), ['Affix::Pointer'], '5';
+        is $ptr->sv, float( 5.3, tolerance => 0.001 ), '$ptr->sv';
+        is unpack( 'f', $ptr->raw( Affix::Platform::SIZEOF_FLOAT() ) ), float( 5.3, tolerance => 0.001 ),
+            '$ptr->raw( ' . Affix::Platform::SIZEOF_FLOAT() . ' )';
+        free $ptr;
+        is $ptr, U(), '$ptr is now free';
+    };
+    subtest undef => sub {
+        isa_ok my $ptr = Affix::sv2ptr( Pointer [Float], undef ), ['Affix::Pointer'], 'undef';
+        $ptr->dump(16);
+        is $ptr->sv, U(), '$ptr->sv is undef';
+        free $ptr;
+        is $ptr, U(), '$ptr is now free';
+    };
+    subtest list => sub {
+        subtest '[ 1.2, 2.3, 3, 4.5, 9.75 ]' => sub {
+            isa_ok my $ptr = Affix::sv2ptr( Pointer [Float], [ 1.2, 2.3, 3, 4.5, 9.75 ] ), ['Affix::Pointer'], '[ 1.2, 2.3, 3, 4.5, 9.75 ]';
+            $ptr->dump(88);
+            is $ptr->at(0),         float( 1.2,  tolerance => 0.001 ), '$ptr->at(0) == 1.2';
+            is $ptr->at(4),         float( 9.75, tolerance => 0.001 ), '$ptr->at(4) == 9.75';
+            is $ptr->at( 0, 2000 ), float( 2000, tolerance => 0.001 ), '$ptr->at(0, 2000) == 2000';
+            $ptr->dump(40);
+            is $ptr->sv,
+                [
+                float( 2000, tolerance => 0.001 ),
+                float( 2.3,  tolerance => 0.001 ),
+                float( 3,    tolerance => 0.001 ),
+                float( 4.5,  tolerance => 0.001 ),
+                float( 9.75, tolerance => 0.001 )
+                ],
+                '$ptr->sv';
+            is [ unpack 'f*', $ptr->raw( 5 * Affix::Platform::SIZEOF_FLOAT() ) ],
+                [
+                float( 2000, tolerance => 0.001 ),
+                float( 2.3,  tolerance => 0.001 ),
+                float( 3,    tolerance => 0.001 ),
+                float( 4.5,  tolerance => 0.001 ),
+                float( 9.75, tolerance => 0.001 )
+                ],
+                '$ptr->raw( ' . 5 * Affix::Platform::SIZEOF_FLOAT() . ' )';
+            free $ptr;
+            is $ptr, U(), '$ptr is now free';
+        };
+        subtest '[]' => sub {
+            isa_ok my $ptr = Affix::sv2ptr( Pointer [Float], [] ), ['Affix::Pointer'], '[]';
+            $ptr->dump(16);
+            use Data::Dump;
+            ddx $ptr->sv;
+            is $ptr->sv, [], '$ptr->sv is []';
+            free $ptr;
+            is $ptr, U(), '$ptr is now free';
+        };
+    };
+};
+subtest 'Pointer[Double]' => sub {
+    subtest 5.3 => sub {
+        isa_ok my $ptr = Affix::sv2ptr( Pointer [Double], 5.3 ), ['Affix::Pointer'], '5';
+        is $ptr->sv, float( 5.3, tolerance => 0.001 ), '$ptr->sv';
+        is unpack( 'd', $ptr->raw( Affix::Platform::SIZEOF_DOUBLE() ) ), float( 5.3, tolerance => 0.001 ),
+            '$ptr->raw( ' . Affix::Platform::SIZEOF_DOUBLE() . ' )';
+        free $ptr;
+        is $ptr, U(), '$ptr is now free';
+    };
+    subtest undef => sub {
+        isa_ok my $ptr = Affix::sv2ptr( Pointer [Double], undef ), ['Affix::Pointer'], 'undef';
+        $ptr->dump(16);
+        is $ptr->sv, U(), '$ptr->sv is undef';
+        free $ptr;
+        is $ptr, U(), '$ptr is now free';
+    };
+    subtest list => sub {
+        subtest '[ 1.2, 2.3, 3, 4.5, 9.75 ]' => sub {
+            isa_ok my $ptr = Affix::sv2ptr( Pointer [Double], [ 1.2, 2.3, 3, 4.5, 9.75 ] ), ['Affix::Pointer'], '[ 1.2, 2.3, 3, 4.5, 9.75 ]';
+            $ptr->dump(88);
+            is $ptr->at(0),         float( 1.2,  tolerance => 0.001 ), '$ptr->at(0) == 1.2';
+            is $ptr->at(4),         float( 9.75, tolerance => 0.001 ), '$ptr->at(4) == 9.75';
+            is $ptr->at( 0, 2000 ), float( 2000, tolerance => 0.001 ), '$ptr->at(0, 2000) == 2000';
+            $ptr->dump(40);
+            is $ptr->sv,
+                [
+                float( 2000, tolerance => 0.001 ),
+                float( 2.3,  tolerance => 0.001 ),
+                float( 3,    tolerance => 0.001 ),
+                float( 4.5,  tolerance => 0.001 ),
+                float( 9.75, tolerance => 0.001 )
+                ],
+                '$ptr->sv';
+            is [ unpack 'd*', $ptr->raw( 5 * Affix::Platform::SIZEOF_DOUBLE() ) ],
+                [
+                float( 2000, tolerance => 0.001 ),
+                float( 2.3,  tolerance => 0.001 ),
+                float( 3,    tolerance => 0.001 ),
+                float( 4.5,  tolerance => 0.001 ),
+                float( 9.75, tolerance => 0.001 )
+                ],
+                '$ptr->raw( ' . 5 * Affix::Platform::SIZEOF_DOUBLE() . ' )';
+            free $ptr;
+            is $ptr, U(), '$ptr is now free';
+        };
+        subtest '[]' => sub {
+            isa_ok my $ptr = Affix::sv2ptr( Pointer [Double], [] ), ['Affix::Pointer'], '[]';
+            $ptr->dump(16);
+            use Data::Dump;
+            ddx $ptr->sv;
+            is $ptr->sv, [], '$ptr->sv is []';
+            free $ptr;
+            is $ptr, U(), '$ptr is now free';
+        };
+    };
+};
 
 #define WCHAR_FLAG 'w'
-#define LONGLONG_FLAG 'x'
-#define ULONGLONG_FLAG 'y'
 #define FLOAT_FLAG 'f'
 #define DOUBLE_FLAG 'd'
 #define STRING_FLAG 'z'
