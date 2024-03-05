@@ -161,6 +161,30 @@ void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
         // else if (ret == NULL)
         // Newxz(ret, 0, DCpointer); // HMM: void pointer?
     } break;
+    case UINT_FLAG: {
+        if (SvOK(data)) {
+            if (SvTYPE(data) == SVt_PVIV) {
+                if (ret == NULL) Newxz(ret, 1, unsigned int);
+                unsigned int i = SvUV(data);
+                Copy(&i, ret, 1, unsigned int);
+            }
+            else if (SvROK(data) && SvTYPE(SvRV(data)) == SVt_PVAV) {
+                AV *array = MUTABLE_AV(SvRV(data));
+                size_t len = av_count(array);
+                if (ret == NULL) Newxz(ret, len, unsigned int);
+                unsigned int i;
+                for (size_t x = 0; x < len; ++x) {
+                    i = SvUV(*av_fetch(array, x, 0));
+                    Copy(&i, INT2PTR(unsigned int *, PTR2IV(ret) + (x * SIZEOF_UINT)), 1,
+                         unsigned int);
+                }
+            }
+            else
+                croak("Data type mismatch for Pointer[%s] [%d]", AXT_STRINGIFY(type), SvTYPE(data));
+        }
+        // else if (ret == NULL)
+        // Newxz(ret, 0, DCpointer); // HMM: void pointer?
+    } break;
     default:
         croak("Attempt to marshal unknown/unhandled type in sv2ptr: [%c] Pointer[%s]",
               (char)AXT_NUMERIC(type), AXT_STRINGIFY(type));
@@ -228,6 +252,18 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr, size_t len) {
             DCpointer tmp = ptr;
             for (size_t x = 0; x < len; ++x)
                 av_push(ret_av, newSViv(*(int *)INT2PTR(int *, PTR2IV(ptr) + (x * SIZEOF_INT))));
+            ret = newRV_noinc(MUTABLE_SV(ret_av));
+        }
+    } break;
+    case UINT_FLAG: {
+        if (len == 1)
+            ret = newSViv(*(unsigned int *)ptr);
+        else {
+            AV *ret_av = newAV();
+            DCpointer tmp = ptr;
+            for (size_t x = 0; x < len; ++x)
+                av_push(ret_av, newSViv(*(unsigned int *)INT2PTR(unsigned int *,
+                                                                 PTR2IV(ptr) + (x * SIZEOF_UINT))));
             ret = newRV_noinc(MUTABLE_SV(ret_av));
         }
     } break;
