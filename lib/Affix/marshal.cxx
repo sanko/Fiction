@@ -38,9 +38,8 @@ void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
     case SCHAR_FLAG: {
         if (SvOK(data)) {
             if (SvPOK(data)) {
-                // TODO: Store SvUTF8 value in subtype?
                 char *i = SvUTF8(data) ? SvPVutf8(data, len) : SvPV(data, len);
-                if (ret == NULL) Newxz(ret, len, char);
+                if (ret == NULL) Newxz(ret, len + 1, char);
                 Copy(i, ret, len, char);
             }
             else if (SvIOK(data)) {
@@ -394,6 +393,7 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr, size_t len) {
     case CHAR_FLAG:
     case SCHAR_FLAG:
     case UCHAR_FLAG:
+        len = strlen((char *)ptr);
         ret = newSVpvn_utf8((char *)ptr, len, is_utf8_string((U8 *)ptr, len));
         break;
     case SHORT_FLAG: {

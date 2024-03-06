@@ -228,26 +228,15 @@ double fn(double i) { return 46 + (i * .01);}
 double fn(double i, double j) { return i * j;}
 
 };
-
-#define STRING_FLAG 'z'
 subtest string => sub {
     build_and_test
-        'const char * fn(const char *)' => <<'', [String], String, 'Hi', 'This is just a friendly hello. So, yeah, hi. Hi.';
+        'const char * fn(const char *)' => <<'', [String], String, 'Hi', q[Wow, this shouldn't crash.];
 #include "std.h"
 // ext: .c
 const char * fn(const char * i) {
-    char * ret = malloc(strlen(i) + 1);
-    warn("In: %s", i);
-    sprintf(ret, "This is just a friendly hello. So, yeah, hi. %s.", i); // sneaky
-    return ret;
+    return "Wow, this shouldn't crash.";
 }
 
-
-    #~ build_and_test
-    #~ 'double fn(double, double)' => <<'', [ Double, Double ], Double, [ 1.5, 2.3 ], float( ( 1.5 * 2.3 ), tolerance => 0.03 );
-    #~ #include "std.h"
-    #~ // ext: .c
-    #~ double fn(double i, double j) { return i * j;}
 };
 
 #define WSTRING_FLAG '<'

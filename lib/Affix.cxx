@@ -543,23 +543,10 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
 
     case POINTER_FLAG: {
         DCpointer ret = dcCallPointer(cvm, a->entry_point);
-
         if (ret == NULL)
             sv_set_undef(a->res);
-        else if (0 && SvOK(MUTABLE_SV(ret))) {
-            DumpHex(ret, 16);
-            sv_dump(MUTABLE_SV(ret));
-            warn("Pointer %p is an SV*", ret);
-            sv_setsv(a->res, MUTABLE_SV(ret));
-            sv_dump(a->res);
-        }
-        else {
-            warn("Pointer %p is not an SV*", ret);
-            DumpHex(ret, 32);
-            DD(a->restype);
-            DD(AXT_SUBTYPE(a->restype));
-            sv_setsv(ptr2sv(aTHX_ AXT_SUBTYPE(a->restype), ret), a->res);
-        }
+        else
+            sv_setsv(a->res, sv_2mortal(ptr2sv(aTHX_ a->restype, ret)));
         //~ if (SvOK(MUTABLE_SV(ret)))
         //~ sv_setsv(a->res, sv_2mortal(MUTABLE_SV(ret)));
     } break;
