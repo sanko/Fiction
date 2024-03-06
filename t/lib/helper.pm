@@ -47,7 +47,7 @@ package t::lib::helper {
             }
         }
         my @cmds = (
-            "$compiler -Wall -Wformat=0 --shared -fPIC -I$Inc -DBUILD_LIB $aggs -o $l_file $c_file",
+            "$compiler -Wall -Wformat=0 --shared -fPIC -I$Inc -DBUILD_LIB -o $l_file $aggs $c_file",
 
             #~ (
             #~ $OS eq 'MSWin32' ? "cl /LD /EHsc /Fe$l_file $c_file" :

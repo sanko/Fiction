@@ -547,11 +547,7 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
             sv_set_undef(a->res);
         else
             sv_setsv(a->res, sv_2mortal(ptr2sv(aTHX_ a->restype, ret)));
-        //~ if (SvOK(MUTABLE_SV(ret)))
-        //~ sv_setsv(a->res, sv_2mortal(MUTABLE_SV(ret)));
     } break;
-
-        //~ #define SV_FLAG '?'
     default:
         croak("Unknown or unhandled return type: %c", a->restype_c);
     };

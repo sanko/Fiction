@@ -72,7 +72,7 @@ XS_INTERNAL(Affix_ptr2sv) {
                 IV tmp = SvIV(MUTABLE_SV(SvRV(ptr_sv)));
                 DCpointer ptr;
                 ptr = INT2PTR(DCpointer, tmp);
-                ST(0) = sv_2mortal(newRV(ptr2sv(aTHX_ ST(0), ptr, AXT_POINTER_COUNT(array))));
+                ST(0) = sv_2mortal(newRV(ptr2sv(aTHX_ ST(0), ptr)));
             }
             else
                 ST(0) = sv_2mortal(newSV(0));
@@ -119,7 +119,7 @@ XS_INTERNAL(Affix_Pointer_sv) {
             IV tmp = SvIV(MUTABLE_SV(SvRV(ptr_sv)));
             DCpointer ptr;
             ptr = INT2PTR(DCpointer, tmp);
-            ST(0) = sv_2mortal(ptr2sv(aTHX_ AXT_SUBTYPE(xsub_tmp_sv), ptr, 1));
+            ST(0) = sv_2mortal(ptr2sv(aTHX_ AXT_SUBTYPE(xsub_tmp_sv), ptr));
         }
         else
             ST(0) = sv_2mortal(newSV(0));

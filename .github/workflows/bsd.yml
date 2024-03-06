@@ -6,7 +6,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - env:
-          AUTHOR_TESTING: 1
           AUTOMATED_TESTING: 1
         name: 'Test on ${{ inputs.os }}'
         uses: cross-platform-actions/action@v0.22.0
