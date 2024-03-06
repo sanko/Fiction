@@ -675,7 +675,6 @@ subtest 'String' => sub {
 DLLEXPORT int ptr(char * line) {
     return strlen(line);
 }
-
 END
             ok Affix::affix( $lib => 'ptr', [ Pointer [Char] ] => Int ), 'int ptr(char *)';
             is ptr('This is a quick test.'), 21, 'C understood we have a line of text containing 21 chars';
@@ -692,15 +691,10 @@ END
 #define UNION_FLAG 'u'
 #define ARRAY_FLAG '@'
 #define CODEREF_FLAG '&'
-#define POINTER_FLAG 'P'
-#define SV_FLAG '?'
 subtest 'Pointer[Pointer[Char]]' => sub {
     isa_ok my $ptr = Affix::sv2ptr( Pointer [ Pointer [Char] ], [ 'This is a string of text.', 'More', 'And Even More', undef ] ),
         ['Affix::Pointer'], 'load list of 3 strings';
-    {
-        my $todo = todo q[ptr2sv requires info for each field but we aren't storing that for multidimensional pointers yet];
-        is [ $ptr->sv ], [ 'This is a string of text.', 'More', 'And Even More', undef ], '$ptr->sv';
-    }
+    is $ptr->sv, [ 'This is a string of text.', 'More', 'And Even More', undef ], '$ptr->sv';
     subtest 'compiled lib' => sub {
         my $lib = compile_test_lib(<<'END');
 #include "std.h"
@@ -725,4 +719,6 @@ END
         #~ is Nothing(), 99, 'Nothing()';
     };
 };
+
+#define SV_FLAG '?'
 done_testing;

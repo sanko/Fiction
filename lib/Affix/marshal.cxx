@@ -44,7 +44,7 @@ void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
             }
             else if (SvIOK(data)) {
                 len = 1;
-                if (ret == NULL) Newxz(ret, len, char);
+                if (ret == NULL) Newxz(ret, len + 1, char);
                 char i = (char)SvIV(data);
                 Copy(&i, ret, len, char);
             }
@@ -371,7 +371,7 @@ void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
 
 SV *ptr2sv(pTHX_ SV *type, DCpointer ptr, size_t len) {
     //~ DD(type);
-    if (ptr == NULL) return sv_2mortal(newSV(0)); // Don't waste any time on NULL pointers
+    if (ptr == NULL) return newSV(0); // Don't waste any time on NULL pointers
     SV *ret;
     //~ DD(type);
     switch (AXT_NUMERIC(type)) {
@@ -514,21 +514,18 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr, size_t len) {
             ret = newRV_noinc(MUTABLE_SV(ret_av));
         }
     } break;
-
     case POINTER_FLAG: {
         SV *subtype = AXT_SUBTYPE(type);
         if (UNLIKELY(sv_derived_from(subtype, "Affix::Type::Pointer"))) {
-            if (len == 1)
-                ret = ptr2sv(aTHX_ subtype, *(DCpointer *)ptr);
-            else {
-                AV *ret_av = newAV();
-                DCpointer tmp = ptr;
-                for (size_t x = 0; x < len; ++x)
-                    av_push(ret_av, ptr2sv(aTHX_ subtype,
-                                           *(DCpointer *)INT2PTR(
-                                               intptr_t *, PTR2IV(ptr) + (x * SIZEOF_INTPTR_T))));
-                ret = newRV_noinc(MUTABLE_SV(ret_av));
-            }
+            AV *ret_av = newAV();
+            DCpointer tmp;
+            int i = 0;
+            do {
+                tmp = *(DCpointer *)INT2PTR(DCpointer *, (i * SIZEOF_INTPTR_T) + PTR2IV(ptr));
+                av_push(ret_av, ptr2sv(aTHX_ subtype, tmp));
+                i++;
+            } while (tmp != NULL);
+            ret = newRV_noinc(MUTABLE_SV(ret_av));
             break;
         }
     }
