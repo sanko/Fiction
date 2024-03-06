@@ -37,18 +37,8 @@ void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
     case CHAR_FLAG:
     case SCHAR_FLAG: {
         if (SvOK(data)) {
-            if (SvPOK(data)) {
-                char *i = SvUTF8(data) ? SvPVutf8(data, len) : SvPV(data, len);
-                if (ret == NULL) Newxz(ret, len + 1, char);
-                Copy(i, ret, len, char);
-            }
-            else if (SvIOK(data)) {
-                len = 1;
-                if (ret == NULL) Newxz(ret, len + 1, char);
-                char i = (char)SvIV(data);
-                Copy(&i, ret, len, char);
-            }
-            else if (SvROK(data) && SvTYPE(SvRV(data)) == SVt_PVAV) {
+
+            if (SvROK(data) && SvTYPE(SvRV(data)) == SVt_PVAV) {
                 AV *array = MUTABLE_AV(SvRV(data));
                 len = av_count(array);
                 if (ret == NULL) Newxz(ret, len, int);
@@ -58,28 +48,20 @@ void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
                     Copy(&i, INT2PTR(char *, PTR2IV(ret) + (x * SIZEOF_CHAR)), 1, char);
                 }
             }
-            else
-                croak("Data type mismatch for Pointer[%s] [%d]", AXT_STRINGIFY(type), SvTYPE(data));
+            else {
+                char *i = SvUTF8(data) ? SvPVutf8(data, len) : SvPV(data, len);
+                if (ret == NULL) Newxz(ret, len + 1, char);
+                Copy(i, ret, len, char);
+            }
         }
     } break;
     case UCHAR_FLAG: {
         if (SvOK(data)) {
-            if (SvPOK(data)) {
-                // TODO: Store SvUTF8 value in subtype?
-                char *i = SvUTF8(data) ? SvPVutf8(data, len) : SvPV(data, len);
-                if (ret == NULL) Newxz(ret, len, char);
-                Copy(i, ret, len, char);
-            }
-            else if (SvIOK(data)) {
-                len = 1;
-                if (ret == NULL) Newxz(ret, len, char);
-                unsigned char i = (unsigned char)SvUV(data);
-                Copy(&i, ret, len, unsigned char);
-            }
-            else if (SvROK(data) && SvTYPE(SvRV(data)) == SVt_PVAV) {
+
+            if (SvROK(data) && SvTYPE(SvRV(data)) == SVt_PVAV) {
                 AV *array = MUTABLE_AV(SvRV(data));
                 len = av_count(array);
-                if (ret == NULL) Newxz(ret, len, unsigned int);
+                if (ret == NULL) Newxz(ret, len + 1, unsigned int);
                 unsigned char i;
                 for (size_t x = 0; x < len; ++x) {
                     i = (unsigned char)SvUV(*av_fetch(array, x, 0));
@@ -87,8 +69,11 @@ void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
                          unsigned char);
                 }
             }
-            else
-                croak("Data type mismatch for Pointer[%s] [%d]", AXT_STRINGIFY(type), SvTYPE(data));
+            else {
+                char *i = SvUTF8(data) ? SvPVutf8(data, len) : SvPV(data, len);
+                if (ret == NULL) Newxz(ret, len + 1, char);
+                Copy(i, ret, len, char);
+            }
         }
     } break;
     case SHORT_FLAG: {

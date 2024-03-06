@@ -63,8 +63,8 @@ subtest 'Pointer[Char]' => sub {
         isa_ok my $ptr = Affix::sv2ptr( Pointer [Char], 97 ), ['Affix::Pointer'], '97';
         $ptr->dump(1);
         $ptr->dump(8);
-        is $ptr->sv,                                        'a',   '$ptr->sv';
-        is [ $ptr->raw( Affix::Platform::SIZEOF_CHAR() ) ], ['a'], '$ptr->raw( ' . Affix::Platform::SIZEOF_CHAR() . ' )';
+        is $ptr->sv,                                        '97',  '$ptr->sv';
+        is [ $ptr->raw( Affix::Platform::SIZEOF_CHAR() ) ], ['9'], '$ptr->raw( ' . Affix::Platform::SIZEOF_CHAR() . ' )';
         free $ptr;
         is $ptr, U(), '$ptr is now free';
     };
@@ -150,8 +150,8 @@ subtest 'Pointer[UChar]' => sub {
         isa_ok my $ptr = Affix::sv2ptr( Pointer [UChar], 97 ), ['Affix::Pointer'], '97';
         $ptr->dump(1);
         $ptr->dump(8);
-        is $ptr->sv,                                         'a',   '$ptr->sv';
-        is [ $ptr->raw( Affix::Platform::SIZEOF_UCHAR() ) ], ['a'], '$ptr->raw( ' . Affix::Platform::SIZEOF_UCHAR() . ' )';
+        is $ptr->sv,                                         '97',  '$ptr->sv';
+        is [ $ptr->raw( Affix::Platform::SIZEOF_UCHAR() ) ], ['9'], '$ptr->raw( ' . Affix::Platform::SIZEOF_UCHAR() . ' )';
         free $ptr;
         is $ptr, U(), '$ptr is now free';
     };
@@ -590,8 +590,8 @@ subtest 'String' => sub {
         isa_ok my $ptr = Affix::sv2ptr( String, 97 ), ['Affix::Pointer'], '97';
         $ptr->dump(1);
         $ptr->dump(8);
-        is $ptr->sv,                                        'a',   '$ptr->sv';
-        is [ $ptr->raw( Affix::Platform::SIZEOF_CHAR() ) ], ['a'], '$ptr->raw( ' . Affix::Platform::SIZEOF_CHAR() . ' )';
+        is $ptr->sv,                                        '97',  '$ptr->sv';
+        is [ $ptr->raw( Affix::Platform::SIZEOF_CHAR() ) ], ['9'], '$ptr->raw( ' . Affix::Platform::SIZEOF_CHAR() . ' )';
         free $ptr;
         is $ptr, U(), '$ptr is now free';
     };
@@ -681,16 +681,6 @@ END
         };
     };
 };
-
-#define WCHAR_FLAG 'w'
-#define STRING_FLAG 'z'
-#define WSTRING_FLAG '<'
-#define STDSTRING_FLAG 'Y'
-#define STRUCT_FLAG 'A'
-#define CPPSTRUCT_FLAG 'B'
-#define UNION_FLAG 'u'
-#define ARRAY_FLAG '@'
-#define CODEREF_FLAG '&'
 subtest 'Pointer[Pointer[Char]]' => sub {
     isa_ok my $ptr = Affix::sv2ptr( Pointer [ Pointer [Char] ], [ 'This is a string of text.', 'More', 'And Even More', undef ] ),
         ['Affix::Pointer'], 'load list of 3 strings';
@@ -719,6 +709,43 @@ END
         #~ is Nothing(), 99, 'Nothing()';
     };
 };
+subtest 'mess' => sub {
+    isa_ok my $ptr = Affix::sv2ptr( Pointer [ Pointer [Char] ], [ 'This is a string of text.', 'More', 'And Even More', undef ] ),
+        ['Affix::Pointer'], 'load list of 3 strings';
+    is $ptr->sv, [ 'This is a string of text.', 'More', 'And Even More', undef ], '$ptr->sv';
+    subtest 'compiled lib' => sub {
+        use ExtUtils::Embed;
+        my $flags = ccopts(). ' ' . ldopts();
+        $flags =~ s[\R][ ]g;
+        my $lib = compile_test_lib( <<'END', $flags );
+#include <EXTERN.h>
+#include <perl.h>
+#include "std.h"
+
+// ext: .c
+DLLEXPORT int ptrsv(SV * arg) {
+    sv_dump(arg);
+    return 0;
+}
+
+END
+        diag '$lib: ' . $lib;
+        ok my $_lib = load_library($lib), 'lib is loaded [debugging]';
+        diag $_lib;
+        ok Affix::affix( $lib => 'ptrsv', [ Pointer [SV] ] => Int ), 'int ptrsv(sv *)';
+
+        #~ is ptrptr($ptr), 3, 'C understood we have 3 lines of text';
+        #~ is Nothing(), 99, 'Nothing()';
+    };
+};
 
 #define SV_FLAG '?'
+#define CODEREF_FLAG '&'
+#define UNION_FLAG 'u'
+#define STRUCT_FLAG 'A'
+#define CPPSTRUCT_FLAG 'B'
+#
+#define WCHAR_FLAG 'w'
+#define STDSTRING_FLAG 'Y'
+#define ARRAY_FLAG '@'
 done_testing;

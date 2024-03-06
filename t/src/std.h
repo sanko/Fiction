@@ -9,9 +9,12 @@
 #include <string.h>
 #include <wchar.h>
 
+// Some tests might actually include perl.h which has the real version of this
+#if !defined(warn)
 #define warn(FORMAT, ...)                                                                          \
     fprintf(stderr, FORMAT " at %s line %i\n", ##__VA_ARGS__, __FILE__, __LINE__);                 \
     fflush(stderr);
+#endif
 
 #if defined _WIN32 || defined __CYGWIN__
 #include <BaseTsd.h>
