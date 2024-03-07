@@ -3,7 +3,6 @@ package t::lib::helper {
     use warnings;
     use Test2::V0;
     use Test2::Plugin::UTF8;
-    use experimental 'signatures';
     use Path::Tiny qw[path tempdir tempfile];
     use Exporter 'import';
     our @EXPORT = qw[compile_test_lib compile_cpp_test_lib is_approx];
@@ -22,7 +21,10 @@ package t::lib::helper {
     #~ note $Config{ccflags};
     #~ note $Config{ccname};
     #~ note $Config{ccsymbols};
-    sub compile_test_lib ( $name, $aggs = '', $keep = 0 ) {
+    sub compile_test_lib ($;$$) {
+        my ( $name, $aggs, $keep ) = @_;
+        $aggs //= '';
+        $keep //= 0;
         my ($opt) = grep { -f $_ } "t/src/$name.cxx", "t/src/$name.c";
         if ($opt) {
             $opt = path($opt)->absolute;

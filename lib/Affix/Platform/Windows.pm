@@ -1,5 +1,5 @@
 package Affix::Platform::Windows 0.5 {
-    use v5.38;
+    use v5.26;
     use DynaLoader;
     use Win32;    # Core on Windows
     use File::Spec;
@@ -7,7 +7,7 @@ package Affix::Platform::Windows 0.5 {
     our @EXPORT_OK   = qw[find_library];
     our %EXPORT_TAGS = ( all => \@EXPORT_OK );
 
-    sub find_msvcrt {
+    sub find_msvcrt () {
         my $version = get_msvcrt_version();    # Assuming _get_build_version is defined elsewhere
         if ( !$version ) {
             my @possible_dlls = (
@@ -45,7 +45,7 @@ package Affix::Platform::Windows 0.5 {
         return "$clibname.dll";
     }
 
-    sub get_msvcrt_version {
+    sub get_msvcrt_version() {
         open( my $pipe, '-|', 'dumpbin /headers msvcrt.dll', 'r' ) or return;
         my $dumpbin_output;
         $dumpbin_output .= $_ while <$pipe>;
@@ -53,7 +53,8 @@ package Affix::Platform::Windows 0.5 {
         return $1 if $dumpbin_output && $dumpbin_output =~ /FileVersion\s+(\d+\.\d+\.\d+\.\d+)/;
     }
 
-    sub find_library ($name) {
+    sub find_library($) {
+        my ($name) = @_;
         return find_msvcrt() if $name eq 'c' || $name eq 'm';
         for my $dir ( split ';', $ENV{PATH} ) {
             my $file = File::Spec->catfile( $dir, $name );

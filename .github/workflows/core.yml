@@ -25,31 +25,31 @@ jobs:
         run: |
           git clone --depth 1 --branch v${{inputs.perl}} https://github.com/Perl/perl5.git
           pushd perl5\win32
-
-          gmake CCHOME=C:\strawberry\c INST_TOP="C:\Users\runneradmin\perl5\perlbrew\perls\cache-${{ inputs.os }}${{ inputs.perl }}${{ inputs.flags }}" ^
+          
+          gmake CCHOME=C:\strawberry\c INST_TOP="C:\Users\runneradmin\perl5\perlbrew\perls\cache-${{ inputs.os }}-${{ inputs.perl }}${{ inputs.flags }}" ^
                 ${{ inputs.flags == '-Dusethreads'      && 'USE_ITHREADS=define    USE_MULTI=define' || '' }} ^
                 ${{ inputs.flags == '-Duselongdouble'   && 'USE_LONG_DOUBLE=define'                  || '' }} ^
                 ${{ inputs.flags == '-Dusequadmath'     && 'USE_QUADMATH=define'                     || '' }} ^
                 -f GNUMakefile -j2 install
-
+          
             popd
-
-          set PATH=C:\Users\runneradmin\perl5\perlbrew\perls\cache-${{ inputs.os }}${{ inputs.perl }}${{ inputs.flags }}\bin;%PATH%
+          
+          set PATH=C:\Users\runneradmin\perl5\perlbrew\perls\cache-${{ inputs.os }}-${{ inputs.perl }}${{ inputs.flags }}\bin;%PATH%
         shell: cmd
       - if: "${{ steps.cache-perl.outputs.cache-hit != 'true' && runner.os != 'Windows' }}"
         name: 'Build perl ${{ inputs.perl }} from source'
         run: |
           \curl -L https://install.perlbrew.pl | bash
           source ~/perl5/perlbrew/etc/bashrc
-
+          
           perlbrew available
           perlbrew install-cpanm
-
-          perlbrew install --switch --verbose --as cache-${{ inputs.os }}${{ inputs.perl }}${{ inputs.flags }} -j 12 --notest --noman ${{ inputs.flags }} perl-${{ inputs.perl }}
+          
+          perlbrew install --switch --verbose --as cache-${{ inputs.os }}-${{ inputs.perl }}${{ inputs.flags }} -j 12 --notest --noman ${{ inputs.flags }} perl-${{ inputs.perl }}
       - name: Checkout source
         uses: actions/checkout@v4
       - name: Install prereqs
-        run: "curl -L https://cpanmin.us | ~/perl5/perlbrew/perls/cache-${{ inputs.os }}${{ inputs.perl }}${{ inputs.flags }}/bin/perl - --installdeps --notest .\n"
+        run: "curl -L https://cpanmin.us | ~/perl5/perlbrew/perls/cache-${{ inputs.os }}-${{ inputs.perl }}${{ inputs.flags }}/bin/perl - --installdeps --notest -v .\n"
         shell: bash
       - env:
           AUTHOR_TESTING: 0
@@ -57,13 +57,12 @@ jobs:
         id: test
         name: Run test suite
         run: |
-          ~/perl5/perlbrew/perls/cache-${{ inputs.os }}${{ inputs.perl }}${{ inputs.flags }}/bin/perl -V
-
-          curl -L https://cpanmin.us | ~/perl5/perlbrew/perls/cache-${{ inputs.os }}${{ inputs.perl }}${{ inputs.flags }}/bin/perl - --installdeps --notest .
-          ~/perl5/perlbrew/perls/cache-${{ inputs.os }}${{ inputs.perl }}${{ inputs.flags }}/bin/perl Build.PL
+          ~/perl5/perlbrew/perls/cache-${{ inputs.os }}-${{ inputs.perl }}${{ inputs.flags }}/bin/perl -V
+          
+          ~/perl5/perlbrew/perls/cache-${{ inputs.os }}-${{ inputs.perl }}${{ inputs.flags }}/bin/perl Build.PL
           ./Build test --verbose
-
-          ~/perl5/perlbrew/perls/cache-${{ inputs.os }}${{ inputs.perl }}${{ inputs.flags }}/bin/perl -e 'print $^V' > test-output-${{ inputs.os }}-${{ inputs.perl }}${{ inputs.flags }}.txt
+          
+          ~/perl5/perlbrew/perls/cache-${{ inputs.os }}-${{ inputs.perl }}${{ inputs.flags }}/bin/perl -e 'print $^V' > test-output-${{ inputs.os }}-${{ inputs.perl }}${{ inputs.flags }}.txt
         shell: bash
       - name: Upload results as artifact
         uses: actions/upload-artifact@v4.0.0

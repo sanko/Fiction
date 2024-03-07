@@ -1,5 +1,5 @@
 package Affix::Platform::Unix 0.5 {
-    use v5.38;
+    use v5.26;
     use Path::Tiny qw[path];
     use Config     qw[%Config];
     use parent 'Exporter';
@@ -7,7 +7,7 @@ package Affix::Platform::Unix 0.5 {
     our %EXPORT_TAGS = ( all => \@EXPORT_OK );
     my $so = $Config{so};
 
-    sub is_elf {
+    sub is_elf ($) {
         my ($filename) = @_;
         my $elf_header = "\x7fELF";                        # ELF header in binary format
         open( my $fh, '<:raw', $filename ) or return 0;    # Open in binary mode
@@ -16,7 +16,8 @@ package Affix::Platform::Unix 0.5 {
         return $header eq $elf_header;
     }
 
-    sub _findSoname_ldconfig ($name) {
+    sub _findSoname_ldconfig ($) {
+        my ($name) = @_;
         my $machine = {
             'x86_64-64'  => 'libc6,x86-64',
             'PPC64-64'   => 'libc6,64bit',
@@ -31,11 +32,13 @@ package Affix::Platform::Unix 0.5 {
             `export LC_ALL 'C'; export LANG 'C'; /sbin/ldconfig -p 2>&1`;
     }
 
-    sub _findLib_ld ($name) {
+    sub _findLib_ld($) {
+        my ($name) = @_;
         `export LC_ALL 'C'; export LANG 'C'; ld -t -o /dev/null -l$name 2>&1`;
     }
 
-    sub _findLib_gcc ($name) {
+    sub _findLib_gcc($) {
+        my ($name) = @_;
         $name =~ s[^lib][];
         CORE::state $compiler;
         $compiler //= sub {
@@ -57,7 +60,9 @@ package Affix::Platform::Unix 0.5 {
         grep {/^.*?\/lib$name\.[^\s]+$/} split /\n/, $trace;
     }
 
-    sub find_library ( $name, $version //= '' ) {    # TODO: actually feed version to diff methods
+    sub find_library ($;$) {    # TODO: actually feed version to diff methods
+        my ( $name, $version ) = @_;
+        $version //= '';
         if ( -f $name ) {
             $name = readlink $name if -l $name;        # Handle symbolic links
             return $name           if is_elf($name);
@@ -77,7 +82,8 @@ package Affix::Platform::Unix 0.5 {
         $cache->{$name}{$version} // ();
     }
 
-    sub _get_soname ($file) {    # assuming GNU binutils / ELF
+    sub _get_soname ($) {    # assuming GNU binutils / ELF
+        my ($file) = @_;
         return undef unless $file && -f $file;
         my $objdump = `which objdump`;
         return undef unless $objdump;    # objdump is not available, give up

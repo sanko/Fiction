@@ -1,5 +1,5 @@
 package Affix::Platform::Solaris 0.5 {
-    use v5.38;
+    use v5.26;
     use parent 'Affix::Platform::Unix';
     use parent 'Exporter';
     our @EXPORT_OK   = qw[find_library];

@@ -710,130 +710,33 @@ END
         #~ is Nothing(), 99, 'Nothing()';
     };
 };
-subtest 'mess' => sub {
-    skip_all 'embedding a perl interpreter requires it be built with multiplicity enabled' unless $Config{usemultiplicity};
-    isa_ok my $ptr = Affix::sv2ptr( Pointer [ Pointer [Char] ], [ 'This is a string of text.', 'More', 'And Even More', undef ] ),
-        ['Affix::Pointer'], 'load list of 3 strings';
-    is $ptr->sv, [ 'This is a string of text.', 'More', 'And Even More', undef ], '$ptr->sv';
+subtest '...why would you do this?' => sub {
+
+    #~ skip_all 'embedding a perl interpreter requires it be built with multiplicity enabled' unless $Config{usemultiplicity};
     subtest 'compiled lib' => sub {
         use ExtUtils::Embed;
         my $flags = `$^X -MExtUtils::Embed -e ccopts -e ldopts`;
         $flags =~ s[\R][ ]g;
         my $lib = compile_test_lib( <<'END', $flags );
 #line 730 "05_pointer.t"
-#define MULTIPLICITY
-
-
-//#define PERL_NO_GET_CONTEXT 1
-#include "EXTERN.h"
-#ifdef _WIN32
-#define PERL_NO_INLINE_FUNCTIONS
-#endif
+#include <EXTERN.h>
 #include <perl.h>
-//#include <perliol.h>
-#define NO_XSLOCKS /* XSUB.h will otherwise override various things we need */
 #include <XSUB.h>
-#define NEED_sv_2pv_flags
-#include "patchlevel.h" /* for local_patches */
-static PerlInterpreter *my_perl = NULL;
-#include <embed.h>
-
 #include "std.h"
 
-#if defined(_WIN32) && !defined(MULTIPLICITY)
-void
-Perl_warn_nocontext(const char *pat, ...)
-{
-    dTHX;
-    va_list args;
-    PERL_ARGS_ASSERT_WARN_NOCONTEXT;
-    va_start(args, pat);
-    vwarn(pat, &args);
-    va_end(args);
-}
-
-#define __impl_Perl_warn_nocontext Perl_warn_nocontext
-#endif
-
-#if 0
-#include <unistd.h>
-
-
-
 // ext: .c
-DLLEXPORT SV* ptrsv(SV * arg) {
+DLLEXPORT SV* inc(SV * arg) {
     dTHX;
-
-    SV*sv=newSVpv("Neat!", 5);
-
-    sv_dump(arg);
-    sv_dump(sv);
-   	//sv = sv_2mortal(sv);
-    warn("----------------------------- %p", sv);
-    return sv;
-    return NULL;
-}
-
-DLLEXPORT int myperl () {
-    char *embedding[] = { "", "-e", "0", NULL };
-
-    //SV*sv=newSVpv("Neat!", 5);
-
-    //PERL_SYS_INIT3(&argc,&argv,&env);
-    int argc = 0;
-    char** argv;
-    char** env;
-
-    PERL_SYS_INIT3(&argc, &argv, &env);
-    my_perl = perl_alloc();
-    //sv_dump(sv);
-    PL_perl_destruct_level = 1;
-    PERL_SET_CONTEXT(my_perl);
-
-    perl_construct( my_perl );
-    perl_parse(my_perl, NULL, 3, embedding, NULL);
-    PL_exit_flags |= PERL_EXIT_DESTRUCT_END;
-    perl_run(my_perl);
-    // Treat $a as an integer
-    eval_pv("$a = 3; $a **= 2", TRUE);
-    printf("a = %d\n", SvIV(get_sv("a", 0)));
-
-    // Treat $a as a float
-    eval_pv("$a = 3.14; $a **= 2", TRUE);
-    printf("a = %f\n", SvNV(get_sv("a", 0)));
-
-    // Treat $a as a string
-    eval_pv("$a = 'rekcaH lreP rehtonA tsuJ'; $a = reverse($a);", TRUE);
-    printf("a = %s\n", SvPV_nolen(get_sv("a", 0)));
-
-    perl_destruct(my_perl);
-    perl_free(my_perl);
-    //PERL_SYS_TERM();
-
-    return 1;
-}
-#endif
-
-DLLEXPORT int ptrptr(char ** lines) {
-    int i = 0;
-    while (lines[i] != NULL && i < 30) { // Fallback is 30
-        warn("    # [%d] %s", i, lines[i]);
-        i++;
-    }
-    return i;
+    sv_inc(arg);
+    return arg;
 }
 END
         diag '$lib: ' . $lib;
-        ok my $_lib = load_library($lib), 'lib is loaded [debugging]';
-        diag $_lib;
-
-        #~ ok Affix::affix( $lib => 'ptrsv', [ Pointer [SV] ] => Pointer [SV] ), 'SV* ptrsv(SV *)';
-        #~ ok Affix::affix( $lib => 'main',  []               => Int ),          'int main()';
-        #~ is ptrsv('wow'), 'Neat!';
-        #~ main();
-        #~ is ptrsv('wow'), 'Neat', 'return SV*';
-        #~ is ptrptr($ptr), 3, 'C understood we have 3 lines of text';
-        #~ is Nothing(), 99, 'Nothing()';
+        ok my $_lib = load_library($lib),                                   'lib is loaded [debugging]';
+        ok Affix::affix( $lib => 'inc', [ Pointer [SV] ] => Pointer [SV] ), 'SV* inc(SV *)';
+        my $name = 'John';
+        is inc($name), 'Joho', 'sv passed and returned from symbol';
+        is $name,      'Joho', 'sv was modified in place';
     };
 };
 

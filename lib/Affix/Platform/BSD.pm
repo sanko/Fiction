@@ -1,14 +1,16 @@
 package Affix::Platform::BSD 0.5 {
-    use v5.38;
+    use v5.26;
     use parent 'Affix::Platform::Unix';
     use parent 'Exporter';
     our @EXPORT_OK   = qw[find_library];
     our %EXPORT_TAGS = ( all => \@EXPORT_OK );
 
-    sub find_library ( $name, $version //= '' ) {    # TODO: actually feed version to diff methods
+    sub find_library ($;$) {    # TODO: actually feed version to diff methods
+        my ( $name, $version ) = @_;
+        $version //= '';
         if ( -f $name ) {
-            $name = readlink $name if -l $name;      # Handle symbolic links
-            return $name                             # if is_elf($name);
+            $name = readlink $name if -l $name;    # Handle symbolic links
+            return $name                           # if is_elf($name);
         }
         CORE::state $cache;
         my $regex = qr[-l$name\.[^\s]+.+\s*=>\s*(.+)$];

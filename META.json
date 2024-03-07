@@ -72,6 +72,9 @@
          }
       },
       "runtime" : {
+         "recommends" : {
+            "perl" : "5.038000"
+         },
          "requires" : {
             "Attribute::Handlers" : "0",
             "Config" : "0",
@@ -81,7 +84,7 @@
             "Scalar::Util" : "0",
             "Sub::Util" : "0",
             "XSLoader" : "0",
-            "perl" : "5.038000"
+            "perl" : "v5.26.0"
          }
       },
       "test" : {

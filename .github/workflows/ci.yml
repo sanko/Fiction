@@ -92,7 +92,7 @@ jobs:
       - env:
           DATA: |
             {
-              "perl": ["5.38.0"],
+              "perl": ["5.38.2", "5.36.3", "5.34.3"],
               "flags": ["", "-Dusethreads", "-Duselongdouble", "-Dusequadmath"]
             }
         id: matrix
@@ -106,7 +106,7 @@ jobs:
       matrix:
         flags: '${{ fromJSON(needs.setup.outputs.matrix).flags }}'
         os:
-          - windows-2022
+          - windows-2019
         perl: '${{ fromJSON(needs.setup.outputs.matrix).perl }}'
       max-parallel: 25
     uses: sanko/Fiction/.github/workflows/core.yml@main

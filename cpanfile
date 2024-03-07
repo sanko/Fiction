@@ -1,10 +1,11 @@
-requires 'perl', '5.038000';    # For //= in signatures
+requires 'perl', '5.026000';      # 2017 is a lifetime ago in software
+recommends 'perl', '5.038000';    # Bugs that only crop up before this version will go unfixed
 requires 'File::Spec';
 requires 'Config';
 requires 'XSLoader';
 requires 'Sub::Util';
 requires 'Attribute::Handlers';
-requires 'File::Temp';          # Used in Affix::Platform::Unix::_findLib_gcc(...)
+requires 'File::Temp';            # Used in Affix::Platform::Unix::_findLib_gcc(...)
 requires 'Scalar::Util';
 
 # TODO: remove this!!!!
