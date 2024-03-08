@@ -17,7 +17,10 @@ diag `nm $lib`;
 warn Callback [ [], Int ];
 use Data::Dump;
 ddx [ Callback [ [ Int, Int ] => Int ] ];
-
+#
+sub Method($) { }
+ddx Struct [ name => String, age => Affix::Type::Function( [ [] => Int ] ) ];
+#
 #~ diag find_library 'm';
 #~ diag find_library 'c';
 #~ diag find_library 'bz2';

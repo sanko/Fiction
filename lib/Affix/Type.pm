@@ -9,7 +9,7 @@ package Affix::Type 0.5 {
             Size_t
             String WString StdString
             Struct Union
-            Callback
+            Callback Function
             Pointer
             SV
             typedef
@@ -213,6 +213,19 @@ package Affix::Type 0.5 {
                 $ret,                                $args, join '', map { chr $_ } @$args
             ],
             'Affix::Type::Callback'
+        );
+    }
+
+    sub Function : prototype($) {
+        my (@elements) = @{ +shift };
+        my ( $args, $ret ) = @elements;
+        $ret //= Void;
+        bless(
+            [   sprintf( 'Function[ [ %s ] => %s ]', join( ', ', @$args ), $ret ), Affix::AFFIX_FLAG(), Affix::Platform::SIZEOF_INTPTR_T(),
+                Affix::Platform::ALIGNOF_INTPTR_T(), undef,    # offset
+                $ret,                                $args, join '', map { chr $_ } @$args
+            ],
+            'Affix::Type::Function'
         );
     }
 

@@ -34,7 +34,7 @@ package Affix 0.50 {    # 'FFI' is my middle name!
             Float Double
             Size_t
             String WString
-            Struct Array
+            Struct
             Pointer
             Callback
             SV
@@ -138,12 +138,12 @@ package Affix 0.50 {    # 'FFI' is my middle name!
         @Affix::Type::Pointer::Unmanaged::ISA = 'Affix::Pointer';
 
         # Aggregates
-        @Affix::Type::Struct::ISA = @Affix::Type::Array::ISA = @Affix::Type::Union::ISA
+        @Affix::Type::Struct::ISA = @Affix::Type::Union::ISA
 
             # Qualifiers
             = @Affix::Flag::Const::ISA = @Affix::Flag::Volatile::ISA = @Affix::Flag::Restrict::ISA = @Affix::Flag::Reference::ISA
             #
-            = @Affix::Type::Pointer::ISA = @Affix::Type::Callback::ISA = 'Affix::Type::Parameterized';
+            = @Affix::Type::Pointer::ISA = @Affix::Type::Callback::ISA = @Affix::Type::Function::ISA = 'Affix::Type::Parameterized';
         @Affix::CC::Reset::ISA = @Affix::CC::This::ISA = @Affix::CC::Ellipsis::ISA = @Affix::CC::Varargs::ISA = @Affix::CC::CDecl::ISA
             = @Affix::CC::STDcall::ISA = @Affix::CC::MSFastcall::ISA = @Affix::CC::GNUFastcall::ISA = @Affix::CC::MSThis::ISA
             = @Affix::CC::GNUThis::ISA = @Affix::CC::Arm::ISA = @Affix::CC::Thumb::ISA = @Affix::CC::Syscall::ISA = 'Affix::CC';

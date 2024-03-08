@@ -711,9 +711,7 @@ END
     };
 };
 subtest '...why would you do this?' => sub {
-
-    #~ skip_all 'embedding a perl interpreter requires it be built with multiplicity enabled' unless $Config{usemultiplicity};
-    subtest 'compiled lib' => sub {
+    subtest 'Pointer[SV]' => sub {
         use ExtUtils::Embed;
         my $flags = `$^X -MExtUtils::Embed -e ccopts -e ldopts`;
         $flags =~ s[\R][ ]g;

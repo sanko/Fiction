@@ -2134,6 +2134,7 @@ XS_EXTERNAL(boot_Affix) {
     export_constant("Affix", "WSTRING_FLAG", "flags", WSTRING_FLAG);
     export_constant("Affix", "STDSTRING_FLAG", "flags", STDSTRING_FLAG);
     export_constant("Affix", "STRUCT_FLAG", "flags", STRUCT_FLAG);
+    export_constant("Affix", "AFFIX_FLAG", "flags", AFFIX_FLAG);
     export_constant("Affix", "CPPSTRUCT_FLAG", "flags", CPPSTRUCT_FLAG);
     export_constant("Affix", "UNION_FLAG", "flags", UNION_FLAG);
     export_constant("Affix", "CODEREF_FLAG", "flags", CODEREF_FLAG);
