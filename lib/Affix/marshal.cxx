@@ -569,67 +569,7 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
 }
 
 SV *ptr2av(pTHX_ DCpointer ptr, SV *type) {
-    // #if DEBUG
-    warn("ptr2av(%p, %s)) at %s line %d", ptr, AXT_STRINGIFY(type), __FILE__, __LINE__);
-    // #endif
-    PING;
-
-    if (ptr == NULL) return newSV(0);
-
-    SV *retval;
-    {
-        PING;
-
-#if DEBUG > 1
-        // size_t field_size = AXT_SIZEOF(type);
-        // DumpHex(ptr, field_size);
-#endif
-        PING;
-        AV *RETVAL_ = newAV_mortal();
-        PING;
-
-        SV *subtype = AXT_SUBTYPE(type);
-        PING;
-
-        size_t size = AXT_ARRAYLEN(type);
-        PING;
-
-        // TODO: dynamic size array
-        size_t el_len = AXT_SIZEOF(subtype);
-        PING;
-
-        size_t pos = 0; // override
-        warn("fyvyuudtivsryryustgjmdtgjjhmdctgdjchgh");
-        switch (AXT_NUMERIC(subtype)) {
-        case ARRAY_FLAG: {
-            PING;
-
-            void **_ptr = (void **)ptr;
-            for (size_t i = 0; i < size; ++i) {
-                av_push(RETVAL_, newRV(ptr2sv(aTHX_ subtype, _ptr[i])));
-            }
-        } break;
-        default: {
-            PING;
-
-            for (size_t i = 0; i < size; ++i) {
-                av_push(RETVAL_, ptr2sv(aTHX_ subtype, INT2PTR(DCpointer, PTR2IV(ptr) + pos)));
-                pos += el_len;
-            }
-        }
-        }
-        PING;
-
-        DD(MUTABLE_SV(RETVAL_));
-
-        retval = MUTABLE_SV(RETVAL_);
-        PING;
-    }
-#if DEBUG
-    // warn("/ptr2av(%p, %s) at %s line %d", ptr, AXT_STRINGIFY(type), __FILE__, __LINE__);
-    // DD(retval);
-#endif
-    return retval;
+    return NULL;
 }
 SV *ptr2svx(pTHX_ DCpointer ptr, SV *type) {
     PING;
@@ -698,11 +638,6 @@ SV *ptr2svx(pTHX_ DCpointer ptr, SV *type) {
         case DOUBLE_FLAG: {
             retval = newSVnv(*(double *)ptr);
         } break;
-        case STRING_FLAG: {
-            char *str = (char *)*(void **)ptr;
-            STRLEN len = strlen(str);
-            retval = len ? newSVpv(str, len) : &PL_sv_undef;
-        } break;
         case WSTRING_FLAG: {
             if (ptr && wcslen((wchar_t *)ptr)) {
                 retval = wchar2utf(aTHX_ * (wchar_t **)ptr, wcslen(*(wchar_t **)ptr));
@@ -741,9 +676,6 @@ SV *ptr2svx(pTHX_ DCpointer ptr, SV *type) {
             //~ sv_dump(MUTABLE_SV(RETVAL_));
             //~ sv_dump(retval);
 #endif
-        } break;
-        case ARRAY_FLAG: {
-            retval = ptr2av(aTHX_ ptr, type);
         } break;
         case CODEREF_FLAG: {
             Callback *cb = (Callback *)dcbGetUserData((DCCallback *)((CallbackWrapper *)ptr)->cb);
@@ -846,83 +778,7 @@ SV *ptr2svx(pTHX_ DCpointer ptr, SV *type) {
 }
 
 void *av2ptr(pTHX_ SV *type, AV *av_data) {
-    warn("av2ptr(...)");
-    PING;
-    DD(type);
-
-    // DCpointer ret = NULL;
-    PING;
-
-    //~ sv_dump(type);
-
-    PING;
-
-    SV *subtype = AXT_SUBTYPE(type);
-    PING;
-    int i_type = AXT_NUMERIC(type);
-    PING;
-
-#if DEBUG
-    warn("av2ptr(%s, ...) at %s line %d", AXT_STRINGIFY(type), __FILE__, __LINE__);
-#if DEBUG > 1
-    DD(type);
-    DD(MUTABLE_SV(av_data));
-//~ sv_dump(av_data);
-#endif
-#endif
-    PING;
-
-    size_t size = AXT_ARRAYLEN(type);
-    // if (size == 0)
-    size = av_count(av_data);
-    //~ warn("------------------ test, size == %ld", size);
-
-    // XXX: THIS IS INCORRECT!!!!!!!!!!!!!!
-    DCpointer ret = safemalloc(AXT_SIZEOF(type) * (size + 1));
-    //~ if (size != NULL && SvOK(*size_ptr)) {
-    //~ size_t av_len = av_count(av_data);
-    //~ if (av_len != size) croak("Expected an array of %zu elements; found %zu", size, av_len);
-    //~ }
-    size_t el_len = AXT_SIZEOF(subtype);
-    PING;
-    size_t pos = 0; // override
-    PING;
-    switch (AXT_NUMERIC(subtype)) {
-    case POINTER_FLAG:
-    case ARRAY_FLAG: {
-        warn("Here");
-        PING;
-        for (size_t i = 0; i < size; ++i) {
-            PING;
-            DCpointer block = sv2ptr(aTHX_ subtype, *(av_fetch(av_data, i, 0)));
-            PING;
-            Move(&block, INT2PTR(DCpointer, PTR2IV(ret) + pos), AXT_SIZEOF(subtype), char);
-            PING;
-            pos += el_len;
-        }
-    } break;
-    default: {
-        PING;
-        warn("Not a deep array. %d elements", size);
-        DD(MUTABLE_SV(av_data));
-
-        for (size_t i = 0; i < size; ++i) {
-            PING;
-            DD(*(av_fetch(av_data, i, 0)));
-            DCpointer block = sv2ptr(aTHX_ subtype, *(av_fetch(av_data, i, 0)));
-            PING;
-            Move(block, INT2PTR(DCpointer, PTR2IV(ret) + pos), AXT_SIZEOF(subtype), char);
-            PING;
-            //~ safefree(block);
-            pos += el_len;
-            PING;
-        }
-    }
-    }
-#if DEBUG
-    warn("/av2ptr(%s, ...) => %p at %s line %d", AXT_STRINGIFY(type), ret, __FILE__, __LINE__);
-#endif
-    return ret;
+    return NULL;
 }
 
 void *sv2ptrx(pTHX_ SV *type, SV *data) {
@@ -1110,26 +966,6 @@ void *sv2ptrx(pTHX_ SV *type, SV *data) {
             safefree(block);
         }
     } break;
-    case STRING_FLAG: {
-        PING;
-        if (SvPOK(data)) {
-            STRLEN len;
-            const char *str = SvPV(data, len);
-            ret = safemalloc(SIZEOF_INTPTR_T);
-            DCpointer value;
-            Newxz(value, len + 1, char);
-            Copy(str, value, len, char);
-            Copy(&value, ret, 1, intptr_t);
-        }
-        else {
-            const char *str = "";
-            DCpointer value;
-            ret = safemalloc(SIZEOF_CHAR);
-            Newxz(value, 1, char);
-            Copy(str, value, 1, char);
-            Copy(&value, ret, 1, intptr_t);
-        }
-    } break;
     case WSTRING_FLAG: {
         PING;
         ret = safemalloc(SIZEOF_INTPTR_T);
@@ -1206,40 +1042,6 @@ void *sv2ptrx(pTHX_ SV *type, SV *data) {
         }
         else
             Zero(ret, 1, intptr_t);
-    } break;
-    case ARRAY_FLAG: {
-        PING;
-        warn("ARRAY");
-        ret = safemalloc(size);
-        if (SvOK(data)) {
-            AV *elements;
-            PING;
-            if (SvPOK(data)) { // char[]
-                PING;
-
-                elements = newAV_mortal();
-                STRLEN len;
-                char *str = SvPV(data, len);
-                for (size_t i = 0; i < len; ++i) {
-                    av_push(elements, newSViv(str[i]));
-                }
-            }
-            else
-                elements = MUTABLE_AV(SvRV(data));
-            PING;
-
-            PING;
-
-            // hv_stores(hv_ptr, "dyn_size", newSVuv(av_count(elements)));
-            PING;
-
-            ret = av2ptr(aTHX_ type, elements);
-            PING;
-        }
-        else
-            Zero(ret, 1, intptr_t);
-        PING;
-
     } break;
     case CODEREF_FLAG: {
         if (SvOK(data)) {

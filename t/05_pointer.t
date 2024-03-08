@@ -747,5 +747,4 @@ END
 #
 #define WCHAR_FLAG 'w'
 #define STDSTRING_FLAG 'Y'
-#define ARRAY_FLAG '@'
 done_testing;

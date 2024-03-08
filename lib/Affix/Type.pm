@@ -8,7 +8,7 @@ package Affix::Type 0.5 {
             Void Bool Char UChar SChar WChar Short UShort Int UInt Long ULong LongLong ULongLong Float Double
             Size_t
             String WString StdString
-            Struct Union Array
+            Struct Union
             Callback
             Pointer
             SV
@@ -188,26 +188,6 @@ package Affix::Type 0.5 {
             }
         }
         bless( [ sprintf( 'Union[ %s ]', join ', ', @fields ), Affix::UNION_FLAG(), $sizeof, $alignment, \@types ], 'Affix::Type::Union' );
-    }
-
-    sub Array : prototype($) {    # [ text, id, size, align, offset, subtype, length, aggregate ]
-        my ( $type, $size ) = @{ +shift };
-        my $sizeof = undef;
-        my $packed = 0;
-        if ($size) {
-            my $__sizeof = $type->sizeof;
-            my $__align  = $type->align;
-            for ( 0 ... $size ) {
-                $sizeof += $packed ? 0 : padding_needed_for( $sizeof, $__align > $__sizeof ? $__sizeof : $__align );
-                $sizeof += $__sizeof;
-            }
-        }
-        bless(
-            [   sprintf( 'Array[ %s%s ]', $type, defined($size) ? ', ' . $size : '' ), Affix::ARRAY_FLAG(), $sizeof, undef, undef, $type, $size,
-                undef
-            ],
-            'Affix::Type::Array'
-        );
     }
 
     #define SLOT_STRINGIFY 0

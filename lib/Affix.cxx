@@ -204,7 +204,6 @@ XS_INTERNAL(Affix_fiction) {
             ret->restype_c = AXT_NUMERIC(ret->restype);
             switch (ret->restype_c) {
             case WCHAR_FLAG:
-            case STRING_FLAG:
             case WSTRING_FLAG:
             case STDSTRING_FLAG:
                 ret->res = newSVpvs("");
@@ -393,11 +392,6 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
             case DOUBLE_FLAG:
                 dcArgDouble(cvm, SvNV(ST(st_pos)));
                 break;
-            case STRING_FLAG: {
-                SV *arg = ST(st_pos);
-                dcArgPointer(cvm, SvOK(arg) ? SvPV_nolen(arg) : NULL);
-                break;
-            }
             case WSTRING_FLAG: { /*
                  DCpointer ptr = NULL;
                  SV *arg = ST(st_pos);
@@ -778,11 +772,6 @@ extern "C" void Affix_trigger(pTHX_ CV *cv) {
             PING;
             dcArgDouble(cvm, SvNV(ST(st_pos)));
         } break;
-        case STRING_FLAG: {
-            PING;
-            SV *arg = ST(st_pos);
-            dcArgPointer(cvm, SvOK(arg) ? SvPV_nolen(arg) : NULL);
-        } break;
         case WSTRING_FLAG: {
             PING;
             DCpointer ptr = NULL;
@@ -822,49 +811,6 @@ extern "C" void Affix_trigger(pTHX_ CV *cv) {
                 SV *type = MUTABLE_SV(affix->arg_info[arg_pos]);
                 affix->temp_ptrs[st_pos] = sv2ptr(aTHX_ type, arg);
                 dcArgAggr(cvm, affix->aggregates[st_pos], affix->temp_ptrs[st_pos]);
-            }
-        } break;
-        case ARRAY_FLAG: {
-            warn("A");
-
-            PING;
-            SV *arg = ST(st_pos);
-            if (!SvOK(arg) && SvREADONLY(arg)) { // explicit undef
-                warn("B");
-
-                PING;
-                dcArgPointer(cvm, NULL);
-            }
-            else if (SvOK(arg) && sv_derived_from(arg, "Affix::Pointer")) {
-                warn("C");
-
-                PING;
-                IV tmp = SvIV(SvRV(arg));
-                dcArgPointer(cvm, INT2PTR(DCpointer, tmp));
-            }
-            else if (!LIKELY(SvROK(arg) && SvTYPE(SvRV(arg)) == SVt_PVAV)) {
-                warn("D");
-
-                PING;
-                croak("Arg %d must be an array reference", st_pos + 1);
-            }
-            else if (affix->aggregates[st_pos] != NULL) { // Null for dynamic length arrays
-                warn("E");
-
-                PING;
-                if (affix->temp_ptrs == NULL) Newxz(affix->temp_ptrs, num_args, DCpointer);
-                if (!SvROK(arg) || SvTYPE(SvRV(arg)) != SVt_PVAV)
-                    croak("Type of arg %d must be an array ref", arg_pos + 1);
-                SV *type = MUTABLE_SV(affix->arg_info[arg_pos]);
-                affix->temp_ptrs[st_pos] = sv2ptr(aTHX_ type, arg);
-                dcArgAggr(cvm, affix->aggregates[st_pos], affix->temp_ptrs[st_pos]);
-            }
-            else {
-                warn("F");
-
-                PING;
-                affix->temp_ptrs[st_pos] = sv2ptr(aTHX_ MUTABLE_SV(affix->arg_info[arg_pos]), arg);
-                dcArgPointer(cvm, affix->temp_ptrs[st_pos]);
             }
         } break;
         case CODEREF_FLAG: {
@@ -1046,10 +992,6 @@ extern "C" void Affix_trigger(pTHX_ CV *cv) {
         PING;
         RETVAL = (newSVnv(dcCallDouble(cvm, affix->entry_point)));
     } break;
-    case STRING_FLAG: {
-        PING;
-        RETVAL = (newSVpv((char *)dcCallPointer(cvm, affix->entry_point), 0));
-    } break;
     case WSTRING_FLAG: {
         PING;
         wchar_t *str = (wchar_t *)dcCallPointer(cvm, affix->entry_point);
@@ -1061,12 +1003,6 @@ extern "C" void Affix_trigger(pTHX_ CV *cv) {
         RETVAL = (newSVpv((char *)str->c_str(), str->length()));
         delete str;
     } break;
-    case ARRAY_FLAG: {
-        PING;
-        // TODO: If this has an aggregate bound to it, use it. Else, dcCallPointer(...) and
-        // ptr2sv(...)
-    }
-    // fall-through
     case STRUCT_FLAG:
     case CPPSTRUCT_FLAG:
     case UNION_FLAG: {
@@ -1924,8 +1860,7 @@ XS_INTERNAL(Affix_affix) {
                                 break;
                             case STRUCT_FLAG:
                             case CPPSTRUCT_FLAG:
-                            case UNION_FLAG:
-                            case ARRAY_FLAG: {
+                            case UNION_FLAG: {
                                 if (affix->aggregates == NULL)
                                     Newxz(affix->aggregates, num_args, DCaggr *);
                                 affix->aggregates[arg_pos] = _aggregate(aTHX_ type);
@@ -2196,13 +2131,11 @@ XS_EXTERNAL(boot_Affix) {
     export_constant("Affix", "SIZE_T_FLAG", "flags", SIZE_T_FLAG);
     export_constant("Affix", "FLOAT_FLAG", "flags", FLOAT_FLAG);
     export_constant("Affix", "DOUBLE_FLAG", "flags", DOUBLE_FLAG);
-    export_constant("Affix", "STRING_FLAG", "flags", STRING_FLAG);
     export_constant("Affix", "WSTRING_FLAG", "flags", WSTRING_FLAG);
     export_constant("Affix", "STDSTRING_FLAG", "flags", STDSTRING_FLAG);
     export_constant("Affix", "STRUCT_FLAG", "flags", STRUCT_FLAG);
     export_constant("Affix", "CPPSTRUCT_FLAG", "flags", CPPSTRUCT_FLAG);
     export_constant("Affix", "UNION_FLAG", "flags", UNION_FLAG);
-    export_constant("Affix", "ARRAY_FLAG", "flags", ARRAY_FLAG);
     export_constant("Affix", "CODEREF_FLAG", "flags", CODEREF_FLAG);
     export_constant("Affix", "POINTER_FLAG", "flags", POINTER_FLAG);
     export_constant("Affix", "SV_FLAG", "flags", SV_FLAG);

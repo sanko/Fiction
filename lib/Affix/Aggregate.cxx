@@ -7,11 +7,6 @@ DCaggr *_aggregate(pTHX_ SV *type) {
     DCaggr *retval = NULL;
     size_t size, array_len;
     switch (AXT_NUMERIC(type)) {
-    case ARRAY_FLAG: {
-        array_len = AXT_ARRAYLEN(type);
-        if (!array_len) return NULL;
-    }
-    // fall-through
     case STRUCT_FLAG:
     case CPPSTRUCT_FLAG:
     case UNION_FLAG: {

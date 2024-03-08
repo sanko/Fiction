@@ -70,10 +70,7 @@ int type_as_dc(int type) {
         return DC_SIGCHAR_FLOAT;
     case DOUBLE_FLAG:
         return DC_SIGCHAR_DOUBLE;
-    case STRING_FLAG:
-        return DC_SIGCHAR_STRING;
     case WSTRING_FLAG:
-    case ARRAY_FLAG:
     case CODEREF_FLAG:
     case POINTER_FLAG:
     case STDSTRING_FLAG:
