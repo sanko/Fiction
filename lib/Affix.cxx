@@ -237,10 +237,9 @@ XS_INTERNAL(Affix_fiction) {
                 }
                 //~ warn("ret->signature: %s", ret->signature);
             }
-
         } break;
-        default:
-            croak("Something's wrong!");
+            //~ default:
+            //~ croak("Something's wrong!");
         }
     }
     STMT_START {
@@ -463,10 +462,12 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
         }
     }
 
+    warn("a->restype_c: %c", a->restype_c);
+
     switch (a->restype_c) {
     case VOID_FLAG:
         dcCallVoid(cvm, a->entry_point);
-        sv_set_undef(a->res);
+        // sv_set_undef(a->res);
         break;
     case BOOL_FLAG:
         sv_setsv(a->res, boolSV(dcCallBool(cvm, a->entry_point)));
@@ -536,18 +537,28 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
         //~ #define POINTER_FLAG 'P'
 
     case POINTER_FLAG: {
+        warn("...pointer 0");
         DCpointer ret = dcCallPointer(cvm, a->entry_point);
+        warn("...pointer 1 [%p]", ret);
+        typedef void (*ptr)(void);
+
+        ptr fn = (ptr)ret;
+
+        //~ fn();
+
         if (ret == NULL)
             sv_set_undef(a->res);
         else
             sv_setsv(a->res, sv_2mortal(ptr2sv(aTHX_ a->restype, ret)));
+        warn("...pointer 2");
+
     } break;
     default:
         croak("Unknown or unhandled return type: %c", a->restype_c);
     };
 
     //~ sv_setnv(a->res, dcCallDouble(cvm, a->entry_point));
-    ST(0) = a->res;
+    if (a->res != NULL) ST(0) = a->res;
     XSRETURN(1);
 }
 

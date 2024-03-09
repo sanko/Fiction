@@ -368,13 +368,21 @@ void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
 }
 
 SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
-    //~ DD(type);
+    DD(type);
     if (ptr == NULL) return newSV(0); // Don't waste any time on NULL pointers
     SV *ret;
     switch (AXT_NUMERIC(type)) {
     case VOID_FLAG: {
-        size_t len = AXT_POINTER_COUNT(type);
-        ret = newSVpv((char *)ptr, len);
+
+        AV *RETVALAV = newAV();
+        {
+            SV *TMP = newSV(0);
+            sv_setref_pv(TMP, NULL, ptr);
+            av_store(RETVALAV, SLOT_POINTER_ADDR, TMP);
+            av_store(RETVALAV, SLOT_SUBTYPE, newSVsv(type));
+        }
+        ret = newRV_noinc(MUTABLE_SV(RETVALAV)); // Create a reference to the AV
+        sv_bless(ret, gv_stashpvn("Affix::Pointer::Unmanaged", 25, GV_ADD));
     } break;
     case BOOL_FLAG: {
         size_t len = AXT_POINTER_COUNT(type);

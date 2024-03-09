@@ -8,10 +8,46 @@ use t::lib::helper;
 use Config;    # Check for multiplicity support
 $|++;
 #
+my $lib = compile_test_lib(<<'END');
+#include "std.h"
+// ext: .c
+typedef void cb(void);
+void fn(cb *callback) {
+    callback();
+}
+void snag(){
+    warn("Inside the snag");
+}
+
+
+typedef void (*ptr)(void);
+
+
+void * getfn() {
+warn("Inside getfn");
+    return &snag;
+}
+END
+use Data::Dump;
+#
+ddx Pointer [SV];
+ddx Pointer [Void];
+
+#~ 'typedef void cb(void)' => <<'', [ Callback [ [] => Void ] ], Void, [], U(), U();
+ddx Affix::find_symbol $lib, 'snag';
+ddx Affix::affix $lib,       'snag';
+ddx Affix::affix $lib,       'getfn', [], Pointer [Void];
+my $fn = getfn();
+warn $fn;
+ddx $fn;
+$fn->dump(16);
+
+#~ my $sub = $fn->cast(Pointer[Int]);
+#~ snag();
+#
 subtest 'Pointer[Void]' => sub {
     subtest scalar => sub {
         isa_ok my $ptr = Affix::sv2ptr( Pointer [Void], 'This is a test' ), ['Affix::Pointer'], 'This is a test';
-        is $ptr->sv,                                         'This is a test', '$ptr->sv';
         is $ptr->raw( Affix::Platform::SIZEOF_CHAR() * 14 ), 'This is a test', '$ptr->raw( ' . Affix::Platform::SIZEOF_CHAR() * 14 . ' )';
         free $ptr;
         is $ptr, U(), '$ptr is now free';

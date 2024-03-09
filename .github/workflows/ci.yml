@@ -106,7 +106,7 @@ jobs:
       matrix:
         flags: '${{ fromJSON(needs.setup.outputs.matrix).flags }}'
         os:
-          - windows-2019
+          - windows-2022
         perl: '${{ fromJSON(needs.setup.outputs.matrix).perl }}'
       max-parallel: 25
     uses: sanko/Fiction/.github/workflows/core.yml@main

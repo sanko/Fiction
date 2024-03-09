@@ -1,5 +1,33 @@
 #include "../../Affix.h"
 
+XS_INTERNAL(Affix_cast) {
+    dVAR;
+    dXSARGS;
+    PING;
+    if (items != 2) croak_xs_usage(cv, "pointer, type");
+    if (UNLIKELY(!sv_derived_from(ST(0), "Affix::Type")))
+        croak("type is not of type Affix::Type::Pointer");
+
+    SV *const xsub_tmp_sv = ST(0);
+    SvGETMAGIC(xsub_tmp_sv);
+
+    {
+        AV *RETVALAV = newAV();
+        {
+            SV *TMP = newSV(0);
+            DCpointer ptr = sv2ptr(aTHX_ ST(0), xsub_tmp_sv);
+            if (ptr != NULL) DumpHex(ptr, 16);
+            sv_setref_pv(TMP, NULL, ptr);
+            av_store(RETVALAV, SLOT_POINTER_ADDR, TMP);
+            av_store(RETVALAV, SLOT_SUBTYPE, newSVsv(ST(1)));
+        }
+        SV *RETVAL = newRV_noinc(MUTABLE_SV(RETVALAV)); // Create a reference to the AV
+        sv_bless(RETVAL, gv_stashpvn("Affix::Pointer::Unmanaged", 25, GV_ADD));
+        ST(0) = sv_2mortal(RETVAL);
+    }
+    XSRETURN(1);
+}
+
 XS_INTERNAL(Affix_sv2ptr) {
     dVAR;
     dXSARGS;
@@ -19,33 +47,7 @@ XS_INTERNAL(Affix_sv2ptr) {
             if (ptr != NULL) DumpHex(ptr, 16);
             sv_setref_pv(TMP, NULL, ptr);
             av_store(RETVALAV, SLOT_POINTER_ADDR, TMP);
-
             av_store(RETVALAV, SLOT_SUBTYPE, newSVsv(ST(0)));
-            /*
-
-            switch (SvIV(subtype)) {
-            case VOID_FLAG: {
-                STRLEN len = 0;
-                if (SvOK(xsub_tmp_sv)) (void)SvPV(xsub_tmp_sv, len);
-                av_store(RETVALAV, SLOT_POINTER_COUNT, newSViv(len));
-            } break;
-            case CHAR_FLAG:
-            case SCHAR_FLAG:
-            case UCHAR_FLAG: {
-                STRLEN len = 0;
-                if (SvPOK(xsub_tmp_sv))
-                    (void)SvPV(xsub_tmp_sv, len);
-                else if (SvIOK(xsub_tmp_sv))
-                    len = 1;
-                av_store(RETVALAV, SLOT_POINTER_COUNT, newSViv(len));
-            } break;
-            default:
-                av_store(RETVALAV, SLOT_POINTER_COUNT,
-                         newSViv(SvROK(xsub_tmp_sv) && SvTYPE(SvRV(xsub_tmp_sv)) == SVt_PVAV
-                                     ? av_count(MUTABLE_AV(SvRV(xsub_tmp_sv)))
-                                     : 1));
-                break;
-            }*/
         }
         SV *RETVAL = newRV_noinc(MUTABLE_SV(RETVALAV)); // Create a reference to the AV
         sv_bless(RETVAL, gv_stashpvn("Affix::Pointer::Unmanaged", 25, GV_ADD));
@@ -165,25 +167,21 @@ XS_INTERNAL(Affix_Pointer_DESTROY) {
     dVAR;
     dXSARGS;
     if (items != 1) croak_xs_usage(cv, "ptr");
-
     SV *const xsub_tmp_sv = ST(0);
     SvGETMAGIC(xsub_tmp_sv);
     if (!(SvROK(xsub_tmp_sv) && SvTYPE(SvRV(xsub_tmp_sv)) == SVt_PVAV &&
           sv_derived_from(xsub_tmp_sv, "Affix::Pointer")))
         croak("ptr is not of type Affix::Pointer");
-    {
-        DCpointer ptr;
-        SV *ptr_sv = AXT_POINTER_ADDR(xsub_tmp_sv);
-        if (SvOK(ptr_sv)) {
-            IV tmp = SvIV(MUTABLE_SV(SvRV(ptr_sv)));
-            ptr = INT2PTR(DCpointer, tmp);
-            if (ptr != NULL) {
-                // safefree(ptr);
-                ptr = NULL;
-            }
+    DCpointer ptr;
+    SV *ptr_sv = AXT_POINTER_ADDR(xsub_tmp_sv);
+    if (SvOK(ptr_sv)) {
+        IV tmp = SvIV(MUTABLE_SV(SvRV(ptr_sv)));
+        ptr = INT2PTR(DCpointer, tmp);
+        if (ptr != NULL) {
+            // safefree(ptr);
+            ptr = NULL;
         }
     }
-
     XSRETURN_EMPTY;
 }
 
@@ -574,6 +572,8 @@ void boot_Affix_Pointer(pTHX_ CV *cv) {
     (void)newXSproto_portable("Affix::DumpHex", Affix_Pointer_DumpHex, __FILE__, "$$");
     (void)newXSproto_portable("Affix::Pointer::DESTROY", Affix_Pointer_DESTROY, __FILE__, "$");
     (void)newXSproto_portable("Affix::Pointer::free", Affix_free, __FILE__, "$");
+
+    (void)newXSproto_portable("Affix::Pointer::cast", Affix_cast, __FILE__, "$");
 
     set_isa("Affix::Pointer::Unmanaged", "Affix::Pointer");
     set_isa("Affix::Type::Ref", "Affix::Type::Pointer");

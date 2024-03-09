@@ -4,6 +4,8 @@ jobs:
     name: "${{ inputs.flags || 'Default' }}"
     runs-on: '${{ inputs.os }}'
     steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
       - id: cache-perl
         name: Check perl Cache
         uses: actions/cache@v4
@@ -46,8 +48,6 @@ jobs:
           perlbrew install-cpanm
           
           perlbrew install --switch --verbose --as cache-${{ inputs.os }}-${{ inputs.perl }}${{ inputs.flags }} -j 12 --notest --noman ${{ inputs.flags }} perl-${{ inputs.perl }}
-      - name: Checkout source
-        uses: actions/checkout@v4
       - name: Install prereqs
         run: "curl -L https://cpanmin.us | ~/perl5/perlbrew/perls/cache-${{ inputs.os }}-${{ inputs.perl }}${{ inputs.flags }}/bin/perl - --installdeps --notest -v .\n"
         shell: bash
