@@ -9,7 +9,7 @@ package Affix::Type 0.5 {
             Size_t
             String WString StdString
             Struct Union
-            Callback Function
+            CodeRef Function
             Pointer
             SV
             typedef
@@ -203,16 +203,16 @@ package Affix::Type 0.5 {
     #define SLOT_CODEREF_ARGS 10
     #define SLOT_CODEREF_RET 11
     #define SLOT_CODEREF_SIG 12
-    sub Callback : prototype($) {
+    sub CodeRef : prototype($) {
         my (@elements) = @{ +shift };
         my ( $args, $ret ) = @elements;
         $ret //= Void;
         bless(
-            [   sprintf( 'Callback[ [ %s ] => %s ]', join( ', ', @$args ), $ret ), Affix::CODEREF_FLAG(), Affix::Platform::SIZEOF_INTPTR_T(),
+            [   sprintf( 'CodeRef[ [ %s ] => %s ]', join( ', ', @$args ), $ret ), Affix::CODEREF_FLAG(), Affix::Platform::SIZEOF_INTPTR_T(),
                 Affix::Platform::ALIGNOF_INTPTR_T(), undef,    # offset
                 $ret,                                $args, join '', map { chr $_ } @$args
             ],
-            'Affix::Type::Callback'
+            'Affix::Type::CodeRef'
         );
     }
 

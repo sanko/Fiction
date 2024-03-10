@@ -829,8 +829,8 @@ extern "C" void Affix_trigger(pTHX_ CV *cv) {
             SV *arg = ST(st_pos);
             if (SvOK(arg)) {
                 PING;
-                CallbackWrapper *hold =
-                    (CallbackWrapper *)sv2ptr(aTHX_ MUTABLE_SV(affix->arg_info[arg_pos]), arg);
+                CodeRefWrapper *hold =
+                    (CodeRefWrapper *)sv2ptr(aTHX_ MUTABLE_SV(affix->arg_info[arg_pos]), arg);
                 dcArgPointer(cvm, hold->cb);
             }
             else {

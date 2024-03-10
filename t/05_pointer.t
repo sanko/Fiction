@@ -12,8 +12,8 @@ my $lib = compile_test_lib(<<'END');
 #include "std.h"
 // ext: .c
 typedef void cb(void);
-void fn(cb *callback) {
-    callback();
+void fn(cb *CodeRef) {
+    CodeRef();
 }
 void snag(){
     warn("Inside the snag");
@@ -33,7 +33,7 @@ use Data::Dump;
 ddx Pointer [SV];
 ddx Pointer [Void];
 
-#~ 'typedef void cb(void)' => <<'', [ Callback [ [] => Void ] ], Void, [], U(), U();
+#~ 'typedef void cb(void)' => <<'', [ CodeRef [ [] => Void ] ], Void, [], U(), U();
 ddx Affix::find_symbol $lib, 'snag';
 ddx Affix::affix $lib,       'snag';
 ddx Affix::affix $lib,       'getfn', [], Pointer [Void];

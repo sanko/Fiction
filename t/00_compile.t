@@ -50,7 +50,7 @@ subtest 'API' => sub {
             String WString
             Struct
             Pointer
-            Callback
+            CodeRef
             SV
             Enum
             IntEnum
@@ -58,7 +58,7 @@ subtest 'API' => sub {
             CharEnum];
         isa_ok $_, ['Affix::Type']
             for Void, Bool, Char, UChar, SChar, WChar, Short, UShort, Int, UInt, Long, ULong, LongLong, ULongLong, Float, Double, Size_t, String,
-            WString, Struct [], Struct [ a => Int, b => Double ], SV, Pointer [Void], Callback [ [ Int, Float, Int ] => Void ];
+            WString, Struct [], Struct [ a => Int, b => Double ], SV, Pointer [Void], CodeRef [ [ Int, Float, Int ] => Void ];
         Affix::Type::Enum::Enum( [qw[a b c]] );
     };
     subtest 'core' => sub {

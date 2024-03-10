@@ -26,259 +26,259 @@ sub build_and_test {
 }
 #
 build_and_test
-    'typedef void cb(void)' => <<'', [ Callback [ [] => Void ] ], Void, [], U(), U();
+    'typedef void cb(void)' => <<'', [ CodeRef [ [] => Void ] ], Void, [], U(), U();
 #include "std.h"
 // ext: .c
 typedef void cb(void);
-void fn(cb *callback) {
-    callback();
+void fn(cb *CodeRef) {
+    CodeRef();
 }
 
 subtest bool => sub {
     build_and_test
-        'typedef bool cb(bool) false' => <<'', [ Callback [ [Bool] => Bool ] ], Bool, [ F() ], !1, F();
+        'typedef bool cb(bool) false' => <<'', [ CodeRef [ [Bool] => Bool ] ], Bool, [ F() ], !1, F();
 #include "std.h"
 // ext: .c
 typedef bool cb( bool );
-bool fn(cb *callback) {
-    return callback(false);
+bool fn(cb *CodeRef) {
+    return CodeRef(false);
 }
 
     build_and_test
-        'typedef bool cb(bool) true' => <<'', [ Callback [ [Bool] => Bool ] ], Bool, [ T() ], !0, T();
+        'typedef bool cb(bool) true' => <<'', [ CodeRef [ [Bool] => Bool ] ], Bool, [ T() ], !0, T();
 #include "std.h"
 // ext: .c
 typedef bool cb( bool );
-bool fn(cb *callback) {
-    return callback(true);
+bool fn(cb *CodeRef) {
+    return CodeRef(true);
 }
 
 };
 subtest char => sub {
     build_and_test
-        'typedef char cb(char)' => <<'', [ Callback [ [Char] => Char ] ], Char, ['a'], 'm', 'm';
+        'typedef char cb(char)' => <<'', [ CodeRef [ [Char] => Char ] ], Char, ['a'], 'm', 'm';
 #include "std.h"
 // ext: .c
 typedef char cb( char );
-char fn(cb *callback) {
-    return callback('a');
+char fn(cb *CodeRef) {
+    return CodeRef('a');
 }
 
     build_and_test
-        'typedef signed char cb(char)' => <<'', [ Callback [ [Char] => Char ] ], Char, [ pack 'c', -ord 'a' ], 'm', 'm';
+        'typedef signed char cb(char)' => <<'', [ CodeRef [ [Char] => Char ] ], Char, [ pack 'c', -ord 'a' ], 'm', 'm';
 #include "std.h"
 // ext: .c
 typedef char cb( char );
-char fn(cb *callback) {
-    return callback(-'a');
+char fn(cb *CodeRef) {
+    return CodeRef(-'a');
 }
 
     build_and_test
-        'typedef char cb(char) with ints' => <<'', [ Callback [ [Char] => Char ] ], Char, ['a'], 109, 'm';
+        'typedef char cb(char) with ints' => <<'', [ CodeRef [ [Char] => Char ] ], Char, ['a'], 109, 'm';
 #include "std.h"
 // ext: .c
 typedef char cb( char );
-char fn(cb *callback) {
-    return callback(97);
+char fn(cb *CodeRef) {
+    return CodeRef(97);
 }
 
 };
 subtest schar => sub {
     build_and_test
-        'typedef signed char cb(char)' => <<'', [ Callback [ [SChar] => SChar ] ], Char, ['a'], 'm', 'm';
+        'typedef signed char cb(char)' => <<'', [ CodeRef [ [SChar] => SChar ] ], Char, ['a'], 'm', 'm';
 #include "std.h"
 // ext: .c
 typedef signed char cb( signed char );
-signed char fn(cb *callback) {
-    return callback('a');
+signed char fn(cb *CodeRef) {
+    return CodeRef('a');
 }
 
     build_and_test
-        'typedef signed char cb(char)' => <<'', [ Callback [ [SChar] => SChar ] ], SChar, [ pack 'c', -ord 'a' ], 'm', 'm';
+        'typedef signed char cb(char)' => <<'', [ CodeRef [ [SChar] => SChar ] ], SChar, [ pack 'c', -ord 'a' ], 'm', 'm';
 #include "std.h"
 // ext: .c
 typedef signed char cb( signed char );
-signed char fn(cb *callback) {
-    return callback(-'a');
+signed char fn(cb *CodeRef) {
+    return CodeRef(-'a');
 }
 
     build_and_test
-        'typedef signed char cb(char) with ints' => <<'', [ Callback [ [SChar] => SChar ] ], SChar, ['a'], 109, 'm';
+        'typedef signed char cb(char) with ints' => <<'', [ CodeRef [ [SChar] => SChar ] ], SChar, ['a'], 109, 'm';
 #include "std.h"
 // ext: .c
 typedef signed char cb( signed char );
-signed char fn(cb *callback) {
-    return callback(97);
+signed char fn(cb *CodeRef) {
+    return CodeRef(97);
 }
 
 };
 subtest uchar => sub {
     build_and_test
-        'typedef unsigned char cb(unsigned char)' => <<'', [ Callback [ [UChar] => UChar ] ], UChar, ['a'], 'm', 'm';
+        'typedef unsigned char cb(unsigned char)' => <<'', [ CodeRef [ [UChar] => UChar ] ], UChar, ['a'], 'm', 'm';
 #include "std.h"
 // ext: .c
 typedef signed char cb( unsigned char );
-unsigned char fn(cb *callback) {
-    return callback('a');
+unsigned char fn(cb *CodeRef) {
+    return CodeRef('a');
 }
 
     build_and_test
-        'typedef unsigned char cb(unsigned char) with ints' => <<'', [ Callback [ [UChar] => UChar ] ], UChar, ['a'], 109, 'm';
+        'typedef unsigned char cb(unsigned char) with ints' => <<'', [ CodeRef [ [UChar] => UChar ] ], UChar, ['a'], 109, 'm';
 #include "std.h"
 // ext: .c
 typedef unsigned char cb( unsigned char );
-unsigned char fn(cb *callback) {
-    return callback(97);
+unsigned char fn(cb *CodeRef) {
+    return CodeRef(97);
 }
 
 };
 subtest wchar_t => sub {
     my $todo = todo 'wchar_t is a mess on *BSD and macOS. See https://www.gnu.org/software/libunistring/manual/html_node/The-wchar_005ft-mess.html';
     build_and_test
-        'typedef wchar_t cb(wchar_t)' => <<'', [ Callback [ [WChar] => WChar ] ], WChar, ['愛'], '絆', '絆';
+        'typedef wchar_t cb(wchar_t)' => <<'', [ CodeRef [ [WChar] => WChar ] ], WChar, ['愛'], '絆', '絆';
 #include "std.h"
 // ext: .c
 typedef wchar_t cb( wchar_t );
-unsigned char fn(cb *callback) {
+unsigned char fn(cb *CodeRef) {
     fflush(stdout);
-    return callback(L'愛');
+    return CodeRef(L'愛');
 }
 
 };
 subtest short => sub {
     build_and_test
-        'typedef short cb(short, short)' => <<'', [ Callback [ [ Short, Short ] => Short ] ], Short, [ 100, 200 ], -600, -600;
+        'typedef short cb(short, short)' => <<'', [ CodeRef [ [ Short, Short ] => Short ] ], Short, [ 100, 200 ], -600, -600;
 #include "std.h"
 // ext: .c
 typedef short cb(short, short);
-short fn(cb *callback) {
-    return callback(100, 200);
+short fn(cb *CodeRef) {
+    return CodeRef(100, 200);
 }
 
 };
 subtest ushort => sub {
     build_and_test
         'typedef unsigned short cb(unsigned short, unsigned short)' =>
-        <<'', [ Callback [ [ UShort, UShort ] => UShort ] ], UShort, [ 100, 200 ], 500, 500;
+        <<'', [ CodeRef [ [ UShort, UShort ] => UShort ] ], UShort, [ 100, 200 ], 500, 500;
 #include "std.h"
 // ext: .c
 typedef short cb(unsigned short, unsigned short);
-unsigned short fn(cb *callback) {
-    return callback(100, 200);
+unsigned short fn(cb *CodeRef) {
+    return CodeRef(100, 200);
 }
 
 };
 subtest int => sub {
     build_and_test
-        'typedef int cb(int, int)' => <<'', [ Callback [ [ Int, Int ] => Int ] ], Int, [ 100, 200 ], -600, -600;
+        'typedef int cb(int, int)' => <<'', [ CodeRef [ [ Int, Int ] => Int ] ], Int, [ 100, 200 ], -600, -600;
 #include "std.h"
 // ext: .c
 typedef int cb(int, int);
-int fn(cb *callback) {
-    return callback(100, 200);
+int fn(cb *CodeRef) {
+    return CodeRef(100, 200);
 }
 
 };
 subtest uint => sub {
     build_and_test
-        'typedef unsigned int cb(unsigned int, unsigned int)' => <<'', [ Callback [ [ UInt, UInt ] => UInt ] ], UInt, [ 100, 200 ], 600, 600;
+        'typedef unsigned int cb(unsigned int, unsigned int)' => <<'', [ CodeRef [ [ UInt, UInt ] => UInt ] ], UInt, [ 100, 200 ], 600, 600;
 #include "std.h"
 // ext: .c
 typedef int cb(unsigned int, unsigned int);
-unsigned int fn(cb *callback) {
-    return callback(100, 200);
+unsigned int fn(cb *CodeRef) {
+    return CodeRef(100, 200);
 }
 
 };
 subtest long => sub {
     build_and_test
-        'typedef long cb(long, long)' => <<'', [ Callback [ [ Long, Long ] => Long ] ], Long, [ 100, 200 ], -600, -600;
+        'typedef long cb(long, long)' => <<'', [ CodeRef [ [ Long, Long ] => Long ] ], Long, [ 100, 200 ], -600, -600;
 #include "std.h"
 // ext: .c
 typedef long cb(long, long);
-long fn(cb *callback) {
-    return callback(100, 200);
+long fn(cb *CodeRef) {
+    return CodeRef(100, 200);
 }
 
 };
 subtest ulong => sub {
     build_and_test
-        'typedef unsigned long cb(unsigned long, unsigned long)' => <<'', [ Callback [ [ ULong, ULong ] => ULong ] ], ULong, [ 100, 200 ], 600, 600;
+        'typedef unsigned long cb(unsigned long, unsigned long)' => <<'', [ CodeRef [ [ ULong, ULong ] => ULong ] ], ULong, [ 100, 200 ], 600, 600;
 #include "std.h"
 // ext: .c
 typedef long cb(unsigned long, unsigned long);
-unsigned long fn(cb *callback) {
-    return callback(100, 200);
+unsigned long fn(cb *CodeRef) {
+    return CodeRef(100, 200);
 }
 
 };
 subtest longlong => sub {
     build_and_test
-        'typedef long long cb(long long, long long)' => <<'', [ Callback [ [ LongLong, LongLong ] => LongLong ] ], LongLong, [ 100, 200 ], -600, -600;
+        'typedef long long cb(long long, long long)' => <<'', [ CodeRef [ [ LongLong, LongLong ] => LongLong ] ], LongLong, [ 100, 200 ], -600, -600;
 #include "std.h"
 // ext: .c
 typedef long cb(long long, long long);
-long long fn(cb *callback) {
-    return callback(100, 200);
+long long fn(cb *CodeRef) {
+    return CodeRef(100, 200);
 }
 
 };
 subtest ulonglong => sub {
     build_and_test
         'typedef unsigned long cb(unsigned long long, unsigned long long)' =>
-        <<'', [ Callback [ [ ULongLong, ULongLong ] => ULongLong ] ], ULongLong, [ 100, 200 ], 600, 600;
+        <<'', [ CodeRef [ [ ULongLong, ULongLong ] => ULongLong ] ], ULongLong, [ 100, 200 ], 600, 600;
 #include "std.h"
 // ext: .c
 typedef long long cb(unsigned long long, unsigned long long);
-unsigned long long fn(cb *callback) {
-    return callback(100, 200);
+unsigned long long fn(cb *CodeRef) {
+    return CodeRef(100, 200);
 }
 
 };
 subtest size_t => sub {
     build_and_test
-        'typedef size_t cb(size_t, size_t)' => <<'', [ Callback [ [ Size_t, Size_t ] => Size_t ] ], Size_t, [ 100, 200 ], 300, 300;
+        'typedef size_t cb(size_t, size_t)' => <<'', [ CodeRef [ [ Size_t, Size_t ] => Size_t ] ], Size_t, [ 100, 200 ], 300, 300;
 #include "std.h"
 // ext: .c
 typedef size_t cb(size_t, size_t);
-size_t fn(cb *callback) {
-    return callback(100, 200);
+size_t fn(cb *CodeRef) {
+    return CodeRef(100, 200);
 }
 
 };
 subtest float => sub {
     build_and_test
         'typedef float cb(float, float)' =>
-        <<'', [ Callback [ [ Float, Float ] => Float ] ], Float, [ float( 1.5, tolerance => 0.01 ), float( 3.98, tolerance => 0.01 ) ], 4.3, float( 4.3, tolerance => 0.01 );
+        <<'', [ CodeRef [ [ Float, Float ] => Float ] ], Float, [ float( 1.5, tolerance => 0.01 ), float( 3.98, tolerance => 0.01 ) ], 4.3, float( 4.3, tolerance => 0.01 );
 #include "std.h"
 // ext: .c
 typedef float cb(float, float);
-float fn(cb *callback) {
-    return callback(1.5, 3.98);
+float fn(cb *CodeRef) {
+    return CodeRef(1.5, 3.98);
 }
 
 };
 subtest double => sub {
     build_and_test
         'typedef double cb(double, double)' =>
-        <<'', [ Callback [ [ Double, Double ] => Double ] ], Double, [ float( 1.5, tolerance => 0.01 ), float( 3.98, tolerance => 0.01 ) ], 4.3, float( 4.3, tolerance => 0.01 );
+        <<'', [ CodeRef [ [ Double, Double ] => Double ] ], Double, [ float( 1.5, tolerance => 0.01 ), float( 3.98, tolerance => 0.01 ) ], 4.3, float( 4.3, tolerance => 0.01 );
 #include "std.h"
 // ext: .c
 typedef double cb(double, double);
-double fn(cb *callback) {
-    return callback(1.5, 3.98);
+double fn(cb *CodeRef) {
+    return CodeRef(1.5, 3.98);
 }
 
 };
 subtest string => sub {
     build_and_test
         'typedef const char * cb(const char *, const char *)' =>
-        <<'', [ Callback [ [ String, String ] => String ] ], String, [ 'Hey this is not working but it also is not broken yet', 'Hello' ], 'Return a long line of text that should wrap around and test the length is correct.', 'Return a long line of text that should wrap around and test the length is correct.';
+        <<'', [ CodeRef [ [ String, String ] => String ] ], String, [ 'Hey this is not working but it also is not broken yet', 'Hello' ], 'Return a long line of text that should wrap around and test the length is correct.', 'Return a long line of text that should wrap around and test the length is correct.';
 #include "std.h"
 // ext: .c
 typedef const char * cb(const char *, const char *);
-const char * fn(cb *callback) {
-    return callback("Hey this is not working but it also is not broken yet", "Hello");
+const char * fn(cb *CodeRef) {
+    return CodeRef("Hey this is not working but it also is not broken yet", "Hello");
 }
 
 };
@@ -295,13 +295,13 @@ const char * fn(cb *callback) {
 subtest enum => sub {
     typedef TV => Enum [ [ FOX => 11 ], [ CNN => 25 ], [ ESPN => 15 ], [ HBO => 22 ], [ NBC => 32 ] ];
     build_and_test
-        'typedef enum TV cb(enum TV)' => <<'', [ Callback [ [ TV() ] => TV() ] ], TV(), [ int TV::ESPN() ], TV::HBO(), int TV::HBO();
+        'typedef enum TV cb(enum TV)' => <<'', [ CodeRef [ [ TV() ] => TV() ] ], TV(), [ int TV::ESPN() ], TV::HBO(), int TV::HBO();
 #include "std.h"
 // ext: .c
 enum TV { FOX = 11, CNN = 25, ESPN = 15, HBO = 22, MAX = 30, NBC = 32 };
 typedef enum TV cb(enum TV);
-enum TV fn(cb *callback) {
-    return callback(ESPN);
+enum TV fn(cb *CodeRef) {
+    return CodeRef(ESPN);
 }
 
 };

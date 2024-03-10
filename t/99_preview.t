@@ -14,12 +14,13 @@ isa_ok Pointer [Int], [ 'Affix::Type', 'Affix::Type::Pointer' ];
 ok my $lib = compile_test_lib('99_preview'), 'compile_test_lib("99_preview")';
 diag $lib;
 diag `nm $lib`;
-warn Callback [ [], Int ];
+warn CodeRef [ [], Int ];
 use Data::Dump;
-ddx [ Callback [ [ Int, Int ] => Int ] ];
+ddx [ CodeRef [ [ Int, Int ] => Int ] ];
 #
 sub Method($) { }
 ddx Struct [ name => String, age => Affix::Type::Function( [ [] => Int ] ) ];
+CodeRef [ [] => Int ];
 #
 #~ diag find_library 'm';
 #~ diag find_library 'c';

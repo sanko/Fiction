@@ -264,16 +264,16 @@ A C union that looks like this:
         f => Float
     ];
 
-=head2 C<Callback[ ... ]>
+=head2 C<CodeRef[ ... ]>
 
-A value where C<ref($value)> equals C<CODE>. This would be how callbacks are defined.
+A value where C<ref($value)> equals C<CODE>. This would be how CodeRefs are defined.
 
-The argument list and return value must be defined. For example, C<Callback[[Int, Int]=>Int]> ~~ C<typedef int
+The argument list and return value must be defined. For example, C<CodeRef[[Int, Int]=>Int]> ~~ C<typedef int
 (*fuc)(int a, int b);>; that is to say our function accepts two integers and returns an integer.
 
-    Callback[[] => Void];                   # typedef void (*function)();
-    Callback[[Pointer[Int]] => Int];        # typedef Int (*function)(int * a);
-    Callback[[Str, Int] => Struct[...]];    # typedef struct Person (*function)(chat * name, int age);
+    CodeRef[[] => Void];                   # typedef void (*function)();
+    CodeRef[[Pointer[Int]] => Int];        # typedef Int (*function)(int * a);
+    CodeRef[[Str, Int] => Struct[...]];    # typedef struct Person (*function)(chat * name, int age);
 
 =head2 C<InstanceOf[ ... ]>
 

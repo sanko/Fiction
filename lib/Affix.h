@@ -350,7 +350,7 @@ struct Affix {
 };
 
 // Callback system
-struct CallbackWrapper {
+struct CodeRefWrapper {
     DCCallback *cb;
 };
 
@@ -363,7 +363,7 @@ typedef struct {
     SV *retval;
     SV *restype;
     dTHXfield(perl)
-} Callback;
+} CodeRef;
 
 char cbHandler(DCCallback *cb, DCArgs *args, DCValue *result, DCpointer userdata);
 DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointer userdata);

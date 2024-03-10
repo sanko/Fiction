@@ -686,7 +686,7 @@ SV *ptr2svx(pTHX_ DCpointer ptr, SV *type) {
 #endif
         } break;
         case CODEREF_FLAG: {
-            Callback *cb = (Callback *)dcbGetUserData((DCCallback *)((CallbackWrapper *)ptr)->cb);
+            CodeRef *cb = (CodeRef *)dcbGetUserData((DCCallback *)((CodeRefWrapper *)ptr)->cb);
             SvSetSV(retval, cb->cv);
         } break;
         case POINTER_FLAG: {
@@ -1053,8 +1053,8 @@ void *sv2ptrx(pTHX_ SV *type, SV *data) {
     } break;
     case CODEREF_FLAG: {
         if (SvOK(data)) {
-            Callback *userdata;
-            Newxz(userdata, 1, Callback);
+            CodeRef *userdata;
+            Newxz(userdata, 1, CodeRef);
             userdata->signature = SvPV_nolen(AXT_CODEREF_SIG(type));
             userdata->argtypes = AXT_CODEREF_ARGS(type);
             size_t arg_count = av_count(userdata->argtypes);
@@ -1062,7 +1062,7 @@ void *sv2ptrx(pTHX_ SV *type, SV *data) {
             userdata->restype_c = AXT_NUMERIC(userdata->restype);
             userdata->cv = SvREFCNT_inc(data);
             storeTHX(userdata->perl);
-            Newxz(ret, 1, CallbackWrapper);
+            Newxz(ret, 1, CodeRefWrapper);
             ret = dcbNewCallback(userdata->signature, &cbHandlerXXXXX, userdata);
         }
         else { Newxz(ret, 1, intptr_t); }

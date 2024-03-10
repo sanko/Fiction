@@ -1,7 +1,7 @@
 #include "../Affix.h"
 
 DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointer userdata) {
-    Callback *c = (Callback *)userdata;
+    CodeRef *c = (CodeRef *)userdata;
     dTHXa(c->perl);
     //~ typedef struct {
     //~ char *sig;
@@ -12,7 +12,7 @@ DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointe
     //~ AV *arg_info;
     //~ SV *retval;
     //~ dTHXfield(perl)
-    //~ } Callback;
+    //~ } CodeRef;
     char ret = c->restype_c;
     {
         dSP;
@@ -111,7 +111,7 @@ DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointe
                         ptr2sv(aTHX_ * av_fetch(c->argtypes, st_pos, 0), dcbArgPointer(args))));
                     break;
                 default:
-                    croak("Attempt to pass unknown or unhandled type to callback: %c",
+                    croak("Attempt to pass unknown or unhandled type to CodeRef: %c",
                           c->signature[sig_pos]);
                     break;
                 }
@@ -125,7 +125,7 @@ DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointe
             }
         }
         /* .. do something .. */
-        //~ warn("Callback signature: %s => %c", c->signature, c->restype_c);
+        //~ warn("CodeRef signature: %s => %c", c->signature, c->restype_c);
 
         //~ PUSHs(sv_2mortal(newSVpv(a, 0)));
         //~ PUSHs(sv_2mortal(newSViv(b)));
@@ -220,8 +220,7 @@ DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointe
             } break;
                 //~ #define SV_FLAG '?'
             default:
-                croak("Attempt to return unknown or unhandled type from callback: %c",
-                      c->restype_c);
+                croak("Attempt to return unknown or unhandled type from CodeRef: %c", c->restype_c);
                 break;
             }
         }
@@ -232,11 +231,11 @@ DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointe
     return ret;
 }
 /*
-char cbHandler(DCCallback *cb, DCArgs *args, DCValue *result, DCpointer userdata) {
+char cbHandler(DCCodeRef *cb, DCArgs *args, DCValue *result, DCpointer userdata) {
     PERL_UNUSED_VAR(cb);
-    warn("Callback.cxx line %d", __LINE__);
+    warn("CodeRef.cxx line %d", __LINE__);
 
-    Callback *cbx = (Callback *)userdata;
+    CodeRef *cbx = (CodeRef *)userdata;
     dTHXa(cbx->perl);
     dSP;
     int count;
@@ -311,7 +310,7 @@ char cbHandler(DCCallback *cb, DCArgs *args, DCValue *result, DCpointer userdata
                 SV *type = *av_fetch(cbx->arg_info, i, 0);
                 switch (SvIV(type)) {
                 case CODEREF_FLAG: {
-                    Callback *cb = (Callback *)dcbGetUserData((DCCallback *)ptr);
+                    CodeRef *cb = (CodeRef *)dcbGetUserData((DCCodeRef *)ptr);
                     mPUSHs(cb->cv);
                 } break;
                 default: {
@@ -350,7 +349,7 @@ char cbHandler(DCCallback *cb, DCArgs *args, DCValue *result, DCpointer userdata
         //~ PUSHs(sv);
         //~ } break;
         default:
-            croak("Unhandled callback arg. Type: %c [%s]", cbx->sig[i], cbx->sig);
+            croak("Unhandled CodeRef arg. Type: %c [%s]", cbx->sig[i], cbx->sig);
             break;
         }
     }
@@ -442,7 +441,7 @@ char cbHandler(DCCallback *cb, DCArgs *args, DCValue *result, DCpointer userdata
         //~ result->p = SvPOK(ret) ?  sv2ptr(aTHX_ ret, _instanceof(aTHX_ cbx->retval), false):
         // NULL; ~ ret_c = DC_SIGCHAR_POINTER; ~ break;
         default:
-            croak("Unhandled return from callback: %c", ret_c);
+            croak("Unhandled return from CodeRef: %c", ret_c);
         }
     }
     PUTBACK;

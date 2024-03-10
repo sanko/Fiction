@@ -36,7 +36,7 @@ package Affix 0.50 {    # 'FFI' is my middle name!
             String WString
             Struct
             Pointer
-            Callback
+            CodeRef
             SV
             Enum IntEnum UIntEnum CharEnum
         ]
@@ -106,7 +106,7 @@ package Affix 0.50 {    # 'FFI' is my middle name!
             sub subtype : prototype($) { return shift->[ Affix::SLOT_SUBTYPE() ]; }
         }
         package    # hide
-            Affix::Type::Callback {
+            Affix::Type::CodeRef {
             sub parameterized           {1}
             sub rettype : prototype($)  { return shift->[ Affix::SLOT_SUBTYPE() ]; }
             sub argtypes : prototype($) { return shift->[ Affix::SLOT_CODEREF_ARGS() ]; }
@@ -143,7 +143,7 @@ package Affix 0.50 {    # 'FFI' is my middle name!
             # Qualifiers
             = @Affix::Flag::Const::ISA = @Affix::Flag::Volatile::ISA = @Affix::Flag::Restrict::ISA = @Affix::Flag::Reference::ISA
             #
-            = @Affix::Type::Pointer::ISA = @Affix::Type::Callback::ISA = @Affix::Type::Function::ISA = 'Affix::Type::Parameterized';
+            = @Affix::Type::Pointer::ISA = @Affix::Type::CodeRef::ISA = @Affix::Type::Function::ISA = 'Affix::Type::Parameterized';
         @Affix::CC::Reset::ISA = @Affix::CC::This::ISA = @Affix::CC::Ellipsis::ISA = @Affix::CC::Varargs::ISA = @Affix::CC::CDecl::ISA
             = @Affix::CC::STDcall::ISA = @Affix::CC::MSFastcall::ISA = @Affix::CC::GNUFastcall::ISA = @Affix::CC::MSThis::ISA
             = @Affix::CC::GNUThis::ISA = @Affix::CC::Arm::ISA = @Affix::CC::Thumb::ISA = @Affix::CC::Syscall::ISA = 'Affix::CC';
