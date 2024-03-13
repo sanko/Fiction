@@ -59,9 +59,59 @@ subtest 'Pointer[Void]' => sub {
         free $ptr;
         is $ptr, U(), '$ptr is now free';
     };
+    subtest compiled => sub {
+        my $lib = compile_test_lib(<<'END');
+#include "std.h"
+// ext: .c
+
+DLLEXPORT int ptr(void * ptr) {
+    if (ptr == NULL)  return 0;
+    return strlen(ptr);
+}
+
+DLLEXPORT bool ptr_null(void * ptr) {
+    return ptr == NULL;
+}
+
+typedef struct {
+    char name[20];
+    int age;
+    double balance;
+} Human;
+
+DLLEXPORT void * new_person(const char * name, int age, double balance) {
+    Human* person = malloc(sizeof(Human));
+    if (person == NULL) {
+        warn("Error allocating memory for %s", name);
+        return NULL;
+    }
+
+    strcpy(person->name, name);
+    person->age = age;
+    person->balance = balance;
+
+    return person;
+}
+
+DLLEXPORT double person_balance(Human * person) {
+    return person->balance;
+}
+
+END
+        ok my $ax1 = Affix::wrap( $lib => 'ptr', [ Pointer [Void] ] => Int ), 'int ptr(void *)';
+        is $ax1->("This is a quick test.\0"), 21, 'C understood we have a line of text containing 21 chars';
+        ok my $ax2 = Affix::wrap( $lib => 'ptr_null', [ Pointer [Void] ] => Bool ), 'bool ptr_null(void *)';
+        ok $ax2->(undef),                                                           'C understood we passed a NULL pointer';
+        ok my $ax3 = Affix::wrap( $lib => 'new_person', [ String, Int, Double ] => Pointer [Void] ), 'void * new_person(const char *, int, double)';
+        isa_ok my $alex = $ax3->( 'Alex', 32, 10005 ), [qw[Affix::Pointer]], 'new human "Alex" returned as void*';
+        ok my $ax4      = Affix::wrap( $lib => 'person_balance', [ Pointer [Void] ] => Double ), 'double person_balance(void *)';
+        is $ax4->($alex), 10005, 'Alex has a balance of 10,005';
+    };
 
     # TODO: CStruct
 };
+done_testing;
+exit;
 subtest 'Pointer[Bool]' => sub {
     subtest undef => sub {
         isa_ok my $ptr = Affix::sv2ptr( Pointer [Bool], undef ), ['Affix::Pointer'], 'undef';

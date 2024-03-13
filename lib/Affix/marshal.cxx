@@ -341,8 +341,21 @@ void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
         else {
             if (UNLIKELY(!sv_derived_from(subtype, "Affix::Type")))
                 croak("subtype is not of type Affix::Type");
-            len = (SvROK(data) && SvTYPE(SvRV(data)) == SVt_PVAV) ? av_count(MUTABLE_AV(data)) : 1;
-            ret = sv2ptr(aTHX_ subtype, data);
+
+            if ((SvROK(data) && SvTYPE(SvRV(data)) == SVt_PVAV &&
+                 sv_derived_from(data, "Affix::Pointer"))) {
+                SV *ptr_sv = AXT_POINTER_ADDR(data);
+                if (SvOK(ptr_sv)) {
+                    IV tmp = SvIV(MUTABLE_SV(SvRV(ptr_sv)));
+                    ret = INT2PTR(DCpointer, tmp);
+                    len = 1;
+                }
+            }
+            else {
+                len = (SvROK(data) && SvTYPE(SvRV(data)) == SVt_PVAV) ? av_count(MUTABLE_AV(data))
+                                                                      : 1;
+                ret = sv2ptr(aTHX_ subtype, data);
+            }
         }
     } break;
     case CONST_FLAG: { // Basically a no-op

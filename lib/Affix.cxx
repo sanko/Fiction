@@ -429,20 +429,8 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
                 SV *const xsub_tmp_sv = ST(st_pos);
                 SvGETMAGIC(xsub_tmp_sv);
 
-                if ((SvROK(xsub_tmp_sv) && SvTYPE(SvRV(xsub_tmp_sv)) == SVt_PVAV &&
-                     sv_derived_from(xsub_tmp_sv, "Affix::Pointer"))) {
-                    SV *ptr_sv = AXT_POINTER_ADDR(xsub_tmp_sv);
-                    if (SvOK(ptr_sv)) {
-                        IV tmp = SvIV(MUTABLE_SV(SvRV(ptr_sv)));
-                        DCpointer ptr = INT2PTR(DCpointer, tmp);
-                        dcArgPointer(cvm, ptr);
-                    }
-                    else
-                        dcArgPointer(cvm, NULL);
-                }
-                else
-                    dcArgPointer(cvm, sv2ptr(aTHX_ AXT_SUBTYPE(*av_fetch(a->argtypes, st_pos, 0)),
-                                             xsub_tmp_sv));
+                dcArgPointer(
+                    cvm, sv2ptr(aTHX_ AXT_SUBTYPE(*av_fetch(a->argtypes, st_pos, 0)), xsub_tmp_sv));
                 break;
             }
             default:
