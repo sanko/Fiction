@@ -3,6 +3,7 @@
 void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
     //~ DD(type);
     //~ DD(data);
+    if (!SvOK(data) && SvREADONLY(data)) return NULL; // explicit undef
     size_t len = 0;
     switch (AXT_NUMERIC(type)) {
     case VOID_FLAG: {
