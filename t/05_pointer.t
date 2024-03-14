@@ -106,9 +106,9 @@ END
         isa_ok my $alex = $ax3->( 'Alex', 32, 10005 ), [qw[Affix::Pointer]], 'new human "Alex" returned as void*';
         ok my $ax4      = Affix::wrap( $lib => 'person_balance', [ Pointer [Void] ] => Double ), 'double person_balance(void *)';
         is $ax4->($alex), 10005, 'Alex has a balance of 10,005';
-        $alex->free;
     };
 
+            # Don't $alex->free; because we didn't malloc with perl's wrapped version
     # TODO: CStruct
 };
 done_testing;

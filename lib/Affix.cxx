@@ -155,8 +155,23 @@ XS_INTERNAL(Affix_fiction) {
             IV tmp = SvIV((SV *)SvRV(xsub_tmp_sv));
             ret->lib = INT2PTR(DLLib *, tmp);
         }
-        else
-            ret->lib = load_library(SvPV_nolen(xsub_tmp_sv));
+        else if (NULL == (ret->lib = load_library(SvPV_nolen(xsub_tmp_sv)))) {
+            Stat_t statbuf;
+            Zero(&statbuf, 1, Stat_t);
+            if (PerlLIO_stat(SvPV_nolen(xsub_tmp_sv), &statbuf) < 0) {
+                ENTER;
+                SAVETMPS;
+                PUSHMARK(SP);
+                XPUSHs(xsub_tmp_sv);
+                PUTBACK;
+                int count = call_pv("Affix::find_library", G_SCALAR);
+                SPAGAIN;
+                ret->lib = load_library(SvPV_nolen(POPs));
+                PUTBACK;
+                FREETMPS;
+                LEAVE;
+            }
+        }
         if (!ret->lib) {
             // TODO: Throw an error
             safefree(ret);
