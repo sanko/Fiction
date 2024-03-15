@@ -27,9 +27,10 @@ package Affix::Platform::Unix 0.5 {
         }->{ Affix::Platform::Architecture() . ( Affix::Platform::SIZEOF_LONG() == 4 ? '-32' : '-64' ) };
 
         # XXX assuming GLIBC's ldconfig (with option -p)
-        my $regex = qr[^lib$name\.[^\s]+\s+\($machine.*?\)\s*=>\s*(.+)$];
-        grep { is_elf($_) } map { -l $_ ? readlink($_) : $_ } map { $_ =~ $regex; defined $1 ? $1 : () } split /\n\s*/,
-            `export LC_ALL 'C'; export LANG 'C'; /sbin/ldconfig -p 2>&1`;
+        grep { is_elf($_) } map {
+            /^(?:lib)?$name\.[\S+]\s*.*\($machine.*\)\s+=>\s+(.+)$/;
+            defined $1 ? path($1)->realpath : ()
+        } split /\R\s*/, `export LC_ALL 'C'; export LANG 'C'; /sbin/ldconfig -p 2>&1`;
     }
 
     sub _findLib_ld($) {
