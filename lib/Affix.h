@@ -294,6 +294,7 @@ following address will be aligned to `alignment`. */
 
 // marshal.cxx
 size_t padding_needed_for(size_t offset, size_t alignment);
+SV *ptr2obj(pTHX_ SV *type_sv, DCpointer ptr);
 SV *ptr2sv(pTHX_ SV *type_sv, DCpointer ptr);
 DCpointer sv2ptr(pTHX_ SV *type_sv, SV *data, DCpointer ptr = NULL);
 size_t _alignof(pTHX_ SV *type);

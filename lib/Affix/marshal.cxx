@@ -381,35 +381,32 @@ void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
     return ret;
 }
 
+SV *ptr2obj(pTHX_ SV *type, DCpointer ptr) {
+    if (ptr == NULL) return newSV(0); // Don't waste any time on NULL pointers
+    SV *ret;
+    AV *RETVALAV = newAV();
+    {
+        SV *TMP = newSV(0);
+        sv_setref_pv(TMP, NULL, ptr);
+        av_store(RETVALAV, SLOT_POINTER_ADDR, TMP);
+        av_store(RETVALAV, SLOT_SUBTYPE, newSVsv(type));
+        //~ av_store(RETVALAV, SLOT_POINTER_COUNT, newSViv(AXT_POINTER_COUNT(type)));
+    }
+    ret = newRV_noinc(MUTABLE_SV(RETVALAV)); // Create a reference to the AV
+    sv_bless(ret, gv_stashpvn("Affix::Pointer::Unmanaged", 25, GV_ADD));
+    return ret;
+}
+
 SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
     DD(type);
     if (ptr == NULL) return newSV(0); // Don't waste any time on NULL pointers
     SV *ret;
     switch (AXT_NUMERIC(type)) {
     case VOID_FLAG: {
-
-        AV *RETVALAV = newAV();
-        {
-            SV *TMP = newSV(0);
-            sv_setref_pv(TMP, NULL, ptr);
-            av_store(RETVALAV, SLOT_POINTER_ADDR, TMP);
-            av_store(RETVALAV, SLOT_SUBTYPE, newSVsv(type));
-        }
-        ret = newRV_noinc(MUTABLE_SV(RETVALAV)); // Create a reference to the AV
-        sv_bless(ret, gv_stashpvn("Affix::Pointer::Unmanaged", 25, GV_ADD));
+        ret = ptr2obj(aTHX_ type, ptr); // Likely wanted ->raw(...)
     } break;
     case BOOL_FLAG: {
-        size_t len = AXT_POINTER_COUNT(type);
-        if (len == 1)
-            ret = newSVbool(*(bool *)ptr);
-        else {
-            AV *ret_av = newAV();
-            DCpointer tmp = ptr;
-            for (size_t x = 0; x < len; ++x)
-                av_push(ret_av,
-                        newSVbool(*(bool *)INT2PTR(bool *, PTR2IV(ptr) + (x * SIZEOF_BOOL))));
-            ret = newRV_noinc(MUTABLE_SV(ret_av));
-        }
+        ret = newSVbool(*(bool *)ptr);
     } break;
     case CHAR_FLAG:
     case SCHAR_FLAG:
@@ -418,145 +415,41 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
         ret = newSVpvn_utf8((char *)ptr, len, is_utf8_string((U8 *)ptr, len));
     } break;
     case SHORT_FLAG: {
-        size_t len = AXT_POINTER_COUNT(type);
-        if (len == 1)
-            ret = newSViv(*(short *)ptr);
-        else {
-            AV *ret_av = newAV();
-            DCpointer tmp = ptr;
-            for (size_t x = 0; x < len; ++x)
-                av_push(ret_av,
-                        newSViv(*(short *)INT2PTR(short *, PTR2IV(ptr) + (x * SIZEOF_SHORT))));
-            ret = newRV_noinc(MUTABLE_SV(ret_av));
-        }
+        ret = newSViv(*(short *)ptr);
     } break;
     case USHORT_FLAG: {
-        size_t len = AXT_POINTER_COUNT(type);
-        if (len == 1)
-            ret = newSVuv(*(unsigned short *)ptr);
-        else {
-            AV *ret_av = newAV();
-            DCpointer tmp = ptr;
-            for (size_t x = 0; x < len; ++x)
-                av_push(ret_av, newSVuv(*(unsigned short *)INT2PTR(
-                                    unsigned short *, PTR2IV(ptr) + (x * SIZEOF_USHORT))));
-            ret = newRV_noinc(MUTABLE_SV(ret_av));
-        }
+        ret = newSVuv(*(unsigned short *)ptr);
     } break;
     case INT_FLAG: {
-        size_t len = AXT_POINTER_COUNT(type);
-
-        if (len == 1)
-            ret = newSViv(*(int *)ptr);
-        else {
-            AV *ret_av = newAV();
-            DCpointer tmp = ptr;
-            for (size_t x = 0; x < len; ++x)
-                av_push(ret_av, newSViv(*(int *)INT2PTR(int *, PTR2IV(ptr) + (x * SIZEOF_INT))));
-            ret = newRV_noinc(MUTABLE_SV(ret_av));
-        }
+        ret = newSViv(*(int *)ptr);
     } break;
     case UINT_FLAG: {
-        size_t len = AXT_POINTER_COUNT(type);
-
-        if (len == 1)
-            ret = newSViv(*(unsigned int *)ptr);
-        else {
-            AV *ret_av = newAV();
-            DCpointer tmp = ptr;
-            for (size_t x = 0; x < len; ++x)
-                av_push(ret_av, newSViv(*(unsigned int *)INT2PTR(unsigned int *,
-                                                                 PTR2IV(ptr) + (x * SIZEOF_UINT))));
-            ret = newRV_noinc(MUTABLE_SV(ret_av));
-        }
+        ret = newSViv(*(unsigned int *)ptr);
     } break;
     case LONG_FLAG: {
-        size_t len = AXT_POINTER_COUNT(type);
-
-        if (len == 1)
-            ret = newSViv(*(long *)ptr);
-        else {
-            AV *ret_av = newAV();
-            DCpointer tmp = ptr;
-            for (size_t x = 0; x < len; ++x)
-                av_push(ret_av, newSViv(*(long *)INT2PTR(long *, PTR2IV(ptr) + (x * SIZEOF_LONG))));
-            ret = newRV_noinc(MUTABLE_SV(ret_av));
-        }
+        ret = newSViv(*(long *)ptr);
     } break;
     case ULONG_FLAG: {
-        size_t len = AXT_POINTER_COUNT(type);
-
-        if (len == 1)
-            ret = newSViv(*(unsigned long *)ptr);
-        else {
-            AV *ret_av = newAV();
-            DCpointer tmp = ptr;
-            for (size_t x = 0; x < len; ++x)
-                av_push(ret_av, newSViv(*(unsigned long *)INT2PTR(
-                                    unsigned long *, PTR2IV(ptr) + (x * SIZEOF_ULONG))));
-            ret = newRV_noinc(MUTABLE_SV(ret_av));
-        }
+        ret = newSViv(*(unsigned long *)ptr);
     } break;
     case LONGLONG_FLAG: {
-        size_t len = AXT_POINTER_COUNT(type);
-
-        if (len == 1)
-            ret = newSViv(*(long long *)ptr);
-        else {
-            AV *ret_av = newAV();
-            DCpointer tmp = ptr;
-            for (size_t x = 0; x < len; ++x)
-                av_push(ret_av, newSViv(*(long long *)INT2PTR(
-                                    long long *, PTR2IV(ptr) + (x * SIZEOF_LONGLONG))));
-            ret = newRV_noinc(MUTABLE_SV(ret_av));
-        }
+        ret = newSViv(*(long long *)ptr);
     } break;
     case ULONGLONG_FLAG: {
-        size_t len = AXT_POINTER_COUNT(type);
-
-        if (len == 1)
-            ret = newSViv(*(unsigned long long *)ptr);
-        else {
-            AV *ret_av = newAV();
-            DCpointer tmp = ptr;
-            for (size_t x = 0; x < len; ++x)
-                av_push(ret_av, newSViv(*(unsigned long long *)INT2PTR(
-                                    unsigned long long *, PTR2IV(ptr) + (x * SIZEOF_ULONGLONG))));
-            ret = newRV_noinc(MUTABLE_SV(ret_av));
-        }
+        ret = newSViv(*(unsigned long long *)ptr);
     } break;
     case FLOAT_FLAG: {
-        size_t len = AXT_POINTER_COUNT(type);
-
-        if (len == 1)
-            ret = newSVnv(*(float *)ptr);
-        else {
-            AV *ret_av = newAV();
-            DCpointer tmp = ptr;
-            for (size_t x = 0; x < len; ++x)
-                av_push(ret_av,
-                        newSVnv(*(float *)INT2PTR(float *, PTR2IV(ptr) + (x * SIZEOF_FLOAT))));
-            ret = newRV_noinc(MUTABLE_SV(ret_av));
-        }
+        ret = newSVnv(*(float *)ptr);
     } break;
     case DOUBLE_FLAG: {
-        size_t len = AXT_POINTER_COUNT(type);
-
-        if (len == 1)
-            ret = newSVnv(*(double *)ptr);
-        else {
-            AV *ret_av = newAV();
-            DCpointer tmp = ptr;
-            for (size_t x = 0; x < len; ++x)
-                av_push(ret_av,
-                        newSVnv(*(double *)INT2PTR(double *, PTR2IV(ptr) + (x * SIZEOF_DOUBLE))));
-            ret = newRV_noinc(MUTABLE_SV(ret_av));
-        }
+        ret = newSVnv(*(double *)ptr);
     } break;
     case POINTER_FLAG: {
         size_t len = AXT_POINTER_COUNT(type);
         SV *subtype = AXT_SUBTYPE(type);
-        if (UNLIKELY(sv_derived_from(subtype, "Affix::Type::Pointer"))) {
+        if (len == 1)
+            ret = ptr2sv(aTHX_ subtype, ptr);
+        else if (UNLIKELY(sv_derived_from(subtype, "Affix::Type::Pointer"))) {
             AV *ret_av = newAV();
             DCpointer tmp;
             int i = 0;
@@ -567,11 +460,23 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
             } while (tmp != NULL);
             ret = newRV_noinc(MUTABLE_SV(ret_av));
         }
-        else {
-            SV *subtype = AXT_SUBTYPE(type);
-            if (UNLIKELY(!sv_derived_from(subtype, "Affix::Type")))
-                croak("subtype is not of type Affix::Type");
+        else if (UNLIKELY(sv_derived_from(subtype, "Affix::Type::Char") ||
+                          sv_derived_from(subtype, "Affix::Type::UChar") ||
+                          sv_derived_from(subtype, "Affix::Type::SChar"))
+
+        ) {
             ret = ptr2sv(aTHX_ subtype, ptr);
+        }
+        else {
+            AV *ret_av = newAV();
+            DCpointer tmp = ptr;
+            size_t sizeof_subtype = AXT_SIZEOF(subtype);
+            warn("len: %d", len);
+            for (size_t x = 0; x < len; ++x)
+                av_push(ret_av, ptr2sv(aTHX_ subtype,
+                                       *(DCpointer *)INT2PTR(DCpointer *,
+                                                             (x * sizeof_subtype) + PTR2IV(ptr))));
+            ret = newRV_noinc(MUTABLE_SV(ret_av));
         }
     } break;
     case CONST_FLAG: { // No-Op

@@ -425,6 +425,7 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
                 break;
             }
             case CODEREF_FLAG: {
+                warn("PASSING CODEREF");
                 dcArgPointer(cvm, sv2ptr(aTHX_ * av_fetch(a->argtypes, st_pos, 0), ST(st_pos)));
                 break;
             }
@@ -552,7 +553,7 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
         if (ret == NULL)
             sv_set_undef(a->res);
         else
-            sv_setsv(a->res, sv_2mortal(ptr2sv(aTHX_ a->restype, ret)));
+            sv_setsv(a->res, sv_2mortal(ptr2obj(aTHX_ a->restype, ret)));
         warn("...pointer 2");
 
     } break;

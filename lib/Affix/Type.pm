@@ -229,26 +229,13 @@ package Affix::Type 0.5 {
         );
     }
 
-    sub Pointer : prototype(;$) {    # [ text, id, size, align, offset, subtype, sizeof, package ]
-        my $sizeof  = 0;
-        my $packed  = 0;
-        my $subtype = undef;
-        if (@_) {
-            ($subtype) = @{ +shift };
-            my $__sizeof = $subtype->sizeof;
-            my $__align  = $subtype->align;
-            $sizeof += $packed ? 0 : Affix::Platform::padding_needed_for( $sizeof, $__align > $__sizeof ? $__sizeof : $__align );
-            $sizeof += $__sizeof;
-        }
-        else {
-            $subtype = Void();    # Defaults to Pointer[Void]
-        }
+    sub Pointer : prototype(;$) {
+        my ( $subtype, $length ) = @_ ? @{ +shift } : ( Void(), 0 );    # Defaults to Pointer[Void]
         bless(
-            [   'Pointer[ ' . $subtype . ' ]',
-                Affix::POINTER_FLAG(),
-                Affix::Platform::SIZEOF_INTPTR_T(),
-                Affix::Platform::ALIGNOF_INTPTR_T(),
-                undef, $subtype, $sizeof, undef
+            [   'Pointer[ ' . $subtype . ' ]',      Affix::POINTER_FLAG(),
+                Affix::Platform::SIZEOF_INTPTR_T(), Affix::Platform::ALIGNOF_INTPTR_T(),
+                undef,                              $subtype,
+                $length
             ],
             'Affix::Type::Pointer'
         );

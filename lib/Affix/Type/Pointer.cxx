@@ -109,7 +109,7 @@ XS_INTERNAL(Affix_Pointer_DumpHex) {
 XS_INTERNAL(Affix_Pointer_sv) {
     dVAR;
     dXSARGS;
-    if (1 != items) croak_xs_usage(cv, "ptr");
+    if (items != 1) croak_xs_usage(cv, "ptr");
     SV *const xsub_tmp_sv = ST(0);
     SvGETMAGIC(xsub_tmp_sv);
     if (!(SvROK(xsub_tmp_sv) && SvTYPE(SvRV(xsub_tmp_sv)) == SVt_PVAV &&
@@ -566,7 +566,7 @@ void boot_Affix_Pointer(pTHX_ CV *cv) {
 
     (void)newXSproto_portable("Affix::sv2ptr", Affix_sv2ptr, __FILE__, "$$");
     (void)newXSproto_portable("Affix::ptr2sv", Affix_ptr2sv, __FILE__, "$$");
-    (void)newXSproto_portable("Affix::Pointer::sv", Affix_Pointer_sv, __FILE__, "$");
+    (void)newXSproto_portable("Affix::Pointer::sv", Affix_Pointer_sv, __FILE__, "$;$");
     (void)newXSproto_portable("Affix::Pointer::raw", Affix_Pointer_raw, __FILE__, "$$;$");
     (void)newXSproto_portable("Affix::Pointer::dump", Affix_Pointer_DumpHex, __FILE__, "$$");
     (void)newXSproto_portable("Affix::DumpHex", Affix_Pointer_DumpHex, __FILE__, "$$");

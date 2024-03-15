@@ -6,7 +6,6 @@ use Affix qw[:all];
 BEGIN { chdir '../' if !-d 't'; }
 use t::lib::helper;
 $|++;
-skip_all 'oy';
 #
 sub build_and_test {
     my ( $name, $c, $arg_types, $ret_type, $arg1, $ret, $ret_check ) = @_;

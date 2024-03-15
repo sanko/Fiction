@@ -35,8 +35,9 @@ ddx Pointer [Void];
 
 #~ 'typedef void cb(void)' => <<'', [ CodeRef [ [] => Void ] ], Void, [], U(), U();
 ddx Affix::find_symbol $lib, 'snag';
-ddx Affix::affix $lib,       'snag';
-ddx Affix::affix $lib,       'getfn', [], Pointer [Void];
+warn $lib;
+ddx Affix::affix $lib, 'snag';
+ddx Affix::affix $lib, 'getfn', [], Pointer [Void];
 my $fn = getfn();
 warn $fn;
 ddx $fn;
@@ -98,21 +99,27 @@ DLLEXPORT double person_balance(Human * person) {
 }
 
 END
-        ok my $ax1 = Affix::wrap( $lib => 'ptr', [ Pointer [Void] ] => Int ), 'int ptr(void *)';
-        is $ax1->("This is a quick test.\0"), 21, 'C understood we have a line of text containing 21 chars';
-        ok my $ax2 = Affix::wrap( $lib => 'ptr_null', [ Pointer [Void] ] => Bool ), 'bool ptr_null(void *)';
-        ok $ax2->(undef),                                                           'C understood we passed a NULL pointer';
-        ok my $ax3 = Affix::wrap( $lib => 'new_person', [ String, Int, Double ] => Pointer [Void] ), 'void * new_person(const char *, int, double)';
-        isa_ok my $alex = $ax3->( 'Alex', 32, 10005 ), [qw[Affix::Pointer]], 'new human "Alex" returned as void*';
-        ok my $ax4      = Affix::wrap( $lib => 'person_balance', [ Pointer [Void] ] => Double ), 'double person_balance(void *)';
-        is $ax4->($alex), 10005, 'Alex has a balance of 10,005';
-    };
+        subtest 'int ptr(void *)' => sub {
+            ok my $ax = Affix::wrap( $lib => 'ptr', [ Pointer [Void] ] => Int ), 'wrap';
+            is $ax->("This is a quick test.\0"), 21, 'C understood we have a line of text containing 21 chars';
+        };
+        subtest 'bool ptr_null(void *)' => sub {
+            ok my $ax = Affix::wrap( $lib => 'ptr_null', [ Pointer [Void] ] => Bool ), 'wrap';
+            ok $ax->(undef),                                                           'C understood we passed a NULL pointer';
+        };
+        my $alex;    # used across two blocks
+        subtest 'void * new_person(const char *, int, double)' => sub {
+            ok my $ax    = Affix::wrap( $lib => 'new_person', [ String, Int, Double ] => Pointer [Void] ), 'wrap';
+            isa_ok $alex = $ax->( 'Alex', 32, 10005 ), [qw[Affix::Pointer]], 'new human "Alex" returned as void*';
+        };
+        subtest 'double person_balance(void *)' => sub {
+            ok my $ax = Affix::wrap( $lib => 'person_balance', [ Pointer [Void] ] => Double ), 'wrap';
+            is $ax->($alex), 10005, 'Alex has a balance of 10,005';
 
             # Don't $alex->free; because we didn't malloc with perl's wrapped version
-    # TODO: CStruct
+        };
+    };
 };
-done_testing;
-exit;
 subtest 'Pointer[Bool]' => sub {
     subtest undef => sub {
         isa_ok my $ptr = Affix::sv2ptr( Pointer [Bool], undef ), ['Affix::Pointer'], 'undef';
@@ -138,14 +145,56 @@ subtest 'Pointer[Bool]' => sub {
         is $ptr, U(), '$ptr is now free';
     };
     subtest list => sub {
-        isa_ok my $ptr = Affix::sv2ptr( Pointer [Bool], [ 1, 1, 0, 1, 0, 0 ] ), ['Affix::Pointer'], 'false';
+        isa_ok my $ptr = Affix::sv2ptr( Pointer [ Bool, 6 ], [ 1, 1, 0, 1, 0, 0 ] ), ['Affix::Pointer'], 'false';
         $ptr->dump( Affix::Platform::SIZEOF_BOOL() * 6 );
-        is $ptr->sv,                                        [ T(), T(), F(), T(), F(), F() ], '$ptr->sv';
+        is $ptr->sv(),                                      [ T(), T(), F(), T(), F(), F() ], '$ptr->sv';
         is $ptr->raw( Affix::Platform::SIZEOF_BOOL() * 6 ), pack( 'c6', 1, 1, 0, 1, 0, 0 ),   '$ptr->raw( ' . Affix::Platform::SIZEOF_BOOL() . ' )';
         free $ptr;
         is $ptr, U(), '$ptr is now free';
     };
+    subtest compiled => sub {
+        my $lib = compile_test_lib(<<'END');
+#include "std.h"
+// ext: .c
+DLLEXPORT int ptr(bool * ptr) {
+    if(ptr == NULL) return -1;
+    int _true = 0;
+    for (int i = 0; i < 4; i++)
+        _true += !!ptr[i];
+    return _true;
+}
+
+DLLEXPORT bool * ptr_return() {
+    bool* flags = (bool*)malloc(sizeof(bool) * 5);
+    for (int i = 0; i<5; i++) flags[i] = false;
+    flags[2] = true;
+    return flags;
+}
+
+DLLEXPORT bool * ptr_return_NULL() {
+    return NULL;
+}
+END
+        subtest 'int ptr(bool *)' => sub {
+            ok my $ax = Affix::wrap( $lib => 'ptr', [ Pointer [Bool] ] => Int ), 'wrap';
+            is $ax->( [ 1, 0, 1, 1 ] ), 3,  'C understood we sent three true values';
+            is $ax->(undef),            -1, 'C understood we sent a NULL pointer';
+        };
+        subtest 'bool * ptr_return()' => sub {
+            ok my $ax      = Affix::wrap( $lib => 'ptr_return', [] => Pointer [ Bool, 5 ] ), 'wrap';
+            isa_ok my $ptr = $ax->(), ['Affix::Pointer'], 'returned pointer';
+            use Data::Dump;
+            ddx $ptr;
+            is $ptr->sv(), [ F(), F(), T(), F(), F() ], 'C gave us the bool* we expected';
+        };
+        subtest 'bool * ptr_return_NULL()' => sub {
+            ok my $ax  = Affix::wrap( $lib => 'ptr_return_NULL', [] => Pointer [Bool] ), 'wrap';
+            is my $ptr = $ax->(), U(), 'returned NULL (undef)';
+        };
+    };
 };
+done_testing;
+exit;
 subtest 'Pointer[Char]' => sub {
     subtest 97 => sub {
         isa_ok my $ptr = Affix::sv2ptr( Pointer [Char], 97 ), ['Affix::Pointer'], '97';
