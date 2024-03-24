@@ -1,6 +1,8 @@
 package Affix::Type::Enum 0.5 {
     use strict;
     use warnings;
+    use Carp qw[];
+    $Carp::Internal{ (__PACKAGE__) }++;
     use Scalar::Util qw[dualvar];
     use parent 'Exporter';
     our ( @EXPORT_OK, %EXPORT_TAGS );
@@ -16,34 +18,20 @@ package Affix::Type::Enum 0.5 {
         my $index = 0;
         my $enum;
         for my $element (@elements) {
-            ( $element, $index ) = @$element if ref $element eq 'ARRAY';
+            if ( ref $element eq 'ARRAY' ) {
+                ( $element, $index ) = @$element if ref $element eq 'ARRAY';
+                push @$fields, sprintf q[[%s => '%s']], $element, $index;
+            }
+            else {
+                push @$fields, qq['$element'];
+            }
             if ( $index =~ /[+|-|\*|\/|^|%|\D]/ ) {
                 $index =~ s[(\w+)][$enum->{$1}//$1]xeg;
                 $index = eval $index;
             }
-            $enum->{$element} = $index;
-            push @$fields, sprintf '%s => %s', $element, $index++;
+            $enum->{$element} = $index++;
         }
         return $fields, $enum;
-    }
-
-    sub _Enumc : prototype($) {
-        my (@elements) = @{ +shift };
-        my $text;
-        my $index = 0;
-        my $enum;
-        my $tmp = {};
-        for my $element (@elements) {
-            ( $element, $index ) = @$element if ref $element eq 'ARRAY';
-            if ( $index =~ /[+|-|\*|\/|^|%|\D]/ ) {
-                $index =~ s[(\w+)][$tmp->{$1}//$1]xeg;
-                $index = eval $index;
-            }
-            $tmp->{$element} = $index;
-            push @$enum, [ $element, $index ];
-            push @$text, sprintf '%s => %s', $element, $index++;
-        }
-        return $text, $enum;
     }
 
     sub Enum : prototype($) {
@@ -98,7 +86,8 @@ package Affix::Type::Enum 0.5 {
                 $index = eval $index;
             }
             push @$enum, [ $element, $index =~ /\D/ ? ord $index : $index ];
-            push @$text, sprintf '%s => %s', $element, $index++;
+            push @$text, sprintf '[%s => %s]', $element, $index;
+            $index++;
         }
         bless(
             [   sprintf( 'CharEnum[ %s ]', join ', ', @$text ),

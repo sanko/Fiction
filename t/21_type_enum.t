@@ -19,5 +19,10 @@ subtest expressions => sub {
     is int CPPRef::F(), 2,  'F == 2';
     is int CPPRef::G(), 12, 'G == 12';
 };
+subtest stringify => sub {
+    is Enum [qw[a b c d]], q[Enum[ 'a', 'b', 'c', 'd' ]], 'simple';
+    is Enum [ 'A', 'B', [ C => 10 ], 'D', [ E => 1 ], 'F', [ G => 'F + C' ] ],
+        q[Enum[ 'A', 'B', [C => '10'], 'D', [E => '1'], 'F', [G => 'F + C'] ]], 'with values';
+};
 #
 done_testing;
