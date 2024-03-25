@@ -1,6 +1,8 @@
 package Affix::Type 0.5 {
     use strict;
     use warnings;
+    use Carp qw[];
+    $Carp::Internal{ (__PACKAGE__) }++;
     use parent 'Exporter';
     our ( @EXPORT_OK, %EXPORT_TAGS );
     $EXPORT_TAGS{all} = [
@@ -10,7 +12,7 @@ package Affix::Type 0.5 {
             String WString StdString
             Struct Union
             CodeRef Function
-            Pointer
+            Pointer Array
             SV
             typedef
         ]
@@ -230,12 +232,27 @@ package Affix::Type 0.5 {
     }
 
     sub Pointer : prototype(;$) {
-        my ( $subtype, $length ) = @_ ? @{ +shift } : ( Void(), 0 );    # Defaults to Pointer[Void]
+        my ( $subtype, @etc ) = @_ ? @{ +shift } : Void();    # Defaults to Pointer[Void]
+        Carp::cluck sprintf( 'Too may arguments in Pointer[ %s, %s ]', $subtype, join ', ', @etc ) if @etc;
         bless(
-            [   'Pointer[ ' . $subtype . ' ]',      Affix::POINTER_FLAG(),
-                Affix::Platform::SIZEOF_INTPTR_T(), Affix::Platform::ALIGNOF_INTPTR_T(),
-                undef,                              $subtype,
-                $length
+            [   'Pointer[ ' . $subtype . ' ]',
+                Affix::POINTER_FLAG(),
+                Affix::Platform::SIZEOF_INTPTR_T(),
+                Affix::Platform::ALIGNOF_INTPTR_T(),
+                undef, $subtype, 1
+            ],
+            'Affix::Type::Pointer'
+        );
+    }
+
+    sub Array : prototype(;$) {
+        my ( $subtype, $length ) = @{ +shift };    # No defaults
+        bless(
+            [   'Array[ ' . $subtype . ', ' . $length . ' ]',
+                Affix::POINTER_FLAG(),
+                Affix::Platform::SIZEOF_INTPTR_T(),
+                Affix::Platform::ALIGNOF_INTPTR_T(),
+                undef, $subtype, $length
             ],
             'Affix::Type::Pointer'
         );
