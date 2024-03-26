@@ -192,19 +192,6 @@ package Affix::Type 0.5 {
         bless( [ sprintf( 'Union[ %s ]', join ', ', @fields ), Affix::UNION_FLAG(), $sizeof, $alignment, \@types ], 'Affix::Type::Union' );
     }
 
-    #define SLOT_STRINGIFY 0
-    #define SLOT_NUMERIC 1
-    #define SLOT_SIZEOF 2
-    #define SLOT_ALIGNMENT 3
-    #define SLOT_OFFSET 4
-    #define SLOT_SUBTYPE 5
-    #define SLOT_ARRAYLEN 6
-    #define SLOT_AGGREGATE 7
-    #define SLOT_TYPEDEF 8
-    #define SLOT_CAST 9
-    #define SLOT_CODEREF_ARGS 10
-    #define SLOT_CODEREF_RET 11
-    #define SLOT_CODEREF_SIG 12
     sub CodeRef : prototype($) {
         my (@elements) = @{ +shift };
         my ( $args, $ret ) = @elements;
@@ -223,23 +210,47 @@ package Affix::Type 0.5 {
         my ( $args, $ret ) = @elements;
         $ret //= Void;
         bless(
-            [   sprintf( 'Function[ [ %s ] => %s ]', join( ', ', @$args ), $ret ), Affix::AFFIX_FLAG(), Affix::Platform::SIZEOF_INTPTR_T(),
-                Affix::Platform::ALIGNOF_INTPTR_T(), undef,    # offset
-                $ret,                                $args, join '', map { chr $_ } @$args
+            [   sprintf( 'Function[ [ %s ] => %s ]', join( ', ', @$args ), $ret ),    # SLOT_STRINGIFY
+                Affix::AFFIX_FLAG(),                                                  # SLOT_NUMERIC
+                Affix::Platform::SIZEOF_INTPTR_T(),                                   # SLOT_SIZEOF
+                Affix::Platform::ALIGNOF_INTPTR_T(),                                  # SLOT_ALIGNMENT
+                undef,                                                                # SLOT_OFFSET
+                $ret,                                                                 # SLOT_CODEREF_RET (result type)
+                $args,                                                                # SLOT_CODEREF_ARGS
+                join '', map { chr $_ } @$args                                        # SLOT_CODEREF_SIG
             ],
             'Affix::Type::Function'
         );
     }
 
+    #~ // [ text, id, size, align, offset, subtype, length, aggregate, typedef ]
+    #define SLOT_STRINGIFY 0
+    #define SLOT_NUMERIC 1
+    #define SLOT_SIZEOF 2
+    #define SLOT_ALIGNMENT 3
+    #define SLOT_OFFSET 4
+    #define SLOT_SUBTYPE 5
+    #define SLOT_ARRAYLEN 6
+    #define SLOT_AGGREGATE 7
+    #define SLOT_TYPEDEF 8
+    #define SLOT_CAST 9
+    #define SLOT_CODEREF_RET 5
+    #define SLOT_CODEREF_ARGS 6
+    #define SLOT_CODEREF_SIG 7
+    #define SLOT_POINTER_SUBTYPE SLOT_SUBTYPE
+    #define SLOT_POINTER_COUNT SLOT_ARRAYLEN
+    #define SLOT_POINTER_ADDR 7
     sub Pointer : prototype(;$) {
         my ( $subtype, @etc ) = @_ ? @{ +shift } : Void();    # Defaults to Pointer[Void]
-        Carp::cluck sprintf( 'Too may arguments in Pointer[ %s, %s ]', $subtype, join ', ', @etc ) if @etc;
+        Carp::croak sprintf( 'Too may arguments in Pointer[ %s, %s ]', $subtype, join ', ', @etc ) if @etc;
         bless(
-            [   'Pointer[ ' . $subtype . ' ]',
-                Affix::POINTER_FLAG(),
-                Affix::Platform::SIZEOF_INTPTR_T(),
-                Affix::Platform::ALIGNOF_INTPTR_T(),
-                undef, $subtype, 1
+            [   'Pointer[ ' . $subtype . ' ]',          # SLOT_STRINGIFY
+                Affix::POINTER_FLAG(),                  # SLOT_NUMERIC
+                Affix::Platform::SIZEOF_INTPTR_T(),     # SLOT_SIZEOF
+                Affix::Platform::ALIGNOF_INTPTR_T(),    # SLOT_ALIGNMENT
+                undef,                                  # SLOT_OFFSET
+                $subtype,                               # SLOT_SUBTYPE
+                1                                       # SLOT_ARRAYLEN
             ],
             'Affix::Type::Pointer'
         );
@@ -248,11 +259,13 @@ package Affix::Type 0.5 {
     sub Array : prototype(;$) {
         my ( $subtype, $length ) = @{ +shift };    # No defaults
         bless(
-            [   'Array[ ' . $subtype . ', ' . $length . ' ]',
-                Affix::POINTER_FLAG(),
-                Affix::Platform::SIZEOF_INTPTR_T(),
-                Affix::Platform::ALIGNOF_INTPTR_T(),
-                undef, $subtype, $length
+            [   'Array[ ' . $subtype . ', ' . $length . ' ]',    # SLOT_STRINGIFY
+                Affix::POINTER_FLAG(),                           # SLOT_NUMERIC
+                Affix::Platform::SIZEOF_INTPTR_T(),              # SLOT_SIZEOF
+                Affix::Platform::ALIGNOF_INTPTR_T(),             # SLOT_ALIGNMENT
+                undef,                                           # SLOT_OFFSET
+                $subtype,                                        # SLOT_SUBTYPE
+                $length                                          # SLOT_ARRAYLEN
             ],
             'Affix::Type::Pointer'
         );

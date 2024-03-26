@@ -272,8 +272,8 @@ following address will be aligned to `alignment`. */
 #define SLOT_CODEREF_ARGS 6
 #define SLOT_CODEREF_SIG 7
 #define SLOT_POINTER_SUBTYPE SLOT_SUBTYPE
+#define SLOT_POINTER_COUNT SLOT_ARRAYLEN
 #define SLOT_POINTER_ADDR 7
-#define SLOT_POINTER_COUNT 6
 
 #define AXT_STRINGIFY(t) SvPV_nolen(*av_fetch(MUTABLE_AV(SvRV(t)), SLOT_STRINGIFY, 0))
 #define AXT_NUMERIC(t) SvIV(*av_fetch(MUTABLE_AV(SvRV(t)), SLOT_NUMERIC, 0))

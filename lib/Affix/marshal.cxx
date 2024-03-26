@@ -376,7 +376,7 @@ void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
         break;
     }
 
-    av_store(MUTABLE_AV(SvRV(type)), SLOT_POINTER_COUNT, newSViv(len));
+    // av_store(MUTABLE_AV(SvRV(type)), SLOT_POINTER_COUNT, newSViv(len));
 
     return ret;
 }
