@@ -22,25 +22,7 @@ package Affix 0.50 {    # 'FFI' is my middle name!
     use Affix::Type::Enum qw[:all];
     use Affix::Platform;
     use parent 'Exporter';
-    $EXPORT_TAGS{types} = [
-        qw[
-            Void
-            Bool
-            Char UChar SChar WChar
-            Short UShort
-            Int UInt
-            Long ULong
-            LongLong ULongLong
-            Float Double
-            Size_t
-            String WString
-            Struct
-            Pointer
-            CodeRef
-            SV
-            Enum IntEnum UIntEnum CharEnum
-        ]
-    ];
+    $EXPORT_TAGS{types} = [ @Affix::Type::EXPORT_OK, @Affix::Type::Enum::EXPORT_OK ];
 
     #~ $EXPORT_TAGS{ctypes} = [
     #~ qw[

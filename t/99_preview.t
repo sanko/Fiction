@@ -5,6 +5,12 @@ use Affix qw[:all];
 BEGIN { chdir '../' if !-d 't'; }
 use t::lib::helper;
 $|++;
+
+# int[5];
+#~ Array [ Int, 5 ];
+#~ Array [ Enum [ 'A', 'B', [ C => 10 ], 'D', [ E => 1 ], 'F', [ G => 'F + C' ] ], 5 ];
+use Data::Dump;
+ddx Pointer [ Enum [ 'A', 'B', [ C => 10 ], 'D', [ E => 1 ], 'F', [ G => 'F + C' ] ], 5, Int ];
 #
 #~ my $affix = affix 'm', 'pow', [ Struct [ a => Int ] ], Void;
 #
