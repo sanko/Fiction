@@ -2,16 +2,15 @@
 
 DCaggr *_aggregate(pTHX_ SV *type) {
 #if DEBUG
-    warn("_aggregate(%s)", AXT_STRINGIFY(type));
+    warn("_aggregate(%s)", AXT_TYPE_STRINGIFY(type));
 #endif
     DCaggr *retval = NULL;
-    size_t size, array_len;
-    switch (AXT_NUMERIC(type)) {
+    switch (AXT_TYPE_NUMERIC(type)) {
     case STRUCT_FLAG:
     case CPPSTRUCT_FLAG:
     case UNION_FLAG: {
-        size = AXT_SIZEOF(type);
-        SV **agg_sv_ptr = AXT_AGGREGATE(type);
+        size_t size = AXT_TYPE_SIZEOF(type);
+        SV **agg_sv_ptr = AXT_TYPE_AGGREGATE(type);
         if (agg_sv_ptr != NULL && SvOK(*agg_sv_ptr)) {
             PING;
             sv_dump(*agg_sv_ptr);
@@ -24,7 +23,7 @@ DCaggr *_aggregate(pTHX_ SV *type) {
         }
         else {
             PING;
-            SV *fields = AXT_SUBTYPE(type);
+            SV *fields = AXT_TYPE_SUBTYPE(type);
             sv_dump(fields);
             /*
 
@@ -73,17 +72,17 @@ type_as_dc(_t), offset, array_len); #endif dcAggrField(retval, type_as_dc(_t), o
                 av_store(MUTABLE_AV(SvRV(type)), 7, newSVsv(RETVALSV));
             }*/
 #if DEBUG
-            warn("/_aggregate(%s)", AXT_STRINGIFY(type));
+            warn("/_aggregate(%s)", AXT_TYPE_STRINGIFY(type));
 #endif
         }
     } break;
     default: {
-        croak("Unsupported aggregate: %s at %s line %d", AXT_STRINGIFY(type), __FILE__, __LINE__);
+        croak("Unsupported aggregate: %s", AXT_TYPE_STRINGIFY(type));
         break;
     }
     }
 #if DEBUG
-    warn("/_aggregate(%s) == NULL", AXT_STRINGIFY(type));
+    warn("/_aggregate(%s) == NULL", AXT_TYPE_STRINGIFY(type));
 #endif
     return retval;
 }
@@ -109,7 +108,7 @@ XS_INTERNAL(Affix_Aggregate_FETCH) {
         SV **name = av_fetch(MUTABLE_AV(SvRV(*elm)), 0, 0);
         if (strcmp(key, SvPV(*name, PL_na)) == 0) {
             SV *_type = *av_fetch(MUTABLE_AV(SvRV(*elm)), 1, 0);
-            size_t offset = AXT_OFFSET(_type); // meaningless for union
+            size_t offset = AXT_TYPE_OFFSET(_type); // meaningless for union
             sv_setsv(RETVAL, sv_2mortal(ptr2sv(aTHX_ _type, INT2PTR(DCpointer, tmp + offset))));
             break;
         }

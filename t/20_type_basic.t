@@ -229,14 +229,17 @@ double fn(double i, double j) { return i * j;}
 
 };
 subtest string => sub {
-    build_and_test
-        'const char * fn(const char *)' => <<'', [String], String, 'Hi', q[Wow, this shouldn't crash.];
-#include "std.h"
+    ok my $lib = compile_test_lib(<<''), 'build test lib';
+    #include "std.h"
 // ext: .c
 const char * fn(const char * i) {
     return "Wow, this shouldn't crash.";
 }
 
+    isa_ok my $fn  = Affix::wrap( $lib, 'fn', [String], String ), [qw[Affix]],        'my $fn = ...';
+    isa_ok my $ptr = $fn->('Hey'),                                ['Affix::Pointer'], '$ptr';
+    is $ptr->raw(26), q[Wow, this shouldn't crash.], '->raw';
+    is $ptr->sv,      q[Wow, this shouldn't crash.], '->sv';
 };
 
 #define WSTRING_FLAG '<'

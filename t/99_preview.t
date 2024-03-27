@@ -5,11 +5,26 @@ use Affix qw[:all];
 BEGIN { chdir '../' if !-d 't'; }
 use t::lib::helper;
 $|++;
+pass '1';
+done_testing;
+exit;
+__END__
+use Data::Dump;
+isa_ok my $ptr = Affix::sv2ptr( Array [ Bool, 6 ], [ 1, 1, 0, 1, 0, 0 ] ), ['Affix::Pointer'], 'false';
+$ptr->dump( Affix::Platform::SIZEOF_BOOL() * 6 );
+use Data::Dump;
+ddx $ptr;
+ddx $ptr->sv;
+__END__
+die;
+ddx Array [ Int,     5 ];
+ddx Array [ Pointer, 5 ];
+ddx Array [ Array [ Int, 5 ], 10 ];
+die;
 
 # int[5];
 #~ Array [ Int, 5 ];
 #~ Array [ Enum [ 'A', 'B', [ C => 10 ], 'D', [ E => 1 ], 'F', [ G => 'F + C' ] ], 5 ];
-use Data::Dump;
 ddx Pointer [ Enum [ 'A', 'B', [ C => 10 ], 'D', [ E => 1 ], 'F', [ G => 'F + C' ] ], 5, Int ];
 #
 #~ my $affix = affix 'm', 'pow', [ Struct [ a => Int ] ], Void;

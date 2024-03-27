@@ -216,7 +216,7 @@ XS_INTERNAL(Affix_fiction) {
         switch (items) {
         case 4:
             ret->restype = newSVsv(ST(3));
-            ret->restype_c = AXT_NUMERIC(ret->restype);
+            ret->restype_c = AXT_TYPE_NUMERIC(ret->restype);
             switch (ret->restype_c) {
             case WCHAR_FLAG:
             case WSTRING_FLAG:
@@ -245,7 +245,7 @@ XS_INTERNAL(Affix_fiction) {
                 char array = '@';
                 char code = '&';
                 for (size_t i = 0; i < sig_len; i++) {
-                    c_type = AXT_NUMERIC(*av_fetch(ret->argtypes, i, 0));
+                    c_type = AXT_TYPE_NUMERIC(*av_fetch(ret->argtypes, i, 0));
                     Copy(&c_type, ret->signature + i, 1, char);
                     // TODO: Generate a valid prototype w/ Array, Callbacks, etc.
                     Copy(&scalar, prototype + i, 1, char);
@@ -440,13 +440,13 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
                 //~ #define CODEREF_FLAG '&'
             case POINTER_FLAG: {
                 //~ sv_dump(*av_fetch(a->argtypes, st_pos, 0));
-                //~ sv_dump(AXT_SUBTYPE(*av_fetch(a->argtypes, st_pos, 0)));
+                //~ sv_dump(AXT_TYPE_SUBTYPE(*av_fetch(a->argtypes, st_pos, 0)));
 
                 SV *const xsub_tmp_sv = ST(st_pos);
                 SvGETMAGIC(xsub_tmp_sv);
 
-                dcArgPointer(
-                    cvm, sv2ptr(aTHX_ AXT_SUBTYPE(*av_fetch(a->argtypes, st_pos, 0)), xsub_tmp_sv));
+                dcArgPointer(cvm, sv2ptr(aTHX_ AXT_TYPE_SUBTYPE(*av_fetch(a->argtypes, st_pos, 0)),
+                                         xsub_tmp_sv));
                 break;
             }
             default:
@@ -867,17 +867,14 @@ extern "C" void Affix_trigger(pTHX_ CV *cv) {
 
                     affix->temp_ptrs[st_pos] =
                         sv2ptr(aTHX_ MUTABLE_SV(affix->arg_info[arg_pos]), ST(st_pos));
-                    // safemalloc(AXT_SIZEOF(AXT_SUBTYPE(MUTABLE_SV(affix->arg_info[arg_pos]))));
+                    // safemalloc(AXT_SIZEOF(AXT_TYPE_SUBTYPE(MUTABLE_SV(affix->arg_info[arg_pos]))));
                     dcArgPointer(cvm, affix->temp_ptrs[st_pos]);
                 }
             }
             else if (SvOK(arg)) {
                 PING;
-                warn("FDSA");
-
                 if (sv_derived_from(arg, "Affix::Pointer")) {
                     PING;
-
                     // pass pointers directly through
                     IV tmp = SvIV(SvRV(arg));
                     dcArgPointer(cvm, INT2PTR(DCpointer, tmp));
@@ -888,7 +885,7 @@ extern "C" void Affix_trigger(pTHX_ CV *cv) {
                     PING;
                     SV *type = MUTABLE_SV(affix->arg_info[arg_pos]);
                     PING;
-                    SV **package_ptr = AXT_TYPEDEF(type);
+                    SV **package_ptr = AXT_TYPE_TYPEDEF(type);
                     PING;
                     if (UNLIKELY(package_ptr != NULL) && UNLIKELY(SvOK(arg) && sv_isobject(arg)) &&
                         SvOK(*package_ptr) && !sv_derived_from_sv(arg, *package_ptr, SVf_UTF8)) {
@@ -903,12 +900,9 @@ extern "C" void Affix_trigger(pTHX_ CV *cv) {
                 }
             }
             else {
-                warn("D");
-
-                PING;
                 if (affix->temp_ptrs == NULL) Newxz(affix->temp_ptrs, num_args, DCpointer);
-                affix->temp_ptrs[st_pos] =
-                    safemalloc(AXT_SIZEOF(AXT_SUBTYPE(MUTABLE_SV(affix->arg_info[arg_pos]))));
+                affix->temp_ptrs[st_pos] = safemalloc(
+                    AXT_TYPE_SIZEOF(AXT_TYPE_SUBTYPE(MUTABLE_SV(affix->arg_info[arg_pos]))));
                 dcArgPointer(cvm, affix->temp_ptrs[st_pos]);
             }
         } break;
@@ -1022,7 +1016,7 @@ extern "C" void Affix_trigger(pTHX_ CV *cv) {
     case CPPSTRUCT_FLAG:
     case UNION_FLAG: {
         PING;
-        if (affix->ret_ptr == NULL) affix->ret_ptr = safemalloc(AXT_SIZEOF(affix->ret_info));
+        if (affix->ret_ptr == NULL) affix->ret_ptr = safemalloc(AXT_TYPE_SIZEOF(affix->ret_info));
         dcCallAggr(cvm, affix->entry_point, affix->ret_aggregate, affix->ret_ptr);
         PING;
         RETVAL = sv_2mortal(ptr2sv(aTHX_ affix->ret_info, affix->ret_ptr));
@@ -1035,7 +1029,7 @@ extern "C" void Affix_trigger(pTHX_ CV *cv) {
     case POINTER_FLAG: {
         PING;
         PING;
-        SV *subtype = AXT_SUBTYPE(affix->ret_info);
+        SV *subtype = AXT_TYPE_SUBTYPE(affix->ret_info);
         DCpointer ptr = dcCallPointer(cvm, affix->entry_point);
         RETVAL = NULL;
         PING;
@@ -1045,14 +1039,14 @@ extern "C" void Affix_trigger(pTHX_ CV *cv) {
         }
         else {
             RETVAL = newSV(1);
-            SV **package = AXT_TYPEDEF(affix->ret_info);
+            SV **package = AXT_TYPE_TYPEDEF(affix->ret_info);
             if (package != NULL) { sv_setref_pv(RETVAL, SvPV_nolen(*package), ptr); }
             else { sv_setref_pv(RETVAL, "Affix::Pointer::Unmanaged", ptr); }
         }
     } break;
     default:
-        croak("Unhandled return type %s at %s line %d", AXT_STRINGIFY(affix->ret_info), __FILE__,
-              __LINE__);
+        croak("Unhandled return type %s at %s line %d", AXT_TYPE_STRINGIFY(affix->ret_info),
+              __FILE__, __LINE__);
     }
     PING;
     if (affix->temp_ptrs != NULL) {
@@ -1064,7 +1058,8 @@ extern "C" void Affix_trigger(pTHX_ CV *cv) {
             if (affix->temp_ptrs[st_pos] != NULL && !SvREADONLY(ST(st_pos))) {
                 PING;
 #if DEBUG
-                DumpHex(affix->temp_ptrs[st_pos], AXT_SIZEOF(MUTABLE_SV(affix->arg_info[st_pos])));
+                DumpHex(affix->temp_ptrs[st_pos],
+                        AXT_TYPE_SIZEOF(MUTABLE_SV(affix->arg_info[st_pos])));
 #endif
                 //~ warn("st_pos: %d", st_pos);
 
@@ -1851,7 +1846,7 @@ XS_INTERNAL(Affix_affix) {
                         //~ warn("arg_pos: %d, prototype_pos: %d", arg_pos, prototype_pos);
                         type = *av_fetch(tmp_args, arg_pos, false);
                         if (LIKELY(SvROK(type) && sv_derived_from(type, "Affix::Type"))) {
-                            affix->arg_types[arg_pos] = AXT_NUMERIC(type);
+                            affix->arg_types[arg_pos] = AXT_TYPE_NUMERIC(type);
                             //~ warn("affix->arg_types[%d] = %d", arg_pos,
                             // affix->arg_types[arg_pos]);
                             switch (affix->arg_types[arg_pos]) {
@@ -1939,7 +1934,7 @@ XS_INTERNAL(Affix_affix) {
                 warn("Returning an array of unknown length is undefined behavior");
             }
             affix->ret_info = newSVsv(ST(3));
-            affix->ret_type = AXT_NUMERIC(ST(3));
+            affix->ret_type = AXT_TYPE_NUMERIC(ST(3));
         }
         else { croak("Unknown return type"); }
     }
@@ -2178,17 +2173,17 @@ XS_EXTERNAL(boot_Affix) {
     export_constant("Affix", "SYSCALL_FLAG", "flags", SYSCALL_FLAG);
 
     // Type object slots
-    export_constant("Affix", "SLOT_STRINGIFY", "flags", SLOT_STRINGIFY);
-    export_constant("Affix", "SLOT_NUMERIC", "flags", SLOT_NUMERIC);
-    export_constant("Affix", "SLOT_SIZEOF", "flags", SLOT_SIZEOF);
-    export_constant("Affix", "SLOT_ALIGNMENT", "flags", SLOT_ALIGNMENT);
-    export_constant("Affix", "SLOT_OFFSET", "flags", SLOT_OFFSET);
-    export_constant("Affix", "SLOT_SUBTYPE", "flags", SLOT_SUBTYPE);
-    export_constant("Affix", "SLOT_ARRAYLEN", "flags", SLOT_ARRAYLEN);
-    export_constant("Affix", "SLOT_AGGREGATE", "flags", SLOT_AGGREGATE);
-    export_constant("Affix", "SLOT_TYPEDEF", "flags", SLOT_TYPEDEF);
-    export_constant("Affix", "SLOT_CAST", "flags", SLOT_CAST);
+    export_constant("Affix", "SLOT_TYPE_STRINGIFY", "flags", SLOT_TYPE_STRINGIFY);
+    export_constant("Affix", "SLOT_TYPE_NUMERIC", "flags", SLOT_TYPE_NUMERIC);
+    export_constant("Affix", "SLOT_TYPE_SIZEOF", "flags", SLOT_TYPE_SIZEOF);
+    export_constant("Affix", "SLOT_TYPE_ALIGNMENT", "flags", SLOT_TYPE_ALIGNMENT);
+    export_constant("Affix", "SLOT_TYPE_OFFSET", "flags", SLOT_TYPE_OFFSET);
+    export_constant("Affix", "SLOT_TYPE_SUBTYPE", "flags", SLOT_TYPE_SUBTYPE);
+    export_constant("Affix", "SLOT_TYPE_AGGREGATE", "flags", SLOT_TYPE_AGGREGATE);
+    export_constant("Affix", "SLOT_TYPE_TYPEDEF", "flags", SLOT_TYPE_TYPEDEF);
     export_constant("Affix", "SLOT_CODEREF_ARGS", "flags", SLOT_CODEREF_ARGS);
+
+    export_constant("Affix", "SLOT_POINTER_SUBTYPE", "flags", SLOT_POINTER_SUBTYPE);
 
     //
     //~ boot_Affix_Aggregate(aTHX_ cv);

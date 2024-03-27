@@ -30,10 +30,10 @@ package Affix::Type 0.5 {
     #~ $_[0]->[ Affix::SLOT_NUMERIC() ] = -1;
     #~ $_[0];
     #~ }
-    use overload '""' => sub { shift->[ Affix::SLOT_STRINGIFY() ] }, '0+' => sub { shift->[ Affix::SLOT_NUMERIC() ] };
+    use overload '""' => sub { shift->[ Affix::SLOT_TYPE_STRINGIFY() ] }, '0+' => sub { shift->[ Affix::SLOT_TYPE_NUMERIC() ] };
     sub parameterized {0}
-    sub sizeof        { shift->[ Affix::SLOT_SIZEOF() ] }
-    sub align         { shift->[ Affix::SLOT_ALIGNMENT() ] }
+    sub sizeof        { shift->[ Affix::SLOT_TYPE_SIZEOF() ] }
+    sub align         { shift->[ Affix::SLOT_TYPE_ALIGNMENT() ] }
 
     sub typedef {
         my ( $name, $type ) = @_;
@@ -49,8 +49,9 @@ package Affix::Type 0.5 {
             @{ $fqn . '::ISA' } = ref $type;
         }
         bless $type, $fqn;
-        $type->[ Affix::SLOT_TYPEDEF() ]   = $name;
-        $type->[ Affix::SLOT_STRINGIFY() ] = sprintf q[typedef %s => %s], $name =~ /::/ ? "'$name'" : $name, $type->[ Affix::SLOT_STRINGIFY() ];
+        $type->[ Affix::SLOT_TYPE_TYPEDEF() ]   = $name;
+        $type->[ Affix::SLOT_TYPE_STRINGIFY() ] = sprintf q[typedef %s => %s], $name =~ /::/ ? "'$name'" : $name,
+            $type->[ Affix::SLOT_TYPE_STRINGIFY() ];
         push @{ $EXPORT_TAGS{types} }, $name if $fqn eq 'Affix::' . $name;    # only great when triggered by/before import
         $type->typedef($fqn) if $type->can('typedef');
         $type;
@@ -256,7 +257,7 @@ package Affix::Type 0.5 {
         );
     }
 
-    sub Array : prototype(;$) {
+    sub Array : prototype($) {
         my ( $subtype, $length ) = @{ +shift };    # No defaults
         bless(
             [   'Array[ ' . $subtype . ', ' . $length . ' ]',    # SLOT_STRINGIFY

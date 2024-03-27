@@ -19,7 +19,7 @@ XS_INTERNAL(Affix_cast) {
             if (ptr != NULL) DumpHex(ptr, 16);
             sv_setref_pv(TMP, NULL, ptr);
             av_store(RETVALAV, SLOT_POINTER_ADDR, TMP);
-            av_store(RETVALAV, SLOT_SUBTYPE, newSVsv(ST(1)));
+            av_store(RETVALAV, SLOT_POINTER_SUBTYPE, newSVsv(ST(1)));
         }
         SV *RETVAL = newRV_noinc(MUTABLE_SV(RETVALAV)); // Create a reference to the AV
         sv_bless(RETVAL, gv_stashpvn("Affix::Pointer::Unmanaged", 25, GV_ADD));
@@ -47,7 +47,7 @@ XS_INTERNAL(Affix_sv2ptr) {
             if (ptr != NULL) DumpHex(ptr, 16);
             sv_setref_pv(TMP, NULL, ptr);
             av_store(RETVALAV, SLOT_POINTER_ADDR, TMP);
-            av_store(RETVALAV, SLOT_SUBTYPE, newSVsv(ST(0)));
+            av_store(RETVALAV, SLOT_POINTER_SUBTYPE, newSVsv(ST(0)));
         }
         SV *RETVAL = newRV_noinc(MUTABLE_SV(RETVALAV)); // Create a reference to the AV
         sv_bless(RETVAL, gv_stashpvn("Affix::Pointer::Unmanaged", 25, GV_ADD));
@@ -112,6 +112,7 @@ XS_INTERNAL(Affix_Pointer_sv) {
     if (items != 1) croak_xs_usage(cv, "ptr");
     SV *const xsub_tmp_sv = ST(0);
     SvGETMAGIC(xsub_tmp_sv);
+
     if (!(SvROK(xsub_tmp_sv) && SvTYPE(SvRV(xsub_tmp_sv)) == SVt_PVAV &&
           sv_derived_from(xsub_tmp_sv, "Affix::Pointer")))
         croak("ptr is not of type Affix::Pointer");
@@ -121,7 +122,7 @@ XS_INTERNAL(Affix_Pointer_sv) {
             IV tmp = SvIV(MUTABLE_SV(SvRV(ptr_sv)));
             DCpointer ptr;
             ptr = INT2PTR(DCpointer, tmp);
-            ST(0) = sv_2mortal(ptr2sv(aTHX_ AXT_SUBTYPE(xsub_tmp_sv), ptr));
+            ST(0) = sv_2mortal(ptr2sv(aTHX_ AXT_POINTER_SUBTYPE(xsub_tmp_sv), ptr));
         }
         else
             ST(0) = sv_2mortal(newSV(0));

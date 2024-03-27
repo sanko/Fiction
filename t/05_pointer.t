@@ -145,8 +145,10 @@ subtest 'Pointer[Bool]' => sub {
         is $ptr, U(), '$ptr is now free';
     };
     subtest list => sub {
-        isa_ok my $ptr = Affix::sv2ptr( Pointer [ Bool, 6 ], [ 1, 1, 0, 1, 0, 0 ] ), ['Affix::Pointer'], 'false';
+        isa_ok my $ptr = Affix::sv2ptr( Array [ Bool, 6 ], [ 1, 1, 0, 1, 0, 0 ] ), ['Affix::Pointer'], 'false';
         $ptr->dump( Affix::Platform::SIZEOF_BOOL() * 6 );
+        use Data::Dump;
+        ddx $ptr;
         is $ptr->sv(),                                      [ T(), T(), F(), T(), F(), F() ], '$ptr->sv';
         is $ptr->raw( Affix::Platform::SIZEOF_BOOL() * 6 ), pack( 'c6', 1, 1, 0, 1, 0, 0 ),   '$ptr->raw( ' . Affix::Platform::SIZEOF_BOOL() . ' )';
         free $ptr;
@@ -166,7 +168,7 @@ DLLEXPORT int ptr(bool * ptr) {
 
 DLLEXPORT bool * ptr_return() {
     bool* flags = (bool*)malloc(sizeof(bool) * 5);
-    for (int i = 0; i<5; i++) flags[i] = false;
+    for (int i = 0; i<=5; i++) flags[i] = false;
     flags[2] = true;
     return flags;
 }
@@ -181,10 +183,8 @@ END
             is $ax->(undef),            -1, 'C understood we sent a NULL pointer';
         };
         subtest 'bool * ptr_return()' => sub {
-            ok my $ax      = Affix::wrap( $lib => 'ptr_return', [] => Pointer [ Bool, 5 ] ), 'wrap';
+            ok my $ax      = Affix::wrap( $lib => 'ptr_return', [] => Array [ Bool, 5 ] ), 'wrap';
             isa_ok my $ptr = $ax->(), ['Affix::Pointer'], 'returned pointer';
-            use Data::Dump;
-            ddx $ptr;
             is $ptr->sv(), [ F(), F(), T(), F(), F() ], 'C gave us the bool* we expected';
         };
         subtest 'bool * ptr_return_NULL()' => sub {
