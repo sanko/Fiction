@@ -425,7 +425,6 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
                 break;
             }
             case CODEREF_FLAG: {
-                warn("PASSING CODEREF");
                 dcArgPointer(cvm, sv2ptr(aTHX_ * av_fetch(a->argtypes, st_pos, 0), ST(st_pos)));
                 break;
             }
@@ -464,9 +463,9 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
                 dcArgInt(cvm, SvIV(ST(i)));
         }
     }
-
-    warn("a->restype_c: %c", a->restype_c);
-
+#ifdef DEBUG
+    //~ warn("a->restype_c: %c", a->restype_c);
+#endif
     switch (a->restype_c) {
     case VOID_FLAG:
         dcCallVoid(cvm, a->entry_point);

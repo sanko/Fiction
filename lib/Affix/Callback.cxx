@@ -42,7 +42,7 @@ DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointe
                     (void)SvUPGRADE(sv, SVt_PVIV);
                     SvIV_set(sv, ((IV)value[0]));
                     SvIOK_on(sv);
-                    mPUSHs(sv);
+                    PUSHs(sv);
                 } break;
                 case UCHAR_FLAG: {
                     char value[1];
@@ -51,7 +51,7 @@ DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointe
                     (void)SvUPGRADE(sv, SVt_PVIV);
                     SvIV_set(sv, ((UV)value[0]));
                     SvIOK_on(sv);
-                    mPUSHs(sv);
+                    PUSHs(sv);
                 } break;
                 case WCHAR_FLAG: {
                     wchar_t *c;
@@ -62,7 +62,7 @@ DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointe
                     SvUPGRADE(w, SVt_PVNV);
                     SvIVX(w) = SvIV(newSViv(c[0]));
                     SvIOK_on(w);
-                    mPUSHs(w);
+                    PUSHs(w);
                     safefree(c);
                 } break;
                 case SHORT_FLAG:

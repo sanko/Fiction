@@ -1,7 +1,7 @@
 #include "../Affix.h"
 
 void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
-    DD(type);
+    //~ DD(type);
     //~ DD(data);
     if (!SvOK(data) && SvREADONLY(data)) return NULL; // explicit undef
     size_t len = 0;
@@ -522,9 +522,6 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
     return ret;
 }
 
-SV *ptr2av(pTHX_ DCpointer ptr, SV *type) {
-    return NULL;
-}
 SV *ptr2svx(pTHX_ DCpointer ptr, SV *type) {
     PING;
     // #if DEBUG
@@ -543,54 +540,7 @@ SV *ptr2svx(pTHX_ DCpointer ptr, SV *type) {
         // if (ptr != NULL) DumpHex(ptr, field_size);
 #endif
         switch (AXT_TYPE_NUMERIC(type)) {
-        case BOOL_FLAG: {
-            retval = newSV(0);
-            sv_setbool_mg(retval, (bool)*(bool *)ptr);
-        } break;
-        case CHAR_FLAG:
-        case SCHAR_FLAG: {
-            retval = newSV(0);
-            sv_setsv(retval, newSVpv((char *)ptr, strlen((char *)ptr)));
-        } break;
-        case UCHAR_FLAG: {
-            retval = newSV(0);
-            sv_setsv(retval, newSVpv((char *)(unsigned char *)ptr, strlen((char *)ptr)));
-        } break;
-        case WCHAR_FLAG: {
-            if (wcslen((wchar_t *)ptr)) {
-                retval = wchar2utf(aTHX_(wchar_t *) ptr, wcslen((wchar_t *)ptr));
-            }
-        } break;
-        case SHORT_FLAG: {
-            retval = newSViv(*(short *)ptr);
-        } break;
-        case USHORT_FLAG: {
-            retval = newSVuv(*(unsigned short *)ptr);
-        } break;
-        case INT_FLAG: {
-            retval = newSViv(*(int *)ptr);
-        } break;
-        case UINT_FLAG: {
-            retval = newSVuv(*(unsigned int *)ptr);
-        } break;
-        case LONG_FLAG: {
-            retval = newSViv(*(long *)ptr);
-        } break;
-        case ULONG_FLAG: {
-            retval = newSVuv(*(unsigned long *)ptr);
-        } break;
-        case LONGLONG_FLAG: {
-            retval = newSViv(*(long long *)ptr);
-        } break;
-        case ULONGLONG_FLAG: {
-            retval = newSVuv(*(unsigned long long *)ptr);
-        } break;
-        case FLOAT_FLAG: {
-            retval = newSVnv(*(float *)ptr);
-        } break;
-        case DOUBLE_FLAG: {
-            retval = newSVnv(*(double *)ptr);
-        } break;
+
         case WSTRING_FLAG: {
             if (ptr && wcslen((wchar_t *)ptr)) {
                 retval = wchar2utf(aTHX_ * (wchar_t **)ptr, wcslen(*(wchar_t **)ptr));
@@ -732,10 +682,6 @@ SV *ptr2svx(pTHX_ DCpointer ptr, SV *type) {
     return retval;
 }
 
-void *av2ptr(pTHX_ SV *type, AV *av_data) {
-    return NULL;
-}
-
 void *sv2ptrx(pTHX_ SV *type, SV *data) {
     DD(type);
     DD(data);
@@ -748,8 +694,8 @@ void *sv2ptrx(pTHX_ SV *type, SV *data) {
     //~ while (SvROK(type))
     //~ type = SvRV(type);
 
-    sv_dump(type);
-    sv_dump(data);
+    //~ sv_dump(type);
+    //~ sv_dump(data);
 
     char type_c = AXT_TYPE_NUMERIC(type);
     warn("Here %d", __LINE__);
@@ -768,159 +714,6 @@ void *sv2ptrx(pTHX_ SV *type, SV *data) {
 #endif
     PING;
     switch (type_c) {
-    case VOID_FLAG: {
-        PING;
-        if (!SvOK(data)) {
-            ret = NULL;
-            //~ ret = safemalloc(sizeof(intptr_t));
-            //~ Zero(ret, 1, intptr_t);
-        }
-        else if (sv_derived_from(data, "Affix::Pointer")) {
-            croak("UGH!");
-            IV tmp = SvIV((SV *)SvRV(data));
-            ret = INT2PTR(DCpointer, tmp);
-        }
-        else {
-            croak("UGH!");
-            size_t len;
-            char *raw = SvPV(data, len);
-            Renew(ret, len + 1, char);
-            Copy((DCpointer)raw, ret, len + 1, char);
-        }
-    } break;
-    case BOOL_FLAG: {
-        PING;
-        ret = safemalloc(SIZEOF_BOOL);
-        bool value = SvOK(data) ? SvTRUE(data) : false; // default to false
-        Copy(&value, ret, 1, bool);
-    } break;
-    case CHAR_FLAG: {
-        warn("CHAR");
-        PING;
-        if (!SvOK(data)) { ret = safecalloc(SIZEOF_CHAR, 1); }
-        else if (SvPOK(data)) {
-            STRLEN len;
-            DCpointer value = (DCpointer)SvPV(data, len);
-            if (len) {
-                warn("len: %d at %d", len, __LINE__);
-                ret = safecalloc(SIZEOF_CHAR, len + 1);
-                Copy(value, ret, len + 1, char);
-                DumpHex(ret, len + 1);
-            }
-            else
-                ret = safecalloc(SIZEOF_CHAR, 1);
-        }
-        else {
-            char value = SvIOK(data) ? SvIV(data) : 0;
-            ret = safemalloc(SIZEOF_CHAR);
-            Copy(&value, ret, 1, char);
-        }
-    } break;
-    case UCHAR_FLAG: {
-        PING;
-        if (SvPOK(data)) {
-            STRLEN len;
-            DCpointer value = (DCpointer)SvPV(data, len);
-            ret = safemalloc(SIZEOF_UCHAR * (len + 1));
-            Copy(value, ret, len + 1, unsigned char);
-        }
-        else {
-            unsigned char value = SvIOK(data) ? SvIV(data) : 0;
-            ret = safemalloc(SIZEOF_UCHAR);
-            Copy(&value, ret, 1, unsigned char);
-        }
-    } break;
-    case WCHAR_FLAG: {
-        PING;
-        if (SvPOK(data)) {
-            STRLEN len;
-            (void)SvPVutf8(data, len);
-            wchar_t *value = utf2wchar(aTHX_ data, len + 1);
-            len = wcslen(value);
-            Renew(ret, len + 1, wchar_t);
-            Copy(value, ret, len + 1, wchar_t);
-        }
-        else {
-            wchar_t value = SvIOK(data) ? SvIV(data) : 0;
-            // Renew(ptr, 1, wchar_t);
-            Copy(&value, ret, 1, wchar_t);
-        }
-    } break;
-    case SHORT_FLAG: {
-        PING;
-        short value = SvOK(data) ? (short)SvIV(data) : 0;
-        ret = safemalloc(sizeof(short));
-        Copy(&value, ret, 1, short);
-    } break;
-    case USHORT_FLAG: {
-        PING;
-        unsigned short value = SvOK(data) ? (unsigned short)SvUV(data) : 0;
-        ret = safemalloc(sizeof(unsigned short));
-        Copy(&value, ret, 1, unsigned short);
-    } break;
-    case INT_FLAG: {
-        PING;
-        int value = SvOK(data) ? SvIV(data) : 0;
-        ret = safemalloc(INTSIZE);
-        Copy(&value, ret, 1, int);
-    } break;
-    case UINT_FLAG: {
-        PING;
-        unsigned int value = SvOK(data) ? SvUV(data) : 0;
-        ret = safemalloc(sizeof(unsigned int));
-        Copy(&value, ret, 1, unsigned int);
-    } break;
-    case LONG_FLAG: {
-        PING;
-        long value = SvOK(data) ? SvIV(data) : 0;
-        ret = safemalloc(sizeof(long));
-        Copy(&value, ret, 1, long);
-    } break;
-    case ULONG_FLAG: {
-        PING;
-        unsigned long value = SvOK(data) ? SvUV(data) : 0;
-        ret = safemalloc(sizeof(unsigned long));
-        Copy(&value, ret, 1, unsigned long);
-    } break;
-    case LONGLONG_FLAG: {
-        PING;
-        I64 value = SvOK(data) ? SvIV(data) : 0;
-        ret = safemalloc(sizeof(long long));
-        Copy(&value, ret, 1, I64);
-    } break;
-    case ULONGLONG_FLAG: {
-        PING;
-        U64 value = SvOK(data) ? SvUV(data) : 0;
-        ret = safemalloc(sizeof(unsigned long long));
-        Copy(&value, ret, 1, U64);
-    } break;
-    case FLOAT_FLAG: {
-        float value = SvOK(data) ? SvNV(data) : 0;
-        ret = safemalloc(sizeof(float));
-        Copy(&value, ret, 1, float);
-    } break;
-    case DOUBLE_FLAG: {
-        PING;
-        double value = SvOK(data) ? SvNV(data) : 0;
-        ret = safemalloc(sizeof(double));
-        Copy(&value, ret, 1, double);
-    } break;
-    case POINTER_FLAG: {
-        warn("POINTER");
-        PING;
-        SV *subtype = AXT_TYPE_SUBTYPE(type);
-        if (!SvOK(data)) { ret = safecalloc(AXT_TYPE_SIZEOF(SvRV(subtype)), 1); }
-        else if (SvROK(data) && SvTYPE(SvRV(data)) == SVt_PVAV) {
-            warn("ARRAY!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-            ret = av2ptr(aTHX_ type, MUTABLE_AV(SvRV(data)));
-        }
-        else {
-            DCpointer block = sv2ptr(aTHX_ subtype, data);
-            ret = safemalloc(SIZEOF_INTPTR_T);
-            Copy(block, ret, 1, intptr_t);
-            safefree(block);
-        }
-    } break;
     case WSTRING_FLAG: {
         PING;
         ret = safemalloc(SIZEOF_INTPTR_T);
@@ -1025,24 +818,7 @@ void *sv2ptrx(pTHX_ SV *type, SV *data) {
             //~ DD(data);
         }
     } break;
-    case CONST_FLAG: {
-        warn("CONST");
-        PING;
-        SV *subtype = AXT_TYPE_SUBTYPE(type);
-        /*
-        if (!SvOK(data)) { ret = safecalloc(AXT_SIZEOF(SvRV(subtype)), 1); }
-        else if (SvROK(data) && SvTYPE(SvRV(data)) == SVt_PVAV) {
-            ret = av2ptr(aTHX_ subtype, MUTABLE_AV(SvRV(data)));
-        }
-        else {
-            const DCpointer block = sv2ptr(aTHX_ subtype, data);
-            ret = safemalloc(SIZEOF_INTPTR_T);
-            Copy(block, ret, 1, intptr_t);
-            safefree(block);
-        }*/
-        ret = sv2ptr(aTHX_ subtype, data);
 
-    } break;
     default: {
         croak("%c is not a known type in sv2ptr(...)", type_c);
     }
