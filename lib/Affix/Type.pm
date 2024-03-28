@@ -198,9 +198,15 @@ package Affix::Type 0.5 {
         my ( $args, $ret ) = @elements;
         $ret //= Void;
         bless(
-            [   sprintf( 'CodeRef[ [ %s ] => %s ]', join( ', ', @$args ), $ret ), Affix::CODEREF_FLAG(), Affix::Platform::SIZEOF_INTPTR_T(),
-                Affix::Platform::ALIGNOF_INTPTR_T(), undef,    # offset
-                $ret,                                $args, join '', map { chr $_ } @$args
+            [   sprintf( 'CodeRef[ [ %s ] => %s ]', join( ', ', @$args ), $ret ),    # SLOT_CODEREF_STRINGIFY
+                Affix::CODEREF_FLAG(),                                               # SLOT_CODEREF_NUMERIC
+                Affix::Platform::SIZEOF_INTPTR_T(),                                  # SLOT_CODEREF_SIZEOF
+                Affix::Platform::ALIGNOF_INTPTR_T(),                                 # SLOT_CODEREF_ALIGNMENT
+                undef,                                                               # SLOT_CODEREF_OFFSET
+                $ret,                                                                # SLOT_CODEREF_RET
+                $args,                                                               # SLOT_CODEREF_ARGS
+                join( '', map { chr $_ } @$args ),                                   # SLOT_CODEREF_SIG
+                undef                                                                # SLOT_CODEREF_TYPEDEF
             ],
             'Affix::Type::CodeRef'
         );

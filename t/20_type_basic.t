@@ -236,10 +236,8 @@ const char * fn(const char * i) {
     return "Wow, this shouldn't crash.";
 }
 
-    isa_ok my $fn  = Affix::wrap( $lib, 'fn', [String], String ), [qw[Affix]],        'my $fn = ...';
-    isa_ok my $ptr = $fn->('Hey'),                                ['Affix::Pointer'], '$ptr';
-    is $ptr->raw(26), q[Wow, this shouldn't crash.], '->raw';
-    is $ptr->sv,      q[Wow, this shouldn't crash.], '->sv';
+    isa_ok my $fn = Affix::wrap( $lib, 'fn', [String], String ), [qw[Affix]], 'my $fn = ...';
+    is $fn->('Hey'), q[Wow, this shouldn't crash.], '$str';
 };
 
 #define WSTRING_FLAG '<'

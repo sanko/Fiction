@@ -113,7 +113,7 @@ XS_INTERNAL(Affix_find_symbol) {
     dXSARGS;
     if (items != 2) croak_xs_usage(cv, "$lib, $symbol");
     AV *RETVAL;
-    DLLib *lib;
+    DLLib *lib = NULL;
     {
         if (!SvOK(ST(0)) && SvREADONLY(ST(0))) // explicit undef
             lib = load_library(NULL);
@@ -123,7 +123,7 @@ XS_INTERNAL(Affix_find_symbol) {
         }
         else if (SvPOK(ST(0)) || (sv_isobject(ST(0)) && sv_derived_from(ST(0), "Path::Tiny")))
             lib = load_library(SvPV_nolen(ST(0)));
-        if (!lib) XSRETURN_UNDEF;
+        if (lib == NULL) XSRETURN_UNDEF;
     }
     RETVAL = newAV_mortal();
     char *name;
@@ -144,7 +144,7 @@ XS_INTERNAL(Affix_fiction) {
     fiction *ret;
     Newxz(ret, 1, fiction);
     char *prototype = NULL;
-    char *name;
+    char *name = NULL;
     {
         SV *const xsub_tmp_sv = ST(0);
         SvGETMAGIC(xsub_tmp_sv);
@@ -444,7 +444,6 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
 
                 SV *const xsub_tmp_sv = ST(st_pos);
                 SvGETMAGIC(xsub_tmp_sv);
-
                 dcArgPointer(cvm, sv2ptr(aTHX_ AXT_TYPE_SUBTYPE(*av_fetch(a->argtypes, st_pos, 0)),
                                          xsub_tmp_sv));
                 break;
@@ -541,21 +540,18 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
         //~ #define POINTER_FLAG 'P'
 
     case POINTER_FLAG: {
-        warn("...pointer 0");
         DCpointer ret = dcCallPointer(cvm, a->entry_point);
-        warn("...pointer 1 [%p]", ret);
-        typedef void (*ptr)(void);
-
-        ptr fn = (ptr)ret;
-
-        //~ fn();
-
         if (ret == NULL)
             sv_set_undef(a->res);
-        else
-            sv_setsv(a->res, sv_2mortal(ptr2obj(aTHX_ a->restype, ret)));
-        warn("...pointer 2");
-
+        else {
+            SV *subtype = AXT_TYPE_SUBTYPE(a->restype);
+            char subtype_c = AXT_TYPE_NUMERIC(subtype);
+            if (subtype_c == CONST_FLAG) subtype_c = AXT_TYPE_NUMERIC(AXT_TYPE_SUBTYPE(subtype));
+            if (subtype_c == CHAR_FLAG)
+                sv_setsv(a->res, sv_2mortal(ptr2sv(aTHX_ a->restype, ret)));
+            else
+                sv_setsv(a->res, sv_2mortal(ptr2obj(aTHX_ a->restype, ret)));
+        }
     } break;
     default:
         croak("Unknown or unhandled return type: %c", a->restype_c);

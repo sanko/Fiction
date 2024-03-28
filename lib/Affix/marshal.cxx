@@ -375,7 +375,7 @@ void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
         if (UNLIKELY(!sv_derived_from(subtype, "Affix::Type")))
             croak("subtype is not of type Affix::Type");
         len = (SvROK(data) && SvTYPE(SvRV(data)) == SVt_PVAV) ? av_count(MUTABLE_AV(data)) : 1;
-        ret = sv2ptr(aTHX_ subtype, data);
+        ret = (const DCpointer)sv2ptr(aTHX_ subtype, data);
     } break;
     case SV_FLAG: {
         SvREFCNT_inc(data); // TODO: This might leak; I'm just being lazy
@@ -383,29 +383,17 @@ void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
     } break;
     case CODEREF_FLAG: {
         if (SvOK(data)) {
-            warn("Here A");
             CodeRef *userdata;
             Newxz(userdata, 1, CodeRef);
-            warn("Here Ab");
-            DD(type);
             userdata->signature = SvPV_nolen(AXT_CODEREF_SIG(type));
-            warn("Here Addd");
-
             userdata->argtypes = AXT_CODEREF_ARGS(type);
-            warn("Here Ax");
-
             //~ size_t arg_count = av_count(userdata->argtypes);
             userdata->restype = AXT_CODEREF_RET(type);
             userdata->restype_c = AXT_TYPE_NUMERIC(userdata->restype);
-            warn("Here Ad");
-
             userdata->cv = SvREFCNT_inc(data);
             storeTHX(userdata->perl);
             Newxz(ret, 1, CodeRefWrapper);
-            warn("Here Aw");
-
             ret = dcbNewCallback(userdata->signature, &cbHandlerXXXXX, userdata);
-            warn("Here Z");
         }
         else { Newxz(ret, 1, intptr_t); }
 

@@ -32,7 +32,7 @@ DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointe
                 case VOID_FLAG:
                     break; // ...skip?
                 case BOOL_FLAG:
-                    PUSHs(sv_2mortal(boolSV(dcbArgBool(args))));
+                    mPUSHs(boolSV(dcbArgBool(args)));
                     break;
                 case CHAR_FLAG:
                 case SCHAR_FLAG: {
@@ -42,8 +42,7 @@ DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointe
                     (void)SvUPGRADE(sv, SVt_PVIV);
                     SvIV_set(sv, ((IV)value[0]));
                     SvIOK_on(sv);
-
-                    PUSHs(sv);
+                    mPUSHs(sv);
                 } break;
                 case UCHAR_FLAG: {
                     char value[1];
@@ -52,7 +51,7 @@ DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointe
                     (void)SvUPGRADE(sv, SVt_PVIV);
                     SvIV_set(sv, ((UV)value[0]));
                     SvIOK_on(sv);
-                    PUSHs(sv);
+                    mPUSHs(sv);
                 } break;
                 case WCHAR_FLAG: {
                     wchar_t *c;
@@ -67,34 +66,34 @@ DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointe
                     safefree(c);
                 } break;
                 case SHORT_FLAG:
-                    PUSHs(sv_2mortal(newSViv(dcbArgShort(args))));
+                    mPUSHs(newSViv(dcbArgShort(args)));
                     break;
                 case USHORT_FLAG:
-                    PUSHs(sv_2mortal(newSVuv(dcbArgShort(args))));
+                    mPUSHs(newSVuv(dcbArgShort(args)));
                     break;
                 case INT_FLAG:
-                    PUSHs(sv_2mortal(newSViv(dcbArgInt(args))));
+                    mPUSHs(newSViv(dcbArgInt(args)));
                     break;
                 case UINT_FLAG:
-                    PUSHs(sv_2mortal(newSVuv(dcbArgInt(args))));
+                    mPUSHs(newSVuv(dcbArgInt(args)));
                     break;
                 case LONG_FLAG:
-                    PUSHs(sv_2mortal(newSViv(dcbArgLong(args))));
+                    mPUSHs(newSViv(dcbArgLong(args)));
                     break;
                 case ULONG_FLAG:
-                    PUSHs(sv_2mortal(newSVuv(dcbArgLong(args))));
+                    mPUSHs(newSVuv(dcbArgLong(args)));
                     break;
                 case LONGLONG_FLAG:
-                    PUSHs(sv_2mortal(newSViv(dcbArgLongLong(args))));
+                    mPUSHs(newSViv(dcbArgLongLong(args)));
                     break;
                 case ULONGLONG_FLAG:
-                    PUSHs(sv_2mortal(newSVuv(dcbArgLongLong(args))));
+                    mPUSHs(newSVuv(dcbArgLongLong(args)));
                     break;
                 case FLOAT_FLAG:
-                    PUSHs(sv_2mortal(newSVnv(dcbArgFloat(args))));
+                    mPUSHs(newSVnv(dcbArgFloat(args)));
                     break;
                 case DOUBLE_FLAG:
-                    PUSHs(sv_2mortal(newSVnv(dcbArgDouble(args))));
+                    mPUSHs(newSVnv(dcbArgDouble(args)));
                     break;
                     //~ #define STRING_FLAG 'z'
                     //~ #define WSTRING_FLAG '<'
@@ -106,10 +105,9 @@ DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointe
                     //~ #define CODEREF_FLAG '&'
                     //~ #define POINTER_FLAG 'P'
 
-                case POINTER_FLAG:
-                    PUSHs(sv_2mortal(
-                        ptr2sv(aTHX_ * av_fetch(c->argtypes, st_pos, 0), dcbArgPointer(args))));
-                    break;
+                case POINTER_FLAG: {
+                    mPUSHs(ptr2sv(aTHX_ * av_fetch(c->argtypes, st_pos, 0), dcbArgPointer(args)));
+                } break;
                 default:
                     croak("Attempt to pass unknown or unhandled type to CodeRef: %c",
                           c->signature[sig_pos]);
@@ -127,8 +125,8 @@ DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointe
         /* .. do something .. */
         //~ warn("CodeRef signature: %s => %c", c->signature, c->restype_c);
 
-        //~ PUSHs(sv_2mortal(newSVpv(a, 0)));
-        //~ PUSHs(sv_2mortal(newSViv(b)));
+        //~ mPUSHs(newSVpv(a, 0)));
+        //~ mPUSHs(newSViv(b)));
         PUTBACK;
 
         if (c->restype_c == VOID_FLAG) { call_sv(c->cv, G_DISCARD); }
