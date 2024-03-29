@@ -472,7 +472,13 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
     } break;
     case POINTER_FLAG: {
         size_t len = AXT_TYPE_ARRAYLEN(type);
+        warn("pointer len: %d", len);
         SV *subtype = AXT_TYPE_SUBTYPE(type);
+        char subtype_c = (char)AXT_TYPE_NUMERIC(subtype);
+        if (subtype_c == CONST_FLAG) {
+            subtype = AXT_TYPE_SUBTYPE(subtype);
+            subtype_c = AXT_TYPE_NUMERIC(subtype);
+        }
         if (len == 1)
             ret = ptr2sv(aTHX_ subtype, ptr);
         else if (UNLIKELY(sv_derived_from(subtype, "Affix::Type::Pointer"))) {
@@ -516,8 +522,72 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
     case SV_FLAG:
         ret = MUTABLE_SV(ptr);
         break;
+    case CODEREF_FLAG: {
+        fiction *cb;
+        Newxz(cb, 1, fiction);
+        char *prototype = NULL;
+        {
+            cb->signature = NULL;
+            cb->restype = NULL;
+            cb->restype_c = VOID_FLAG;
+            cb->restype = newSVsv(AXT_CODEREF_RET(type));
+            cb->restype_c = AXT_TYPE_NUMERIC(cb->restype);
+            cb->restype = newSVsv(AXT_CODEREF_RET(type));
+            cb->entry_point = ptr;
+
+            switch (cb->restype_c) {
+            case WCHAR_FLAG:
+            case WSTRING_FLAG:
+            case STDSTRING_FLAG:
+                cb->res = newSVpvs("");
+                break;
+            default:
+                cb->res = newSV(0);
+                break;
+            }
+            cb->argtypes = // MUTABLE_AV(SvREFCNT_inc(SvRV(newSVsv(
+                AXT_CODEREF_ARGS(type)
+                //))))
+                ;
+
+            size_t sig_len = av_count(cb->argtypes);
+            Newxz(cb->signature, sig_len * 2, char); // extra room
+            Newxz(prototype, sig_len + 1, char);
+            char c_type;
+            char scalar = '$';
+            char array = '@';
+            char code = '&';
+            for (size_t i = 0; i < sig_len; i++) {
+                c_type = AXT_TYPE_NUMERIC(*av_fetch(cb->argtypes, i, 0));
+                Copy(&c_type, cb->signature + i, 1, char);
+                // TODO: Generate a valid prototype w/ Array, Callbacks, etc.
+                Copy(&scalar, prototype + i, 1, char);
+            }
+            warn("ret->signature: %s", cb->signature);
+            warn("     prototype: %s", prototype);
+            warn("ret->restype_c: %c", cb->restype_c);
+            warn("t->entry_point: %p", cb->entry_point);
+        }
+        CV *cv;
+
+        STMT_START {
+            cv = newXSproto_portable(NULL, Fiction_trigger, __FILE__, prototype);
+            cb->symbol = "anonymous subroutine";
+            if (UNLIKELY(cv == NULL))
+                croak("ARG! Something went really wrong while installing a new XSUB!");
+            XSANY.any_ptr = (DCpointer)cb;
+            if (prototype != NULL) safefree(prototype);
+        }
+        STMT_END;
+        ret = // sv_2mortal(
+            sv_bless(newRV_noinc(MUTABLE_SV(cv)), gv_stashpv("Affix", GV_ADD))
+            //)
+            ;
+    } break;
     default:
-        croak("Attempt to marshal unknown/unhandled type in ptr2sv: %s", AXT_TYPE_STRINGIFY(type));
+        croak("Attempt to marshal unknown/unhandled type in ptr2sv: %s ",
+
+              AXT_TYPE_STRINGIFY(type));
     };
     return ret;
 }
@@ -589,6 +659,10 @@ SV *ptr2svx(pTHX_ DCpointer ptr, SV *type) {
         case POINTER_FLAG: {
             SV *subtype = AXT_TYPE_SUBTYPE(type);
             char subtype_c = (char)AXT_TYPE_NUMERIC(subtype);
+            if (subtype_c == CONST_FLAG) {
+                subtype = AXT_TYPE_SUBTYPE(subtype);
+                subtype_c = AXT_TYPE_NUMERIC(subtype);
+            }
             switch (subtype_c) {
             case CHAR_FLAG:
             case SCHAR_FLAG:
@@ -621,8 +695,11 @@ SV *ptr2svx(pTHX_ DCpointer ptr, SV *type) {
             //~ case UNION_FLAG: {
             //~ retval = ptr2sv(aTHX_ *(void**)ptr, subtype);
             //~ }break;
+            case POINTER_FLAG: {
+                sv_setsv(retval, sv_2mortal(ptr2obj(aTHX_ subtype, ptr)));
+            } break;
             default: {
-                retval = ptr2sv(aTHX_ subtype, ptr);
+                //~ retval = ptr2sv(aTHX_ subtype, ptr);
             } break;
             }
         } break;
