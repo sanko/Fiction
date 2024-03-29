@@ -472,7 +472,6 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
     } break;
     case POINTER_FLAG: {
         size_t len = AXT_TYPE_ARRAYLEN(type);
-        warn("pointer len: %d", len);
         SV *subtype = AXT_TYPE_SUBTYPE(type);
         char subtype_c = (char)AXT_TYPE_NUMERIC(subtype);
         if (subtype_c == CONST_FLAG) {

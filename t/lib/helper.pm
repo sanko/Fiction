@@ -32,7 +32,9 @@ package t::lib::helper {
         else {
             $opt = tempfile( UNLINK => !$keep, SUFFIX => $name =~ m[^\s*//\s*ext:\s*\.c$]ms ? '.c' : '.cxx' )->absolute;
             push @cleanup, $opt unless $keep;
-            $opt->spew_utf8($name);
+            my ( $package, $filename, $line ) = caller;
+            $line++;
+            $opt->spew_utf8( qq[#line $line "$filename"\n] . $name );
         }
         return plan skip_all => 'Failed to build test lib' if !$opt;
         my $c_file = $opt->canonpath;

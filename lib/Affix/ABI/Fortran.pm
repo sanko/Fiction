@@ -48,7 +48,7 @@ If you're building with the GNU Fortran compiler, you'd toss something like this
 
     gfortran -shared -fPIC -o ./project/out/vehicle.so ./project/compiled/truck.f90
 
-Simply change the C<.so> extention for your platform and you're set.
+Simply change the C<.so> extension for your platform and you're set.
 
 To build a shared lib with Intel's Fortran compiler, you must specify the C<-shared> option on Unix, C<-dynamiclib> on
 macOS, and C</libs:dll> on Windows.
@@ -238,6 +238,7 @@ Sanko Robinson E<lt>sanko@cpan.orgE<gt>
 
 =begin stopwords
 
+kinda vs
 
 =end stopwords
 

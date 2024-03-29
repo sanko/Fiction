@@ -810,34 +810,25 @@ typedef void cb(void);
 void fn(cb *CodeRef) {
     CodeRef();
 }
-int snag(){
-    warn("Inside the snag");
+int snag(int i){
+    warn("# Inside the snag");
+    if(i == 100) return 50;
     return 100;
 }
 
-
 typedef void (*ptr)(void);
 
-
 void * getfn() {
-warn("Inside getfn");
+    warn("# Inside getfn");
     return &snag;
 }
 END
-    #
-    #~ 'typedef void cb(void)' => <<'', [ CodeRef [ [] => Void ] ], Void, [], U(), U();
-    Affix::find_symbol $lib, 'snag';
-    warn $lib;
-
-    #~ ddx Affix::affix $lib, 'snag';
-    my $getfn = Affix::wrap $lib, 'getfn', [], CodeRef [ [] => Int ];
-    my $fn    = $getfn->();
-    is $fn->(), 100, 'return value from calling function pointer';
-
-    #~ $fn->dump(16);
+    my $getfn = Affix::wrap $lib, 'getfn', [], CodeRef [ [Int] => Int ];
+    isa_ok my $fn = $getfn->(), ['Affix'], '$fn';
+    is $fn->(20),  100, '$fn->(20)';
+    is $fn->(100), 50,  '$fn->(100)';
 };
 
-#define CODEREF_FLAG '&'
 #define UNION_FLAG 'u'
 #define STRUCT_FLAG 'A'
 #define CPPSTRUCT_FLAG 'B'
