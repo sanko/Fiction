@@ -50,40 +50,45 @@ XS_INTERNAL(Affix_pin) {
     DLLib *_lib;
     // pin( my $integer, 't/src/58_affix_import_vars', 'integer', Int );
 
-    if (!SvOK(ST(1)))
-        _lib = NULL;
-    else if (SvROK(ST(1)) && sv_derived_from(ST(1), "Affix::Lib")) {
-        IV tmp = SvIV(MUTABLE_SV(SvRV(ST(1))));
-        _lib = INT2PTR(DLLib *, tmp);
-    }
-    else {
-        SV *lib, *ver;
-        if (UNLIKELY(SvROK(ST(1)) && SvTYPE(SvRV(ST(1))) == SVt_PVAV)) {
-            AV *tmp = MUTABLE_AV(SvRV(ST(1)));
-            size_t tmp_len = av_count(tmp);
-            // Non-fatal
-            if (UNLIKELY(!(tmp_len == 1 || tmp_len == 2))) { warn("Expected a lib and version"); }
-            lib = *av_fetch(tmp, 0, false);
-            ver = *av_fetch(tmp, 1, false);
+    {
+        SV *const xsub_tmp_sv = ST(1);
+        SvGETMAGIC(xsub_tmp_sv);
+
+        if (!SvOK(xsub_tmp_sv) && SvREADONLY(xsub_tmp_sv)) // explicit undef
+            _lib = load_library(NULL);
+        else if (sv_isobject(xsub_tmp_sv) && sv_derived_from(xsub_tmp_sv, "Affix::Lib")) {
+            IV tmp = SvIV((SV *)SvRV(xsub_tmp_sv));
+            _lib = INT2PTR(DLLib *, tmp);
         }
-        else {
-            lib = newSVsv(ST(1));
-            ver = newSV(0);
+        else if (NULL == (_lib = load_library(SvPV_nolen(xsub_tmp_sv)))) {
+            Stat_t statbuf;
+            Zero(&statbuf, 1, Stat_t);
+            if (PerlLIO_stat(SvPV_nolen(xsub_tmp_sv), &statbuf) < 0) {
+                ENTER;
+                SAVETMPS;
+                PUSHMARK(SP);
+                XPUSHs(xsub_tmp_sv);
+                PUTBACK;
+                int count = call_pv("Affix::find_library", G_SCALAR);
+                SPAGAIN;
+                _lib = load_library(SvPV_nolen(POPs));
+                PUTBACK;
+                FREETMPS;
+                LEAVE;
+            }
         }
-        const char *_libpath = locate_lib(aTHX_ lib, ver);
-        _lib =
-#if defined(DC__OS_Win64) || defined(DC__OS_MacOSX)
-            dlLoadLibrary(_libpath);
-#else
-            (DLLib *)dlopen(_libpath, RTLD_LAZY /* RTLD_NOW|RTLD_GLOBAL */);
-#endif
-        if (_lib == NULL) { croak("Failed to load %s: %s", _libpath, dlerror()); }
+        if (!_lib) {
+            // TODO: Throw an error
+            safefree(_lib);
+            croak("Failed to load library");
+            XSRETURN_UNDEF;
+        }
     }
+
     const char *symbol = (const char *)SvPV_nolen(ST(2));
     DCpointer ptr = dlFindSymbol(_lib, symbol);
     if (ptr == NULL) { croak("Failed to locate '%s'", symbol); }
-    SV *sv = ST(0);
-    MAGIC *mg = sv_magicext(sv, NULL, PERL_MAGIC_ext, &pin_vtbl, NULL, 0);
+    MAGIC *mg = sv_magicext(ST(0), NULL, PERL_MAGIC_ext, &pin_vtbl, NULL, 0);
     {
         var_ptr *_ptr;
         Newx(_ptr, 1, var_ptr);

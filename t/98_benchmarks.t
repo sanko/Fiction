@@ -14,9 +14,9 @@ affix( find_library('m'), [ 'pow' => 'affix_w_context' ], undef,              Do
 #
 subtest verify => sub {
     ok 81 == $wrap_w_params->( 3, 4 ),      'wrap w/ params';
-    ok 81 == $wrap_w_context->( 3.0, 4.0 ), 'wrap q/ context';
+    ok 81 == $wrap_w_context->( 3.0, 4.0 ), 'wrap w/ context';
     ok 81 == affix_w_params( 3, 4 ),        'affix w/ params';
-    ok 81 == affix_w_context( 3.0, 4.0 ),   'affix q/ context';
+    ok 81 == affix_w_context( 3.0, 4.0 ),   'affix w/ context';
     ok 81 == pow( 3, 4 ),                   'pure perl [Int, Int]';
     ok 81 == pow( 3.0, 4.0 ),               'pure perl [Double, Double]';
 };

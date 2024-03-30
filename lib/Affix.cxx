@@ -2187,7 +2187,7 @@ XS_EXTERNAL(boot_Affix) {
 
     //
     //~ boot_Affix_Aggregate(aTHX_ cv);
-    //~ boot_Affix_pin(aTHX_ cv);
+    boot_Affix_pin(aTHX_ cv);
     boot_Affix_Pointer(aTHX_ cv);
     boot_Affix_Lib(aTHX_ cv);
     boot_Affix_Platform(aTHX_ cv);

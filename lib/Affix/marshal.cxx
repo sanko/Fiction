@@ -506,9 +506,6 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
                 av_push(ret_av,
                         ptr2sv(aTHX_ subtype,
                                (DCpointer)INT2PTR(DCpointer, (x * sizeof_subtype) + PTR2IV(ptr))));
-            //~ av_push(ret_av, ptr2sv(aTHX_ subtype,
-            //~ *(DCpointer *)INT2PTR(DCpointer *,
-            //~ (x * sizeof_subtype) + PTR2IV(ptr))));
             ret = newRV_noinc(MUTABLE_SV(ret_av));
         }
     } break;
