@@ -136,9 +136,9 @@ package Affix::Type 0.5 {
         $type;
     }
 
-    sub WString () {
-        bless( [ 'String', Affix::WSTRING_FLAG(), Affix::Platform::SIZEOF_INTPTR_T(), Affix::Platform::ALIGNOF_INTPTR_T(), undef ],
-            'Affix::Type::WString' );
+    sub WString() {
+        CORE::state $type //= Pointer( [ Affix::Const( [ WChar() ] ) ] );
+        $type;
     }
 
     sub StdString () {

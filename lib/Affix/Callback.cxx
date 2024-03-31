@@ -157,11 +157,11 @@ DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointe
                     STRLEN len;
                     (void)SvPVutf8x(sv, len);
                     wchar_t *wc = utf2wchar(aTHX_ sv, len);
-                    result->l = wc[0];
+                    result->L = (wchar_t)wc[0];
                     safefree(wc);
                 }
-                else { result->l = 0; }
-                ret = 'l'; // Fake it
+                else result->L = 0;
+                ret = 'L'; // Fake it
             } break;
             case SHORT_FLAG:
                 result->s = POPi;

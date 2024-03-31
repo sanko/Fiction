@@ -12,12 +12,15 @@ SV *wchar2utf(pTHX_ wchar_t *src, size_t len) {
     U8 *dst = (U8 *)safecalloc(len + 1, SIZEOF_WCHAR);
     U8 *d = dst;
     while (len--) {
-        if (*src < 256)
+        if (isASCII(*src)) {
             *d = (U8)*src++;
+            d++;
+        }
         else
             d = uvchr_to_utf8(d, *src++);
     }
     sv_setpv(RETVAL, (char *)dst);
+    sv_dump(RETVAL);
     sv_utf8_decode(RETVAL);
     safefree(dst);
 #endif
@@ -32,28 +35,8 @@ wchar_t *utf2wchar(pTHX_ SV *src, size_t len) {
     if (SvUTF8(src)) {
         STRLEN len_;
         char *raw = SvPVutf8(src, len_);
-
         mbstowcs(RETVAL, raw, (len_ + 1) * SIZEOF_WCHAR); // Include space for null terminator
-
-        /*
-        STRLEN xlen;
-        size_t utflen;
-        while (*raw) {
-            utflen = isUTF8_CHAR(raw, raw + SIZEOF_WCHAR);
-            if (utflen) {
-                *p++ = utf8_to_uvchr_buf(raw, raw +( utflen* 4), &xlen);
-                raw += xlen;
-            }
-            else
-                *p++ = (wchar_t)*raw++;
-        }*/
     }
-    //~ else {
-    //~ while (*raw) {
-    //~ *p++ = (wchar_t)*raw++;
-    //~ }
-    //~ }
-    //~ *p = 0;
 #endif
     return RETVAL;
 }

@@ -547,10 +547,17 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
             SV *subtype = AXT_TYPE_SUBTYPE(a->restype);
             char subtype_c = AXT_TYPE_NUMERIC(subtype);
             if (subtype_c == CONST_FLAG) subtype_c = AXT_TYPE_NUMERIC(AXT_TYPE_SUBTYPE(subtype));
-            if (subtype_c == CHAR_FLAG || subtype_c == SV_FLAG)
+            switch (subtype_c) {
+            case CHAR_FLAG:
+            case UCHAR_FLAG:
+            case SCHAR_FLAG:
+            case WCHAR_FLAG:
+            case SV_FLAG:
                 sv_setsv(a->res, sv_2mortal(ptr2sv(aTHX_ a->restype, ret)));
-            else
+                break;
+            default:
                 sv_setsv(a->res, sv_2mortal(ptr2obj(aTHX_ a->restype, ret)));
+            }
         }
     } break;
     case CODEREF_FLAG: {

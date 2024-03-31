@@ -132,7 +132,7 @@ unsigned char fn(cb *CodeRef) {
 
 };
 subtest wchar_t => sub {
-    my $todo = todo 'wchar_t is a mess on *BSD and macOS. See https://www.gnu.org/software/libunistring/manual/html_node/The-wchar_005ft-mess.html';
+    #~ my $todo = todo 'wchar_t is a mess on *BSD and macOS. See https://www.gnu.org/software/libunistring/manual/html_node/The-wchar_005ft-mess.html';
     build_and_test
         'typedef wchar_t cb(wchar_t)' => <<'', [ CodeRef [ [WChar] => WChar ] ], WChar, ['愛'], '絆', '絆';
 #include "std.h"
@@ -278,6 +278,19 @@ subtest string => sub {
 typedef const char * cb(const char *, const char *);
 const char * fn(cb *CodeRef) {
     return CodeRef("Hey this is not working but it also is not broken yet", "Hello");
+}
+
+};
+subtest wstring => sub {
+    build_and_test
+        'typedef const wchar_t * cb(const wchar_t *, const wchar_t *)' =>
+        <<'', [ CodeRef [ [ WString, WString ] => WString ] ], WString, [ '1兆ドル', '100億ドル' ], 'ポケットチェンジ（冗談）', 'ポケットチェンジ（冗談）';
+#include "std.h"
+#include <wchar.h>
+// ext: .c
+typedef const wchar_t * cb(const wchar_t *, const wchar_t *);
+const wchar_t * fn(cb *CodeRef) {
+    return CodeRef(L"1兆ドル", L"100億ドル");
 }
 
 };

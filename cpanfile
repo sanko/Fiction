@@ -14,6 +14,7 @@ requires 'Data::Dump';
 on 'test' => sub {
     requires 'Test2::V0';
     requires 'File::Temp';    # Used in tests that compile short C/CPP files
+    requires 'Unicode::GCString';
 };
 on 'configure' => sub {
     requires 'Archive::Tar';

@@ -398,13 +398,18 @@ void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
         else { Newxz(ret, 1, intptr_t); }
 
     } break;
+    case WCHAR_FLAG: {
+        STRLEN len;
+        (void)SvPVutf8(data, len);
+        wchar_t *value = utf2wchar(aTHX_ data, len + 1);
+        len = wcslen(value);
+        Renew(ret, len + 1, wchar_t);
+        Copy(value, ret, len + 1, wchar_t);
+    } break;
     default:
         croak("Attempt to marshal unknown/unhandled type in sv2ptr: %s", AXT_TYPE_STRINGIFY(type));
         break;
     }
-
-    // av_store(MUTABLE_AV(SvRV(type)), SLOT_POINTER_COUNT, newSViv(len));
-
     return ret;
 }
 
@@ -425,6 +430,7 @@ SV *ptr2obj(pTHX_ SV *type, DCpointer ptr) {
 }
 
 SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
+    //~ DD(type);
     if (ptr == NULL) return newSV(0); // Don't waste any time on NULL pointers
     SV *ret;
     switch (AXT_TYPE_NUMERIC(type)) {
@@ -471,16 +477,15 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
         ret = newSVnv(*(double *)ptr);
     } break;
     case POINTER_FLAG: {
-        size_t len = AXT_TYPE_ARRAYLEN(type);
         SV *subtype = AXT_TYPE_SUBTYPE(type);
         char subtype_c = (char)AXT_TYPE_NUMERIC(subtype);
-        if (subtype_c == CONST_FLAG) {
+        while (subtype_c == CONST_FLAG) {
             subtype = AXT_TYPE_SUBTYPE(subtype);
             subtype_c = AXT_TYPE_NUMERIC(subtype);
         }
-        if (len == 1)
-            ret = ptr2sv(aTHX_ subtype, ptr);
-        else if (UNLIKELY(sv_derived_from(subtype, "Affix::Type::Pointer"))) {
+        size_t len = AXT_TYPE_ARRAYLEN(type);
+        switch (subtype_c) {
+        case POINTER_FLAG: {
             AV *ret_av = newAV();
             DCpointer tmp;
             int i = 0;
@@ -490,23 +495,30 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
                 i++;
             } while (tmp != NULL);
             ret = newRV_noinc(MUTABLE_SV(ret_av));
-        }
-        else if (UNLIKELY(sv_derived_from(subtype, "Affix::Type::Char") ||
-                          sv_derived_from(subtype, "Affix::Type::UChar") ||
-                          sv_derived_from(subtype, "Affix::Type::SChar"))
-
-        ) {
+        } break;
+        case CHAR_FLAG:
+        case UCHAR_FLAG:
+        case SCHAR_FLAG:
             ret = ptr2sv(aTHX_ subtype, ptr);
+            break;
+        case WCHAR_FLAG: {
+            size_t len = wcslen((wchar_t *)ptr);
+            if (len) ret = wchar2utf(aTHX_(wchar_t *) ptr, len);
+        } break;
+        default: {
+            if (len == 1) { ret = ptr2sv(aTHX_ subtype, ptr); }
+            else {
+                AV *ret_av = newAV();
+                DCpointer tmp = ptr;
+                size_t sizeof_subtype = AXT_TYPE_SIZEOF(subtype);
+                for (size_t x = 0; x < len; ++x)
+                    av_push(ret_av, ptr2sv(aTHX_ subtype,
+                                           (DCpointer)INT2PTR(DCpointer,
+                                                              (x * sizeof_subtype) + PTR2IV(ptr))));
+
+                ret = newRV_noinc(MUTABLE_SV(ret_av));
+            }
         }
-        else {
-            AV *ret_av = newAV();
-            DCpointer tmp = ptr;
-            size_t sizeof_subtype = AXT_TYPE_SIZEOF(subtype);
-            for (size_t x = 0; x < len; ++x)
-                av_push(ret_av,
-                        ptr2sv(aTHX_ subtype,
-                               (DCpointer)INT2PTR(DCpointer, (x * sizeof_subtype) + PTR2IV(ptr))));
-            ret = newRV_noinc(MUTABLE_SV(ret_av));
         }
     } break;
     case CONST_FLAG: { // No-Op
@@ -518,6 +530,10 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
     case SV_FLAG:
         ret = MUTABLE_SV(ptr);
         break;
+    case WCHAR_FLAG: {
+        size_t len = wcslen((wchar_t *)ptr);
+        if (len) ret = wchar2utf(aTHX_(wchar_t *) ptr, 1);
+    } break;
     case CODEREF_FLAG: {
         fiction *cb;
         Newxz(cb, 1, fiction);
@@ -530,34 +546,24 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
             cb->restype_c = AXT_TYPE_NUMERIC(cb->restype);
             cb->restype = newSVsv(AXT_CODEREF_RET(type));
             cb->entry_point = ptr;
-
-            switch (cb->restype_c) {
-            case WCHAR_FLAG:
-            case WSTRING_FLAG:
-            case STDSTRING_FLAG:
-                cb->res = newSVpvs("");
-                break;
-            default:
-                cb->res = newSV(0);
-                break;
-            }
+            cb->res = newSV(0);
             cb->argtypes = // MUTABLE_AV(SvREFCNT_inc(SvRV(newSVsv(
                 AXT_CODEREF_ARGS(type)
                 //))))
                 ;
-
             size_t sig_len = av_count(cb->argtypes);
             Newxz(cb->signature, sig_len * 2, char); // extra room
             Newxz(prototype, sig_len + 1, char);
             char c_type;
             char scalar = '$';
-            char array = '@';
-            char code = '&';
+            //~ char array = '@';
+            //~ char code = '&';
             for (size_t i = 0; i < sig_len; i++) {
                 c_type = AXT_TYPE_NUMERIC(*av_fetch(cb->argtypes, i, 0));
                 Copy(&c_type, cb->signature + i, 1, char);
                 // TODO: Generate a valid prototype w/ Array, Callbacks, etc.
-                Copy(&scalar, prototype + i, 1, char);
+                prototype[i + 1] = '$';
+                //~ Copy(&scalar, prototype + i, 1, char);
             }
             warn("ret->signature: %s", cb->signature);
             warn("     prototype: %s", prototype);
@@ -668,9 +674,7 @@ SV *ptr2svx(pTHX_ DCpointer ptr, SV *type) {
                 retval = len ? newSVpv(str, len) : &PL_sv_undef;
             } break;
             case WCHAR_FLAG: {
-                if (wcslen((wchar_t *)ptr)) {
-                    retval = wchar2utf(aTHX_(wchar_t *) ptr, wcslen((wchar_t *)ptr));
-                }
+                retval = wchar2utf(aTHX_(wchar_t *) ptr, wcslen((wchar_t *)ptr));
             } break;
             case VOID_FLAG: {
                 retval = newSV(0);
