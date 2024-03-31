@@ -532,7 +532,7 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
         break;
     case WCHAR_FLAG: {
         size_t len = wcslen((wchar_t *)ptr);
-        if (len) ret = wchar2utf(aTHX_(wchar_t *) ptr, 1);
+        if (len) ret = wchar2utf(aTHX_(wchar_t *) ptr, len);
     } break;
     case CODEREF_FLAG: {
         fiction *cb;

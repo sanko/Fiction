@@ -132,7 +132,7 @@ unsigned char fn(cb *CodeRef) {
 
 };
 subtest wchar_t => sub {
-    #~ my $todo = todo 'wchar_t is a mess on *BSD and macOS. See https://www.gnu.org/software/libunistring/manual/html_node/The-wchar_005ft-mess.html';
+    my $todo = todo 'wchar_t is a mess on *BSD and macOS. See https://www.gnu.org/software/libunistring/manual/html_node/The-wchar_005ft-mess.html';
     build_and_test
         'typedef wchar_t cb(wchar_t)' => <<'', [ CodeRef [ [WChar] => WChar ] ], WChar, ['愛'], '絆', '絆';
 #include "std.h"
