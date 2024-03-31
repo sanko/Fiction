@@ -230,7 +230,7 @@ double fn(double i, double j) { return i * j;}
 };
 subtest string => sub {
     ok my $lib = compile_test_lib(<<''), 'build test lib';
-    #include "std.h"
+#include "std.h"
 // ext: .c
 const char * fn(const char * i) {
     return "Wow, this shouldn't crash.";
@@ -247,7 +247,22 @@ const char * fn(const char * i) {
 #define UNION_FLAG 'u'
 #define ARRAY_FLAG '@'
 #define CODEREF_FLAG '&'
-#define POINTER_FLAG 'P'
+subtest pointer => sub {
+    ok my $lib = compile_test_lib(<<''), 'build test lib';
+#include "std.h"
+// ext: .c
+int* fn(int* nums, int count) {
+    int* a;
+    a = (int *) malloc(sizeof(int) * count); // leak
+    if (a != NULL) for( int i = 0; i < count; i++) a[i] = nums[count - i - 1];
+    return a;
+}
+
+    isa_ok my $fn   = Affix::wrap( $lib, 'fn', [ Pointer [Int], Int ], Array [ Int, 7 ] ), [qw[Affix]],        'my $fn = ...';
+    isa_ok my $ints = $fn->( [ 1 .. 7 ], 7 ),                                              ['Affix::Pointer'], '$ints';
+    is $ints->sv, [ reverse 1 .. 7 ], '$ints->sv';
+};
+
 #define SV_FLAG '?'
 subtest enum => sub {
     typedef TV => Enum [ [ FOX => 11 ], [ CNN => 25 ], [ ESPN => 15 ], [ HBO => 22 ], [ NBC => 32 ] ];
