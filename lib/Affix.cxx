@@ -496,13 +496,7 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
     case WCHAR_FLAG: {
         wchar_t src[1];
         src[0] = (wchar_t)dcCallLongLong(cvm, a->entry_point);
-#include <wchar.h>
-        wprintf(L"wchar is '%ls' in trigger.\n", src);
         a->res = wchar2utf(aTHX_ src, 1);
-        src[0] = ((src[0] & 0x00FF) << 8) | ((src[0] & 0xFF00) >> 8);
-        wprintf(L"wchar is now '%ls' in trigger.\n", src);
-        src[0] = ((src[0] & 0x00FF) << 8) | ((src[0] & 0xFF00) >> 8);
-        wprintf(L"wchar is now '%ls' in trigger.\n", src);
     } break;
     case SHORT_FLAG:
         sv_setiv(a->res, (short)dcCallShort(cvm, a->entry_point));

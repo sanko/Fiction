@@ -89,9 +89,10 @@
       },
       "test" : {
          "requires" : {
+            "Capture::Tiny" : "0",
+            "ExtUtils::Embed" : "0",
             "File::Temp" : "0",
-            "Test2::V0" : "0",
-            "Unicode::GCString" : "0"
+            "Test2::V0" : "0"
          }
       }
    },

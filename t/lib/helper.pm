@@ -3,7 +3,8 @@ package t::lib::helper {
     use warnings;
     use Test2::V0;
     use Test2::Plugin::UTF8;
-    use Path::Tiny qw[path tempdir tempfile];
+    use Path::Tiny    qw[path tempdir tempfile];
+    use Capture::Tiny qw[capture];
     use Exporter 'import';
     our @EXPORT = qw[compile_test_lib compile_cpp_test_lib is_approx];
     use Config;
@@ -62,15 +63,19 @@ package t::lib::helper {
         my $ok;
         for my $cmd (@cmds) {
             note $cmd;
-            system $cmd;
-            if ( $? == -1 ) {
+            my ( $stdout, $stderr, $exit ) = capture {
+                system($cmd);
+            };
+            note $stdout;
+            note $stderr;
+            if ( $exit == -1 ) {
                 note 'failed to execute: ' . $!;
             }
-            elsif ( $? & 127 ) {
-                note sprintf "child died with signal %d, %s coredump\n", ( $? & 127 ), ( $? & 128 ) ? 'with' : 'without';
+            elsif ( $exit & 127 ) {
+                note sprintf "child died with signal %d, %s coredump\n", ( $exit & 127 ), ( $exit & 128 ) ? 'with' : 'without';
             }
             else {
-                note 'child exited with value ' . ( $? >> 8 );
+                note 'child exited with value ' . ( $exit >> 8 );
                 $ok++;
                 last;
             }

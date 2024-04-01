@@ -8,10 +8,10 @@ use t::lib::helper;
 $|++;
 #
 sub build_and_test {
-    my ( $name, $c, $arg_types, $ret_type, $arg1, $ret, $ret_check ) = @_;
+    my ( $name, $c, $arg_types, $ret_type, $arg1, $ret, $ret_check, $flags ) = @_;
     subtest $name => sub {
         plan 4;
-        ok my $lib    = compile_test_lib($c), 'build test lib';
+        ok my $lib    = compile_test_lib( $c, $flags // () ), 'build test lib';
         isa_ok my $fn = Affix::wrap( $lib, 'fn', $arg_types, $ret_type ), [qw[Affix]], 'my $fn = ...';
         is $fn->(
             sub {
@@ -294,13 +294,44 @@ const wchar_t * fn(cb *CodeRef) {
 }
 
 };
+subtest sv => sub {
+    use ExtUtils::Embed;
+    my $flags = `$^X -MExtUtils::Embed -e ccopts -e ldopts`;
+    $flags =~ s[\R][ ]g;
+    diag$flags;
+    #~ $flags=q[-s -L"C:\Users\runneradmin\perl5\perlbrew\perls\cache-windows-2022-5.36.3-Duselongdouble\lib\CORE"  -L"C:\Users\runneradmin\perl5\perlbrew\perls\cache-windows-2022-5.36.3-Duselongdouble\lib\5.36.3\lib\CORE"   -lcomdlg32 -ladvapi32 -lshell32        -lole32 -loleaut32 -lnetapi32        -luuid -lws2_32 -lmpr -lwinmm        -lversion -lodbc32 -lodbccp32 -lcomctl32        -DWIN32 -DWIN64  -DPERL_TEXTMODE_SCRIPTS -DMULTIPLICITY -DPERL_IMPLICIT_SYS -DUSE_PERLIO -D__USE_MINGW_ANSI_STDIO -fwrapv -fno-strict-aliasing -mms-bitfields  -I"C:\Users\runneradmin\perl5\perlbrew\perls\cache-windows-2022-5.36.3-Duselongdouble\lib\CORE" -lperl];
 
-#define WSTRING_FLAG '<'
+    build_and_test
+        'typedef const SV* cb(SV*, SV*)' =>
+        <<'', [ CodeRef [ [ Pointer [SV], Pointer [SV] ] => Pointer [SV] ] ], Pointer [SV], [ {}, ['wow'] ], [100], [100], $flags;
+#include <EXTERN.h>
+#include <perl.h>
+#include <XSUB.h>
+#include "std.h"
+// ext: .c
+typedef SV * cb(pTHX_ SV *, SV *);
+DLLEXPORT SV * fn(cb *CodeRef) {
+    dTHX;
+    /*SV *hv, *av;
+    {
+        HV * h = newHV();
+	    hv = newRV_inc(MUTABLE_SV(h));
+    }
+    {
+        AV * a = newAV();
+        av_push_simple(a, newSVpvs_share("wow"));
+	    av = newRV_inc(MUTABLE_SV(a));
+    }*/
+    //return CodeRef(aTHX_ newSV(0), newSV(0));
+    return newSViv(100);
+}
+
+};
+
 #define STDSTRING_FLAG 'Y'
 #define STRUCT_FLAG 'A'
 #define CPPSTRUCT_FLAG 'B'
 #define UNION_FLAG 'u'
-#define ARRAY_FLAG '@'
 #define CODEREF_FLAG '&'
 #define POINTER_FLAG 'P'
 #define SV_FLAG '?'

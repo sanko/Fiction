@@ -780,8 +780,15 @@ subtest '...why would you do this?' => sub {
         use ExtUtils::Embed;
         my $flags = `$^X -MExtUtils::Embed -e ccopts -e ldopts`;
         $flags =~ s[\R][ ]g;
+
+
+
+
+
+
+
+
         my $lib = compile_test_lib( <<'END', $flags );
-#line 730 "05_pointer.t"
 #include <EXTERN.h>
 #include <perl.h>
 #include <XSUB.h>
