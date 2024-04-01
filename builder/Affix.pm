@@ -77,55 +77,57 @@ sub alien {
             ( $opt{config}->get('osname') =~ /bsd/ ? '' : $LDFLAGS ) . '"';
         if ( $opt{config}->get('osname') eq 'MSWin32' ) {
             require Devel::CheckBin;
-            for my $exe ( $make, qw[make nmake mingw32-make] ) {
+            warn 'DONE!!!!!!!!!!!';
+            for my $exe ( $make, qw[gmake nmake mingw32-make] ) {
                 next unless Devel::CheckBin::check_bin($exe);
                 $make      = $exe;
-                $configure = '.\configure.bat /tool-' . $opt{config}->get('cc') . ' /make-';
+                $configure = '.\configure.bat /target-x64 /tool-' . $opt{config}->get('cc') . ' /make-';
                 if ( $exe eq 'nmake' ) {
                     $configure .= 'nmake';
                     $make      .= ' -f Nmakefile';
                 }
                 else {
                     $configure .= 'make';
-                    $make      .= ' CC=gcc VPATH=. PREFIX="' . $pre->absolute . '"';
+                    $make = 'gmake AS="gcc    -c " CC=gcc VPATH=. PREFIX="' . $pre->absolute . '"';
                 }
                 last;
             }
-            warn($_) && system($_) for $configure, $make;
-            my %libs = (
-                dyncall => [
-                    qw[dyncall_version.h dyncall_macros.h dyncall_config.h
-                        dyncall_types.h dyncall.h dyncall_signature.h
-                        dyncall_value.h dyncall_callf.h dyncall_alloc.h
-                    ]
-                ],
-                dyncallback => [
-                    qw[dyncall_thunk.h dyncall_thunk_x86.h
-                        dyncall_thunk_ppc32.h dyncall_thunk_x64.h
-                        dyncall_thunk_arm32.h dyncall_thunk_arm64.h
-                        dyncall_thunk_mips.h dyncall_thunk_mips64.h
-                        dyncall_thunk_ppc64.h dyncall_thunk_sparc32.h
-                        dyncall_thunk_sparc64.h dyncall_args.h
-                        dyncall_callback.h
-                    ]
-                ],
-                dynload => [qw[dynload.h]],
-            );
-            $pre->child('include')->mkdir;
-            $pre->child('lib')->mkdir;
-            for my $lib ( keys %libs ) {
+            warn($_) && system($_) for $configure, $make, $make . ' install';
 
-                #chdir $kid->child($lib)->absolute;
-                #warn $kid->child( $lib, 'lib' . $lib . '_s' . $opt{config}->get('_a') );
-                $kid->child( $lib, 'lib' . $lib . '_s' . $opt{config}->get('_a') )->copy( $pre->child('lib')->absolute );
-                for ( @{ $libs{$lib} } ) {
-
-                    #warn sprintf '%s => %s', $kid->child( $lib, $_ ),
-                    #    $pre->child( 'include', $_ )->absolute;
-                    #warn
-                    $kid->child( $lib, $_ )->copy( $pre->child( 'include', $_ )->absolute );
-                }
-            }
+            #~ my %libs = (
+            #~ dyncall => [
+            #~ qw[dyncall_version.h dyncall_macros.h dyncall_config.h
+            #~ dyncall_types.h dyncall.h dyncall_signature.h
+            #~ dyncall_value.h dyncall_callf.h dyncall_alloc.h
+            #~ ]
+            #~ ],
+            #~ dyncallback => [
+            #~ qw[dyncall_thunk.h dyncall_thunk_x86.h
+            #~ dyncall_thunk_ppc32.h dyncall_thunk_x64.h
+            #~ dyncall_thunk_arm32.h dyncall_thunk_arm64.h
+            #~ dyncall_thunk_mips.h dyncall_thunk_mips64.h
+            #~ dyncall_thunk_ppc64.h dyncall_thunk_sparc32.h
+            #~ dyncall_thunk_sparc64.h dyncall_args.h
+            #~ dyncall_callback.h
+            #~ ]
+            #~ ],
+            #~ dynload => [qw[dynload.h]],
+            #~ );
+            #~ $pre->child('include')->mkdir;
+            #~ $pre->child('lib')->mkdir;
+            #~ for my $lib ( keys %libs ) {
+            #~ #chdir $kid->child($lib)->absolute;
+            #~ #warn $kid->child( $lib, 'lib' . $lib . '_s' . $opt{config}->get('_a') );
+            #~ $kid->child( $lib, 'lib' . $lib . '_s' . $opt{config}->get('_a') )->copy( $pre->child('lib')->absolute );
+            #~ for ( @{ $libs{$lib} } ) {
+            #~ #warn sprintf '%s => %s', $kid->child( $lib, $_ ),
+            #~ #    $pre->child( 'include', $_ )->absolute;
+            #~ #warn
+            #~ $kid->child( $lib, $_ )->copy( $pre->child( 'include', $_ )->absolute );
+            #~ }
+            #~ }
+            #~ $make = $opt{config}->get('make');
+            #~ system($_) for $make . ' install';
         }
         else {
             $make = $opt{config}->get('make');

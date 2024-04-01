@@ -3,8 +3,7 @@ package t::lib::helper {
     use warnings;
     use Test2::V0;
     use Test2::Plugin::UTF8;
-    use Path::Tiny    qw[path tempdir tempfile];
-    use Capture::Tiny qw[capture];
+    use Path::Tiny qw[path tempdir tempfile];
     use Exporter 'import';
     our @EXPORT = qw[compile_test_lib compile_cpp_test_lib is_approx];
     use Config;
@@ -37,12 +36,14 @@ package t::lib::helper {
             $line++;
             $opt->spew_utf8( qq[#line $line "$filename"\n] . $name );
         }
-        return plan skip_all => 'Failed to build test lib' if !$opt;
+        skip 'Failed to build test lib' if !$opt;
         my $c_file = $opt->canonpath;
         my $o_file = tempfile( UNLINK => !$keep, SUFFIX => $Config{_o} )->absolute;
         my $l_file = tempfile( UNLINK => !$keep, SUFFIX => $opt->basename(qr/\.cx*/) . '.' . $Config{so} )->absolute;
+        push @cleanup, $o_file, $l_file unless $keep;
         note sprintf 'Building %s into %s', $opt, $l_file;
         my $compiler = $Config{cc};
+
         if ( $opt =~ /\.cxx$/ ) {
             if ( Affix::Platform::Compiler() eq 'Clang' ) {
                 $compiler = 'c++';
@@ -62,26 +63,21 @@ package t::lib::helper {
         my ( @fails, $succeeded );
         my $ok;
         for my $cmd (@cmds) {
-            note $cmd;
-            my ( $stdout, $stderr, $exit ) = capture {
-                system($cmd);
-            };
-            note $stdout;
-            note $stderr;
-            if ( $exit == -1 ) {
+            diag $cmd;
+            system $cmd;
+            if ( $? == -1 ) {
                 note 'failed to execute: ' . $!;
             }
-            elsif ( $exit & 127 ) {
-                note sprintf "child died with signal %d, %s coredump\n", ( $exit & 127 ), ( $exit & 128 ) ? 'with' : 'without';
+            elsif ( $? & 127 ) {
+                note sprintf "child died with signal %d, %s coredump\n", ( $? & 127 ), ( $? & 128 ) ? 'with' : 'without';
             }
             else {
-                note 'child exited with value ' . ( $exit >> 8 );
+                note 'child exited with value ' . ( $? >> 8 );
                 $ok++;
                 last;
             }
         }
-        plan skip_all => 'Failed to build test lib' if !-f $l_file;
-        push @cleanup, $o_file, $l_file unless $keep;
+        skip 'Failed to build test lib' if !-f $l_file;
         $l_file;
     }
 
