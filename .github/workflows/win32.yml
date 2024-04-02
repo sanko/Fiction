@@ -5,22 +5,28 @@ jobs:
     runs-on: '${{ inputs.os }}'
     steps:
       - uses: actions/checkout@v4
-      - name: Set up perl
-        uses: shogo82148/actions-setup-perl@v1
         with:
           distribution: "${{ inputs.flags == '-Dusethreads' && 'strawberry' || 'default' }}"
           install-modules-args: --with-configure --installdeps --notest -v .
           install-modules-with: cpanm
           multi-thread: "${{ inputs.flags == '-Dusethreads' && true || false }}"
           perl-version: '${{ inputs.perl }}'
-      - run: |
+      - name: Install prereqs
+        run: cpanm --installdeps --notest -v .
+      - name: Run tests
+        run: |
           perl -V
           
           perl Build.PL
           
           ./Build test --verbose
           
-          perl -e 'print $^V' > test-output-${{ inputs.os }}-${{ inputs.perl }}${{ inputs.flags }}.txt
+          if ($LASTEXITCODE -eq 0) {
+            perl -V > test-output-${{ inputs.os }}-${{ inputs.perl }}${{ inputs.flags }}.txt
+          } else {
+            Out-File -FilePath "test-output-${{ inputs.os }}-${{ inputs.perl }}${{ inputs.flags }}.txt" -InputObject "Error" -Append
+            exit $LASTEXITCODE
+          }
       - name: Upload results as artifact
         uses: actions/upload-artifact@v4.0.0
         with:

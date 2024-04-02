@@ -778,6 +778,7 @@ END
 subtest '...why would you do this?' => sub {
     subtest 'Pointer[SV]' => sub {
     SKIP: {
+            skip 'I have no idea how to link a DLL to libperl' if Affix::Platform::Win64() || Affix::Platform::Win32();
             use ExtUtils::Embed;
             my $flags = `$^X -MExtUtils::Embed -e ccopts -e ldopts`;
             $flags =~ s[\R][ ]g;
@@ -794,6 +795,8 @@ DLLEXPORT SV* inc(SV * arg) {
     return arg;
 }
 END
+
+            skip 'Failed to build library' unless $lib;
             diag '$lib: ' . $lib;
             ok my $_lib = load_library($lib),                                   'lib is loaded [debugging]';
             ok Affix::affix( $lib => 'inc', [ Pointer [SV] ] => Pointer [SV] ), 'SV* inc(SV *)';

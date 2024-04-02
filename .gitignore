@@ -75,3 +75,5 @@ dyncall/test/*/*
 .github/workflows/matrix.yaml
 
 vgcore.*
+
+*.session

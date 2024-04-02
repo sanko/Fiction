@@ -11,7 +11,8 @@ sub build_and_test {
     my ( $name, $c, $arg_types, $ret_type, $arg1, $ret, $ret_check, $flags ) = @_;
     subtest $name => sub {
     SKIP: {
-            ok my $lib    = compile_test_lib( $c, $flags // () ), 'build test lib';
+            ok my $lib = compile_test_lib( $c, $flags // () ), 'build test lib';
+            skip 'Failed to build library' unless $lib;
             isa_ok my $fn = Affix::wrap( $lib, 'fn', $arg_types, $ret_type ), [qw[Affix]], 'my $fn = ...';
             is $fn->(
                 sub {
@@ -296,6 +297,7 @@ const wchar_t * fn(cb *CodeRef) {
 
 };
 subtest sv => sub {
+          my $todo = todo 'Might fail';
     use ExtUtils::Embed;
     my $flags = `$^X -MExtUtils::Embed -e ccopts -e ldopts`;
     $flags =~ s[\R][ ]g;

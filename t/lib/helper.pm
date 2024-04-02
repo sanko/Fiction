@@ -36,14 +36,16 @@ package t::lib::helper {
             $line++;
             $opt->spew_utf8( qq[#line $line "$filename"\n] . $name );
         }
-        skip 'Failed to build test lib' if !$opt;
+        if ( !$opt ) {
+            diag 'Failed to locate test source';
+            return ();
+        }
         my $c_file = $opt->canonpath;
         my $o_file = tempfile( UNLINK => !$keep, SUFFIX => $Config{_o} )->absolute;
         my $l_file = tempfile( UNLINK => !$keep, SUFFIX => $opt->basename(qr/\.cx*/) . '.' . $Config{so} )->absolute;
         push @cleanup, $o_file, $l_file unless $keep;
         note sprintf 'Building %s into %s', $opt, $l_file;
         my $compiler = $Config{cc};
-
         if ( $opt =~ /\.cxx$/ ) {
             if ( Affix::Platform::Compiler() eq 'Clang' ) {
                 $compiler = 'c++';
@@ -65,19 +67,24 @@ package t::lib::helper {
         for my $cmd (@cmds) {
             diag $cmd;
             system $cmd;
-            if ( $? == -1 ) {
-                note 'failed to execute: ' . $!;
-            }
-            elsif ( $? & 127 ) {
-                note sprintf "child died with signal %d, %s coredump\n", ( $? & 127 ), ( $? & 128 ) ? 'with' : 'without';
-            }
-            else {
-                note 'child exited with value ' . ( $? >> 8 );
+            if ( $? == 0 ) {
                 $ok++;
                 last;
             }
+            elsif ( $? == -1 ) {
+                diag 'failed to execute: ' . $!;
+            }
+            elsif ( $? & 127 ) {
+                diag sprintf "child died with signal %d, %s coredump\n", ( $? & 127 ), ( $? & 128 ) ? 'with' : 'without';
+            }
+            else {
+                note 'child exited with value ' . ( $? >> 8 );
+            }
         }
-        skip 'Failed to build test lib' if !-f $l_file;
+        if ( !-f $l_file ) {
+            diag 'Failed to build test lib';
+            return;
+        }
         $l_file;
     }
 

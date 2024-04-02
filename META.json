@@ -91,7 +91,7 @@
          "requires" : {
             "ExtUtils::Embed" : "0",
             "File::Temp" : "0",
-            "Test2::V0" : "0"
+            "Test2::V0" : "0.000159"
          }
       }
    },

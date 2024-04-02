@@ -21,7 +21,7 @@ jobs:
         perl:
           - 5.38
       max-parallel: 25
-    uses: sanko/Fiction/.github/workflows/bsd.yml@main
+    uses: sanko/Fiction/.github/workflows/cross.yml@main
     with:
       arch: '${{ matrix.os.architecture }}'
       host: '${{ matrix.os.host }}'
@@ -45,7 +45,7 @@ jobs:
           - ubuntu-22.04
         perl: '${{ fromJSON(needs.setup.outputs.matrix).perl }}'
       max-parallel: 25
-    uses: sanko/Fiction/.github/workflows/core.yml@main
+    uses: sanko/Fiction/.github/workflows/unix.yml@main
     with:
       flags: '${{ matrix.flags }}'
       os: '${{ matrix.os }}'
@@ -66,7 +66,7 @@ jobs:
           - macos-latest
         perl: '${{ fromJSON(needs.setup.outputs.matrix).perl }}'
       max-parallel: 25
-    uses: sanko/Fiction/.github/workflows/core.yml@main
+    uses: sanko/Fiction/.github/workflows/unix.yml@main
     with:
       flags: '${{ matrix.flags }}'
       os: '${{ matrix.os }}'
@@ -79,14 +79,35 @@ jobs:
       - linux
     runs-on: ubuntu-22.04
     steps:
-      - name: Do something
-        run: echo "Do something"
       - name: Download test results
         uses: actions/download-artifact@v4
         with:
           path: artifacts
       - name: Report test results
-        run: ls -R artifacts
+        run: |
+          # Function to process a directory
+          process_dir() {
+            local dir="$1"
+            # Loop through each element in the directory
+            for file in "$dir"/*; do
+              # Check if it's a directory
+              if [ -d "$file" ]; then
+                # Recursively call process_dir for subdirectories (except .)
+                if [ "$file" != "." ]; then
+                  process_dir "$file"
+                fi
+              # If it's a regular file, print its content
+              elif [ -f "$file" ]; then
+                echo "================> $file <================"
+                cat "$file"
+                echo ""  # Add an empty line between files
+              fi
+            done
+          }
+          # Get the directory path from the first argument (or current directory)
+          dir=${1:-.}
+          # Process the specified directory
+          process_dir "artifacts"
   setup:
     name: Generate Testing Matrix
     outputs:
@@ -119,7 +140,7 @@ jobs:
           - windows-2022
         perl: '${{ fromJSON(needs.setup.outputs.matrix).perl }}'
       max-parallel: 25
-    uses: sanko/Fiction/.github/workflows/strawberry.yml@main
+    uses: sanko/Fiction/.github/workflows/win32.yml@main
     with:
       flags: '${{ matrix.flags }}'
       os: '${{ matrix.os }}'
