@@ -12,8 +12,7 @@ sub build_and_test {
     subtest $name => sub {
     SKIP: {
             ok my $lib    = compile_test_lib( $c, $flags // () ), 'build test lib';
-            isa_ok my $fn = Affix::wrap( $lib, 'fn', $arg_types, $ret_type ), [qw[Affix]],
-                'my $fn = ...';
+            isa_ok my $fn = Affix::wrap( $lib, 'fn', $arg_types, $ret_type ), [qw[Affix]], 'my $fn = ...';
             is $fn->(
                 sub {
                     is \@_, $arg1, '@_ in $fn is correct';
@@ -37,8 +36,7 @@ void fn(cb *CodeRef) {
 
 subtest bool => sub {
     build_and_test
-        'typedef bool cb(bool) false' =>
-        <<'', [ CodeRef [ [Bool] => Bool ] ], Bool, [ F() ], !1, F();
+        'typedef bool cb(bool) false' => <<'', [ CodeRef [ [Bool] => Bool ] ], Bool, [ F() ], !1, F();
 #include "std.h"
 // ext: .c
 typedef bool cb( bool );
@@ -47,8 +45,7 @@ bool fn(cb *CodeRef) {
 }
 
     build_and_test
-        'typedef bool cb(bool) true' =>
-        <<'', [ CodeRef [ [Bool] => Bool ] ], Bool, [ T() ], !0, T();
+        'typedef bool cb(bool) true' => <<'', [ CodeRef [ [Bool] => Bool ] ], Bool, [ T() ], !0, T();
 #include "std.h"
 // ext: .c
 typedef bool cb( bool );
@@ -68,8 +65,7 @@ char fn(cb *CodeRef) {
 }
 
     build_and_test
-        'typedef signed char cb(char)' =>
-        <<'', [ CodeRef [ [Char] => Char ] ], Char, [ pack 'c', -ord 'a' ], 'm', 'm';
+        'typedef signed char cb(char)' => <<'', [ CodeRef [ [Char] => Char ] ], Char, [ pack 'c', -ord 'a' ], 'm', 'm';
 #include "std.h"
 // ext: .c
 typedef char cb( char );
@@ -78,8 +74,7 @@ char fn(cb *CodeRef) {
 }
 
     build_and_test
-        'typedef char cb(char) with ints' =>
-        <<'', [ CodeRef [ [Char] => Char ] ], Char, ['a'], 109, 'm';
+        'typedef char cb(char) with ints' => <<'', [ CodeRef [ [Char] => Char ] ], Char, ['a'], 109, 'm';
 #include "std.h"
 // ext: .c
 typedef char cb( char );
@@ -90,8 +85,7 @@ char fn(cb *CodeRef) {
 };
 subtest schar => sub {
     build_and_test
-        'typedef signed char cb(char)' =>
-        <<'', [ CodeRef [ [SChar] => SChar ] ], Char, ['a'], 'm', 'm';
+        'typedef signed char cb(char)' => <<'', [ CodeRef [ [SChar] => SChar ] ], Char, ['a'], 'm', 'm';
 #include "std.h"
 // ext: .c
 typedef signed char cb( signed char );
@@ -100,8 +94,7 @@ signed char fn(cb *CodeRef) {
 }
 
     build_and_test
-        'typedef signed char cb(char)' =>
-        <<'', [ CodeRef [ [SChar] => SChar ] ], SChar, [ pack 'c', -ord 'a' ], 'm', 'm';
+        'typedef signed char cb(char)' => <<'', [ CodeRef [ [SChar] => SChar ] ], SChar, [ pack 'c', -ord 'a' ], 'm', 'm';
 #include "std.h"
 // ext: .c
 typedef signed char cb( signed char );
@@ -110,8 +103,7 @@ signed char fn(cb *CodeRef) {
 }
 
     build_and_test
-        'typedef signed char cb(char) with ints' =>
-        <<'', [ CodeRef [ [SChar] => SChar ] ], SChar, ['a'], 109, 'm';
+        'typedef signed char cb(char) with ints' => <<'', [ CodeRef [ [SChar] => SChar ] ], SChar, ['a'], 109, 'm';
 #include "std.h"
 // ext: .c
 typedef signed char cb( signed char );
@@ -122,8 +114,7 @@ signed char fn(cb *CodeRef) {
 };
 subtest uchar => sub {
     build_and_test
-        'typedef unsigned char cb(unsigned char)' =>
-        <<'', [ CodeRef [ [UChar] => UChar ] ], UChar, ['a'], 'm', 'm';
+        'typedef unsigned char cb(unsigned char)' => <<'', [ CodeRef [ [UChar] => UChar ] ], UChar, ['a'], 'm', 'm';
 #include "std.h"
 // ext: .c
 typedef signed char cb( unsigned char );
@@ -132,8 +123,7 @@ unsigned char fn(cb *CodeRef) {
 }
 
     build_and_test
-        'typedef unsigned char cb(unsigned char) with ints' =>
-        <<'', [ CodeRef [ [UChar] => UChar ] ], UChar, ['a'], 109, 'm';
+        'typedef unsigned char cb(unsigned char) with ints' => <<'', [ CodeRef [ [UChar] => UChar ] ], UChar, ['a'], 109, 'm';
 #include "std.h"
 // ext: .c
 typedef unsigned char cb( unsigned char );
@@ -143,11 +133,9 @@ unsigned char fn(cb *CodeRef) {
 
 };
 subtest wchar_t => sub {
-    my $todo = todo
-        'wchar_t is a mess on *BSD and macOS. See https://www.gnu.org/software/libunistring/manual/html_node/The-wchar_005ft-mess.html';
+    my $todo = todo 'wchar_t is a mess on *BSD and macOS. See https://www.gnu.org/software/libunistring/manual/html_node/The-wchar_005ft-mess.html';
     build_and_test
-        'typedef wchar_t cb(wchar_t)' =>
-        <<'', [ CodeRef [ [WChar] => WChar ] ], WChar, ['愛'], '絆', '絆';
+        'typedef wchar_t cb(wchar_t)' => <<'', [ CodeRef [ [WChar] => WChar ] ], WChar, ['愛'], '絆', '絆';
 #include "std.h"
 // ext: .c
 typedef wchar_t cb( wchar_t );
@@ -159,8 +147,7 @@ unsigned char fn(cb *CodeRef) {
 };
 subtest short => sub {
     build_and_test
-        'typedef short cb(short, short)' =>
-        <<'', [ CodeRef [ [ Short, Short ] => Short ] ], Short, [ 100, 200 ], -600, -600;
+        'typedef short cb(short, short)' => <<'', [ CodeRef [ [ Short, Short ] => Short ] ], Short, [ 100, 200 ], -600, -600;
 #include "std.h"
 // ext: .c
 typedef short cb(short, short);
@@ -183,8 +170,7 @@ unsigned short fn(cb *CodeRef) {
 };
 subtest int => sub {
     build_and_test
-        'typedef int cb(int, int)' =>
-        <<'', [ CodeRef [ [ Int, Int ] => Int ] ], Int, [ 100, 200 ], -600, -600;
+        'typedef int cb(int, int)' => <<'', [ CodeRef [ [ Int, Int ] => Int ] ], Int, [ 100, 200 ], -600, -600;
 #include "std.h"
 // ext: .c
 typedef int cb(int, int);
@@ -195,8 +181,7 @@ int fn(cb *CodeRef) {
 };
 subtest uint => sub {
     build_and_test
-        'typedef unsigned int cb(unsigned int, unsigned int)' =>
-        <<'', [ CodeRef [ [ UInt, UInt ] => UInt ] ], UInt, [ 100, 200 ], 600, 600;
+        'typedef unsigned int cb(unsigned int, unsigned int)' => <<'', [ CodeRef [ [ UInt, UInt ] => UInt ] ], UInt, [ 100, 200 ], 600, 600;
 #include "std.h"
 // ext: .c
 typedef int cb(unsigned int, unsigned int);
@@ -207,8 +192,7 @@ unsigned int fn(cb *CodeRef) {
 };
 subtest long => sub {
     build_and_test
-        'typedef long cb(long, long)' =>
-        <<'', [ CodeRef [ [ Long, Long ] => Long ] ], Long, [ 100, 200 ], -600, -600;
+        'typedef long cb(long, long)' => <<'', [ CodeRef [ [ Long, Long ] => Long ] ], Long, [ 100, 200 ], -600, -600;
 #include "std.h"
 // ext: .c
 typedef long cb(long, long);
@@ -219,8 +203,7 @@ long fn(cb *CodeRef) {
 };
 subtest ulong => sub {
     build_and_test
-        'typedef unsigned long cb(unsigned long, unsigned long)' =>
-        <<'', [ CodeRef [ [ ULong, ULong ] => ULong ] ], ULong, [ 100, 200 ], 600, 600;
+        'typedef unsigned long cb(unsigned long, unsigned long)' => <<'', [ CodeRef [ [ ULong, ULong ] => ULong ] ], ULong, [ 100, 200 ], 600, 600;
 #include "std.h"
 // ext: .c
 typedef long cb(unsigned long, unsigned long);
@@ -231,8 +214,7 @@ unsigned long fn(cb *CodeRef) {
 };
 subtest longlong => sub {
     build_and_test
-        'typedef long long cb(long long, long long)' =>
-        <<'', [ CodeRef [ [ LongLong, LongLong ] => LongLong ] ], LongLong, [ 100, 200 ], -600, -600;
+        'typedef long long cb(long long, long long)' => <<'', [ CodeRef [ [ LongLong, LongLong ] => LongLong ] ], LongLong, [ 100, 200 ], -600, -600;
 #include "std.h"
 // ext: .c
 typedef long cb(long long, long long);
@@ -255,8 +237,7 @@ unsigned long long fn(cb *CodeRef) {
 };
 subtest size_t => sub {
     build_and_test
-        'typedef size_t cb(size_t, size_t)' =>
-        <<'', [ CodeRef [ [ Size_t, Size_t ] => Size_t ] ], Size_t, [ 100, 200 ], 300, 300;
+        'typedef size_t cb(size_t, size_t)' => <<'', [ CodeRef [ [ Size_t, Size_t ] => Size_t ] ], Size_t, [ 100, 200 ], 300, 300;
 #include "std.h"
 // ext: .c
 typedef size_t cb(size_t, size_t);
@@ -314,72 +295,10 @@ const wchar_t * fn(cb *CodeRef) {
 }
 
 };
-subtest svptr => sub {
-    use ExtUtils::CBuilder;
-    use Path::Tiny qw[tempfile];
-    my $name = <<'';
-#define PERL_NO_GET_CONTEXT 1
-#include <EXTERN.h>
-#include <perl.h>
-#include <perliol.h>
-#define NO_XSLOCKS /* XSUB.h will otherwise override various things we need */
-#include <XSUB.h>
-#define NEED_sv_2pv_flags
-#include "patchlevel.h" /* for local_patches */
-#include "std.h"
-// ext: .c
-typedef SV * cb(SV *, SV *);
-SV * fn(cb *CodeRef) {
-    dTHX;
-    SV *hv, *av;
-    /*{
-        HV * h = newHV();
-	    hv = newRV_inc(MUTABLE_SV(h));
-    }
-    {
-        AV * a = newAV();
-        //av_push_simple(a, newSVpvs_share("wow"));
-	    av = newRV_inc(MUTABLE_SV(a));
-    }*/
-    hv = newSV(0);
-    av = newSV(0);
-    return CodeRef(hv, av);
-}
-int boot_basict() {
-    return 1;
-}
-//
-
-    my $opt = tempfile( UNLINK => 1, SUFFIX => $name =~ m[^\s*//\s*ext:\s*\.c$]ms ? '.c' : '.cxx' )
-        ->absolute;
-    my $b        = ExtUtils::CBuilder->new();
-    my $obj_file = $b->compile( source => $opt->stringify );
-    my $lib_file = $b->link( objects => $obj_file, module_name => 'basict' );
-
-    #~ diag $opt;
-    diag `nm $lib_file`;
-    diag $obj_file;
-    diag $lib_file;
-    ok $lib_file;
-};
 subtest sv => sub {
     use ExtUtils::Embed;
-
-    #~ my $flags = `$^X -MExtUtils::Embed -e ccopts -e ldopts`;
-    #~ $flags =~ s[\R][ ]g;
-    #~ $flags .= ' -Wl,-k,-export-all-symbols -static ' if $^O eq 'MSWin32';
-    use Config;
-    my $flags = join ' ', '-DBUILDING_DLL=1', $Config{'ccflags'}, $Config{'optimize'}, (
-        map {qq[-I"$_"]} './', $Config{'incpath'},
-        $Config{'incpath'},    $Config{'archlib'} . '/CORE/'
-        ), (
-        map {qq[-L"$_"]} './', $Config{'incpath'},
-        $Config{'incpath'},    $Config{'archlib'} . '/CORE/'
-        ),
-        $Config{ldflags}, $Config{perllibs}, $Config{libs}, $Config{'lddlflags'};
-    $flags =~ s[-lole32]['-lole32 -lperl5' . sub { [split /\./, $^V] }->()->[1]]eg;
-    $flags =~ s[-mdll][]g;
-    diag $flags;
+    my $flags = `$^X -MExtUtils::Embed -e ccopts -e ldopts`;
+    $flags =~ s[\R][ ]g;
     build_and_test    # {}, ['wow']
         'typedef const SV* * cb(SV*, SV*)' =>
         <<'', [ CodeRef [ [ Pointer [SV], Pointer [SV] ] => Pointer [SV] ] ], Pointer [SV], [ undef, undef ], [100], [100], $flags;
@@ -421,11 +340,9 @@ SV * fn(cb *CodeRef) {
 #define POINTER_FLAG 'P'
 #define SV_FLAG '?'
 subtest enum => sub {
-    typedef TV =>
-        Enum [ [ FOX => 11 ], [ CNN => 25 ], [ ESPN => 15 ], [ HBO => 22 ], [ NBC => 32 ] ];
+    typedef TV => Enum [ [ FOX => 11 ], [ CNN => 25 ], [ ESPN => 15 ], [ HBO => 22 ], [ NBC => 32 ] ];
     build_and_test
-        'typedef enum TV cb(enum TV)' =>
-        <<'', [ CodeRef [ [ TV() ] => TV() ] ], TV(), [ int TV::ESPN() ], TV::HBO(), int TV::HBO();
+        'typedef enum TV cb(enum TV)' => <<'', [ CodeRef [ [ TV() ] => TV() ] ], TV(), [ int TV::ESPN() ], TV::HBO(), int TV::HBO();
 #include "std.h"
 // ext: .c
 enum TV { FOX = 11, CNN = 25, ESPN = 15, HBO = 22, MAX = 30, NBC = 32 };

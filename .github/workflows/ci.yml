@@ -36,7 +36,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        flags: '${{ fromJSON(needs.setup.outputs.matrix).flags }}'
+        flags:
+          - ''
+          - -Dusethreads
+          - -Duselongdouble
+          - -Dusequadmath
         os:
           - ubuntu-22.04
         perl: '${{ fromJSON(needs.setup.outputs.matrix).perl }}'
@@ -92,7 +96,7 @@ jobs:
       - env:
           DATA: |
             {
-              "perl": ["5.38.2", "5.36.3", "5.34.3"],
+              "perl":  ["5.38.2", "5.36.3", "5.34.3", "5.32.1"],
               "flags": ["", "-Dusethreads", "-Duselongdouble", "-Dusequadmath"]
             }
         id: matrix
@@ -104,12 +108,18 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        flags: '${{ fromJSON(needs.setup.outputs.matrix).flags }}'
+        exclude:
+          - perl: 5.34.3
+          - flags: -Duselongdouble
+          - flags: -Dusequadmath
+        flags:
+          - -Dusethreads
+          - ''
         os:
           - windows-2022
         perl: '${{ fromJSON(needs.setup.outputs.matrix).perl }}'
       max-parallel: 25
-    uses: sanko/Fiction/.github/workflows/core.yml@main
+    uses: sanko/Fiction/.github/workflows/strawberry.yml@main
     with:
       flags: '${{ matrix.flags }}'
       os: '${{ matrix.os }}'

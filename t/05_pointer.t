@@ -777,10 +777,11 @@ END
 };
 subtest '...why would you do this?' => sub {
     subtest 'Pointer[SV]' => sub {
-        use ExtUtils::Embed;
-        my $flags = `$^X -MExtUtils::Embed -e ccopts -e ldopts`;
-        $flags =~ s[\R][ ]g;
-        my $lib = compile_test_lib( <<'END', $flags );
+    SKIP: {
+            use ExtUtils::Embed;
+            my $flags = `$^X -MExtUtils::Embed -e ccopts -e ldopts`;
+            $flags =~ s[\R][ ]g;
+            my $lib = compile_test_lib( <<'END', $flags );
 #include <EXTERN.h>
 #include <perl.h>
 #include <XSUB.h>
@@ -793,12 +794,13 @@ DLLEXPORT SV* inc(SV * arg) {
     return arg;
 }
 END
-        diag '$lib: ' . $lib;
-        ok my $_lib = load_library($lib),                                   'lib is loaded [debugging]';
-        ok Affix::affix( $lib => 'inc', [ Pointer [SV] ] => Pointer [SV] ), 'SV* inc(SV *)';
-        my $name = 'John';
-        is inc($name), 'Joho', 'sv passed and returned from symbol';
-        is $name,      'Joho', 'sv was modified in place';
+            diag '$lib: ' . $lib;
+            ok my $_lib = load_library($lib),                                   'lib is loaded [debugging]';
+            ok Affix::affix( $lib => 'inc', [ Pointer [SV] ] => Pointer [SV] ), 'SV* inc(SV *)';
+            my $name = 'John';
+            is inc($name), 'Joho', 'sv passed and returned from symbol';
+            is $name,      'Joho', 'sv was modified in place';
+        }
     };
 };
 subtest 'return function pointer' => sub {

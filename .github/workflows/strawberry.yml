@@ -1,0 +1,43 @@
+---
+jobs:
+  build:
+    name: "${{ inputs.flags == '-Dusethreads' && 'Strawberry' || 'Default' }}"
+    runs-on: '${{ inputs.os }}'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up perl
+        uses: shogo82148/actions-setup-perl@v1
+        with:
+          distribution: "${{ inputs.flags == '-Dusethreads' && 'strawberry' || 'default' }}"
+          install-modules-args: --with-configure --installdeps --notest -v .
+          install-modules-with: cpanm
+          multi-thread: "${{ inputs.flags == '-Dusethreads' && true || false }}"
+          perl-version: '${{ inputs.perl }}'
+      - run: |
+          perl -V
+          
+          perl Build.PL
+          
+          ./Build test --verbose
+          
+          perl -e 'print $^V' > test-output-${{ inputs.os }}-${{ inputs.perl }}${{ inputs.flags }}.txt
+      - name: Upload results as artifact
+        uses: actions/upload-artifact@v4.0.0
+        with:
+          if-no-files-found: error
+          name: 'test-output-${{ inputs.os }}-${{ inputs.perl }}${{ inputs.flags }}'
+          path: 'test-output-${{ inputs.os }}-${{ inputs.perl }}${{ inputs.flags }}.txt'
+          retention-days: 1
+name: windows module
+on:
+  workflow_call:
+    inputs:
+      flags:
+        required: false
+        type: string
+      os:
+        required: true
+        type: string
+      perl:
+        required: true
+        type: string
