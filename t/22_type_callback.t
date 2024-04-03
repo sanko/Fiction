@@ -301,9 +301,9 @@ subtest sv => sub {
     use ExtUtils::Embed;
     my $flags = `$^X -MExtUtils::Embed -e ccopts -e ldopts`;
     $flags =~ s[\R][ ]g;
-    build_and_test    # {}, ['wow']
+    build_and_test
         'typedef const SV* * cb(SV*, SV*)' =>
-        <<'', [ CodeRef [ [ Pointer [SV], Pointer [SV] ] => Pointer [SV] ] ], Pointer [SV], [ undef, undef ], [100], [100], $flags;
+        <<'', [ CodeRef [ [ Pointer [SV], Pointer [SV] ] => Pointer [SV] ] ], Pointer [SV], [ {}, [] ], [100], [100], $flags;
 #define PERL_NO_GET_CONTEXT 1
 #include <EXTERN.h>
 #include <perl.h>
@@ -318,17 +318,16 @@ typedef SV * cb(SV *, SV *);
 SV * fn(cb *CodeRef) {
     dTHX;
     SV *hv, *av;
-    /*{
+    {
         HV * h = newHV();
 	    hv = newRV_inc(MUTABLE_SV(h));
     }
     {
         AV * a = newAV();
-        //av_push_simple(a, newSVpvs_share("wow"));
 	    av = newRV_inc(MUTABLE_SV(a));
-    }*/
-    hv = newSV(0);
-    av = newSV(0);
+    }
+    //hv = (newSV(0));
+    //av = (newSV(0));
     return CodeRef(hv, av);
 }
 
