@@ -5,7 +5,25 @@ use Affix qw[:all];
 BEGIN { chdir '../' if !-d 't'; }
 use t::lib::helper;
 $|++;
-skip_all 'ignore';
+use Data::Dump;
+
+isa_ok my $ptr = Affix::sv2ptr( Pointer [Char], 'This is a test' ), ['Affix::Pointer'], 'This is a test';
+is $ptr->raw( Affix::Platform::SIZEOF_CHAR() * 14 ), 'This is a test', '$ptr->raw( ' . Affix::Platform::SIZEOF_CHAR() * 14 . ' )';
+free $ptr;
+{
+    my @types = (
+        Affix::Void(),  Affix::Bool(),   Affix::Char(), Affix::SChar(), Affix::UChar(),
+        Affix::Short(), Affix::UShort(), Affix::Int(),  Affix::UInt(),
+
+        # ...
+        Affix::Pointer [ Affix::Bool() ]
+    );
+    ddx \@types;
+    warn sprintf "%c => %3d [%s]", $_, $_, $_ for @types;
+    warn "$_" for @types;
+}
+warn 'left';
+done_testing;
 __END__
 subtest pin => sub {
     ok my $lib = compile_test_lib(<<''), 'build test lib';
