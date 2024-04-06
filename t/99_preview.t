@@ -6,9 +6,10 @@ BEGIN { chdir '../' if !-d 't'; }
 use t::lib::helper;
 $|++;
 use Data::Dump;
-
-isa_ok my $ptr = Affix::sv2ptr( Pointer [Char], 'This is a test' ), ['Affix::Pointer'], 'This is a test';
-is $ptr->raw( Affix::Platform::SIZEOF_CHAR() * 14 ), 'This is a test', '$ptr->raw( ' . Affix::Platform::SIZEOF_CHAR() * 14 . ' )';
+isa_ok my $ptr = Affix::sv2ptr( Pointer [Char], 'This is a test' ), ['Affix::Pointer'],
+    'This is a test';
+is $ptr->raw( Affix::Platform::SIZEOF_CHAR() * 14 ), 'This is a test',
+    '$ptr->raw( ' . Affix::Platform::SIZEOF_CHAR() * 14 . ' )';
 free $ptr;
 {
     my @types = (
@@ -21,6 +22,29 @@ free $ptr;
     ddx \@types;
     warn sprintf "%c => %3d [%s]", $_, $_, $_ for @types;
     warn "$_" for @types;
+}
+{
+
+    sub build_and_test {
+        my ( $name, $c, $arg_types, $ret_type, $arg1, $ret_check ) = @_;
+        subtest $name => sub {
+            plan 3;
+            ok my $lib    = compile_test_lib($c), 'build test lib';
+            isa_ok my $fn = Affix::wrap( $lib, 'fn', $arg_types, $ret_type ), [qw[Affix]],
+                'my $fn = ...';
+            is $fn->( defined $arg1 ? ref $arg1 eq 'ARRAY' ? @$arg1 : $arg1 : () ), $ret_check,
+                'return from $fn->(...) is correct';
+        }
+    }
+    build_and_test 'char fn(char)' => <<'', [Char], Char, 'a', 'b';
+#include "std.h"
+// ext: .c
+char fn(char i) {
+    wchar_t hey =L'は';
+    DumpHex(&hey, 16);
+    return i + 1;
+}
+
 }
 warn 'left';
 done_testing;

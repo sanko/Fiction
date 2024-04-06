@@ -55,9 +55,8 @@ DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointe
                 } break;
                 case WCHAR_FLAG: {
                     wchar_t *c;
-                    Newx(c, 2, wchar_t);
+                    Newxz(c, 1, wchar_t);
                     c[0] = (wchar_t)dcbArgLong(args);
-                    c[1] = 0;
                     SV *w = wchar2utf(aTHX_ c, 1);
                     SvUPGRADE(w, SVt_PVNV);
                     SvIVX(w) = SvIV(newSViv(c[0]));
