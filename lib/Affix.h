@@ -65,18 +65,14 @@ extern "C" {
 #define av_count(av) (AvFILL(av) + 1)
 #endif
 
-#include <dyncall.h>
-#include <dyncall_callback.h>
-#include <dynload.h>
-
-#include <dyncall_callf.h>
-#include <dyncall_value.h>
-
-#include <dyncall_signature.h>
-
-#include <dyncall/dyncall/dyncall_aggregate.h>
-
-#include <dyncall_version.h>
+#include <dyncall/dyncall.h>
+#include <dyncall/dyncall_callf.h>
+#include <dyncall/dyncall_value.h>
+#include <dyncall/dyncall_signature.h>
+#include <dyncall/dyncall_aggregate.h>
+#include <dyncall/dyncall_version.h>
+#include <dyncallback/dyncall_callback.h>
+#include <dynload/dynload.h>
 
 #if defined(DC__OS_Win32) || defined(DC__OS_Win64)
 #elif defined(DC__OS_MacOS)

@@ -280,7 +280,7 @@ sub process_cxx {
             'C++'                => ( $source =~ /\.cxx$/ ? 1 : 0 ),
             source               => $source,
             defines              => { VERSION => qq/"$version"/, XS_VERSION => qq/"$version"/ },
-            include_dirs         => [ curdir, dirname($source), $pre->child( $opt{meta}->name, 'include' )->stringify ],
+            include_dirs         => [ curdir, path('./dyncall')->realpath->stringify, dirname($source), $pre->child( $opt{meta}->name, 'include' )->stringify ],
             extra_compiler_flags => (
                 '-fPIC -std=c++14 ' . ( $opt{config}->get('osname') =~ /bsd/ ? '' : $CFLAGS ) . ( $DEBUG ? ' -ggdb3 -g -Wall -Wextra -pedantic' : '' )
             )
