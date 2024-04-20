@@ -268,6 +268,7 @@ following address will be aligned to `alignment`. */
 #define SLOT_POINTER_ADDR 0
 #define SLOT_POINTER_SUBTYPE 1
 #define SLOT_POINTER_COUNT 2
+#define SLOT_POINTER_POSITION 3
 
 #define AXT_TYPE_STRINGIFY(t) SvPV_nolen(*av_fetch(MUTABLE_AV(SvRV(t)), SLOT_TYPE_STRINGIFY, 0))
 #define AXT_TYPE_NUMERIC(t) SvIV(*av_fetch(MUTABLE_AV(SvRV(t)), SLOT_TYPE_NUMERIC, 0))
@@ -287,6 +288,7 @@ following address will be aligned to `alignment`. */
 #define AXT_POINTER_ADDR(t) *av_fetch(MUTABLE_AV(SvRV(t)), SLOT_POINTER_ADDR, 0)
 #define AXT_POINTER_SUBTYPE(t) *av_fetch(MUTABLE_AV(SvRV(t)), SLOT_POINTER_SUBTYPE, 0)
 #define AXT_POINTER_COUNT(t) SvIV(*av_fetch(MUTABLE_AV(SvRV(t)), SLOT_POINTER_COUNT, 0))
+#define AXT_POINTER_POSITION(t) SvIV(*av_fetch(MUTABLE_AV(SvRV(t)), SLOT_POINTER_POSITION, 0))
 
 // marshal.cxx
 size_t padding_needed_for(size_t offset, size_t alignment);

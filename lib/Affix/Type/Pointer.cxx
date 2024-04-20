@@ -20,6 +20,8 @@ XS_INTERNAL(Affix_cast) {
             sv_setref_pv(TMP, NULL, ptr);
             av_store(RETVALAV, SLOT_POINTER_ADDR, TMP);
             av_store(RETVALAV, SLOT_POINTER_SUBTYPE, newSVsv(ST(1)));
+            av_store(RETVALAV, SLOT_POINTER_COUNT, newSViv(1));
+            av_store(RETVALAV, SLOT_POINTER_POSITION, newSViv(0));
         }
         SV *RETVAL = newRV_noinc(MUTABLE_SV(RETVALAV)); // Create a reference to the AV
         sv_bless(RETVAL, gv_stashpvn("Affix::Pointer::Unmanaged", 25, GV_ADD));
@@ -48,6 +50,8 @@ XS_INTERNAL(Affix_sv2ptr) {
             sv_setref_pv(TMP, NULL, ptr);
             av_store(RETVALAV, SLOT_POINTER_ADDR, TMP);
             av_store(RETVALAV, SLOT_POINTER_SUBTYPE, newSVsv(ST(0)));
+            av_store(RETVALAV, SLOT_POINTER_COUNT, newSViv(1));
+            av_store(RETVALAV, SLOT_POINTER_POSITION, newSViv(0));
         }
         SV *RETVAL = newRV_noinc(MUTABLE_SV(RETVALAV)); // Create a reference to the AV
         sv_bless(RETVAL, gv_stashpvn("Affix::Pointer::Unmanaged", 25, GV_ADD));
@@ -120,6 +124,14 @@ XS_INTERNAL(Affix_Pointer_sv) {
         SV *ptr_sv = AXT_POINTER_ADDR(xsub_tmp_sv);
         if (SvOK(ptr_sv)) {
             IV tmp = SvIV(MUTABLE_SV(SvRV(ptr_sv)));
+            //~ warn("AXT_POINTER_POSITION(xsub_tmp_sv) = %d", AXT_POINTER_POSITION(xsub_tmp_sv));
+            //~ warn("AXT_TYPE_SIZEOF(AXT_POINTER_SUBTYPE(xsub_tmp_sv)) = %d",
+                 //~ AXT_TYPE_SIZEOF(AXT_POINTER_SUBTYPE(xsub_tmp_sv)));
+            //~ warn("AXT_TYPE_SIZEOF(AXT_TYPE_SUBTYPE(AXT_POINTER_SUBTYPE(xsub_tmp_sv))) = %d",
+                 //~ AXT_TYPE_SIZEOF(AXT_TYPE_SUBTYPE(AXT_POINTER_SUBTYPE(xsub_tmp_sv))));
+
+            tmp += (AXT_TYPE_SIZEOF(AXT_TYPE_SUBTYPE(AXT_POINTER_SUBTYPE(xsub_tmp_sv))) *
+                    AXT_POINTER_POSITION(xsub_tmp_sv));
             DCpointer ptr;
             ptr = INT2PTR(DCpointer, tmp);
             ST(0) = sv_2mortal(ptr2sv(aTHX_ AXT_POINTER_SUBTYPE(xsub_tmp_sv), ptr));

@@ -2186,7 +2186,11 @@ XS_EXTERNAL(boot_Affix) {
     export_constant("Affix", "SLOT_TYPE_TYPEDEF", "flags", SLOT_TYPE_TYPEDEF);
     export_constant("Affix", "SLOT_CODEREF_ARGS", "flags", SLOT_CODEREF_ARGS);
     export_constant("Affix", "SLOT_CODEREF_SIG", "flags", SLOT_CODEREF_SIG);
+
+    export_constant("Affix", "SLOT_POINTER_ADDR", "flags", SLOT_POINTER_ADDR);
     export_constant("Affix", "SLOT_POINTER_SUBTYPE", "flags", SLOT_POINTER_SUBTYPE);
+    export_constant("Affix", "SLOT_POINTER_COUNT", "flags", SLOT_POINTER_COUNT);
+    export_constant("Affix", "SLOT_POINTER_POSITION", "flags", SLOT_POINTER_POSITION);
 
     //
     //~ boot_Affix_Aggregate(aTHX_ cv);

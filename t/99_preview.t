@@ -44,6 +44,83 @@ char fn(char i) {
 is Affix::String, 'Pointer[ Const[ Char ] ]', 'stringify const char *';
 use Data::Dump;
 ddx CodeRef [ [] => Void ];
+subtest compiled => sub {
+    my $lib = compile_test_lib(<<'END');
+#include "std.h"
+// ext: .c
+DLLEXPORT int ptr(bool * ptr) {
+    if(ptr == NULL) return -1;
+    int _true = 0;
+    for (int i = 0; i < 4; i++)
+        _true += !!ptr[i];
+    return _true;
+}
+
+DLLEXPORT int * ptr_return() {
+    int* flags = (int*)malloc(sizeof(int) * 5);
+    for (int i = 0; i<=5; i++) flags[i] = i;
+    flags[2] = 200;
+    return flags;
+}
+
+DLLEXPORT bool * ptr_return_NULL() {
+    return NULL;
+}
+END
+    subtest 'int ptr(bool *)' => sub {
+        ok my $ax = Affix::wrap( $lib => 'ptr', [ Pointer [Bool] ] => Int ), 'wrap';
+        my $ptr = [ 1, 0, 1, 1 ];
+        is $ax->($ptr),  3,  'C understood we sent three true values';
+        is $ax->(undef), -1, 'C understood we sent a NULL pointer';
+    };
+    my $ptr = Affix::wrap( $lib, 'ptr_return', [], Pointer [Int] )->();
+    ddx $ptr;
+
+    package Affix::Pointer {    # [address, type, length = 0, offset = 0]
+        use overload
+
+            #~ '=' =>sub{
+            #~ use Data::Dump;
+            #~ ddx \@_;
+            #~ \shift;
+            #~ },
+            '++' => sub {
+            $_[0][3]++;
+            $_[0];
+            },
+            '--' => sub {
+            $_[0][3]--;
+            $_[0];
+            },
+            '""' => sub ( $ptr, $x, $mutate = () ) {
+            $ptr->[0] + ( $ptr->[3] * $ptr->[1]->sizeof );
+            },    # return address (address + (offset * sizeof(type))
+            'int' => sub {...},    # return address (address + (offset * sizeof(type))
+            '${}' => sub {
+            \shift->sv();
+            },                     # return current element (address + (offset * sizeof(type))
+            'bool'   => sub { return 1; ... },    # return true if ! NULL
+            fallback => 1;
+        #
+        sub cast( $ptr, $new_type ) {
+        }
+
+        #~ DESTROY { warn '# TODO: call free(...)' }
+    };
+
+    package Affix::Pointer::Unmanaged {    # [address, type, length = 0, offset = 0]
+        our @ISA = ('Affix::Pointer');
+
+        #~ DESTROY { }
+    }
+
+    #~ ddx $ptr;
+    is $$ptr, 0;
+    ok $ptr++;
+    is $$ptr, 1;
+    ok $ptr++;
+    is $$ptr, 200;
+};
 
 #~ diag CodeRef [ [] => Void ];
 warn 'left';

@@ -423,6 +423,9 @@ SV *ptr2obj(pTHX_ SV *type, DCpointer ptr) {
         av_store(RETVALAV, SLOT_POINTER_ADDR, TMP);
         av_store(RETVALAV, SLOT_POINTER_SUBTYPE, newSVsv(type));
         //~ av_store(RETVALAV, SLOT_POINTER_COUNT, newSViv(AXT_POINTER_COUNT(type)));
+
+        av_store(RETVALAV, SLOT_POINTER_COUNT, newSViv(1));
+        av_store(RETVALAV, SLOT_POINTER_POSITION, newSViv(0));
     }
     ret = newRV_noinc(MUTABLE_SV(RETVALAV)); // Create a reference to the AV
     sv_bless(ret, gv_stashpvn("Affix::Pointer::Unmanaged", 25, GV_ADD));
