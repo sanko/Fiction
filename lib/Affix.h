@@ -66,10 +66,10 @@ extern "C" {
 #endif
 
 #include <dyncall/dyncall.h>
-#include <dyncall/dyncall_callf.h>
-#include <dyncall/dyncall_value.h>
-#include <dyncall/dyncall_signature.h>
 #include <dyncall/dyncall_aggregate.h>
+#include <dyncall/dyncall_callf.h>
+#include <dyncall/dyncall_signature.h>
+#include <dyncall/dyncall_value.h>
 #include <dyncall/dyncall_version.h>
 #include <dyncallback/dyncall_callback.h>
 #include <dynload/dynload.h>
