@@ -546,7 +546,6 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
         else {
             SV *subtype = AXT_TYPE_SUBTYPE(a->restype);
             char subtype_c = AXT_TYPE_NUMERIC(subtype);
-            if (subtype_c == CONST_FLAG) subtype_c = AXT_TYPE_NUMERIC(AXT_TYPE_SUBTYPE(subtype));
             switch (subtype_c) {
             case CHAR_FLAG:
             case UCHAR_FLAG:
@@ -2158,12 +2157,6 @@ XS_EXTERNAL(boot_Affix) {
     export_constant("Affix", "POINTER_FLAG", "flags", POINTER_FLAG);
     export_constant("Affix", "SV_FLAG", "flags", SV_FLAG);
 
-    // Qualifiers
-    export_constant("Affix", "CONST_FLAG", "all", CONST_FLAG);
-    export_constant("Affix", "VOLATILE_FLAG", "all", VOLATILE_FLAG);
-    export_constant("Affix", "RESTRICT_FLAG", "all", RESTRICT_FLAG);
-    export_constant("Affix", "REFERENCE_FLAG", "all", REFERENCE_FLAG);
-
     // calling conventions
     export_constant("Affix", "RESET_FLAG", "flags", RESET_FLAG);
     export_constant("Affix", "THIS_FLAG", "flags", THIS_FLAG);
@@ -2185,11 +2178,14 @@ XS_EXTERNAL(boot_Affix) {
     export_constant("Affix", "SLOT_TYPE_SIZEOF", "flags", SLOT_TYPE_SIZEOF);
     export_constant("Affix", "SLOT_TYPE_ALIGNMENT", "flags", SLOT_TYPE_ALIGNMENT);
     export_constant("Affix", "SLOT_TYPE_OFFSET", "flags", SLOT_TYPE_OFFSET);
-    export_constant("Affix", "SLOT_TYPE_SUBTYPE", "flags", SLOT_TYPE_SUBTYPE);
+    export_constant("Affix", "SLOT_TYPE_ARRAYLEN", "flags", SLOT_TYPE_ARRAYLEN);
+    export_constant("Affix", "SLOT_TYPE_CONST", "flags", SLOT_TYPE_CONST);
+    export_constant("Affix", "SLOT_TYPE_VOLATILE", "flags", SLOT_TYPE_VOLATILE);
+    export_constant("Affix", "SLOT_TYPE_RESTRICT", "flags", SLOT_TYPE_RESTRICT);
     export_constant("Affix", "SLOT_TYPE_AGGREGATE", "flags", SLOT_TYPE_AGGREGATE);
     export_constant("Affix", "SLOT_TYPE_TYPEDEF", "flags", SLOT_TYPE_TYPEDEF);
     export_constant("Affix", "SLOT_CODEREF_ARGS", "flags", SLOT_CODEREF_ARGS);
-
+    export_constant("Affix", "SLOT_CODEREF_SIG", "flags", SLOT_CODEREF_SIG);
     export_constant("Affix", "SLOT_POINTER_SUBTYPE", "flags", SLOT_POINTER_SUBTYPE);
 
     //

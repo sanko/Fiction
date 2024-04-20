@@ -156,11 +156,6 @@ static const char *dlerror(void) {
 #define THUMB_FLAG 'g'
 #define SYSCALL_FLAG 'H'
 
-#define CONST_FLAG 'K'
-#define VOLATILE_FLAG 'V'
-#define RESTRICT_FLAG 'r'
-#define REFERENCE_FLAG 'R'
-
 /* Flag for whether we should free a string after passing it or not. */
 #define AFFIX_TYPE_NO_FREE_STR 0
 #define AFFIX_TYPE_FREE_STR 1
@@ -253,7 +248,6 @@ following address will be aligned to `alignment`. */
 #define ALIGNOF_INTPTR_T ALIGNOF(intptr_t)
 #define ALIGNOF_SIZE_T ALIGNOF(size_t)
 
-// [ text, id, size, align, offset, subtype, length, aggregate, typedef ]
 #define SLOT_TYPE_STRINGIFY 0
 #define SLOT_TYPE_NUMERIC 1
 #define SLOT_TYPE_SIZEOF 2
@@ -261,18 +255,15 @@ following address will be aligned to `alignment`. */
 #define SLOT_TYPE_OFFSET 4
 #define SLOT_TYPE_SUBTYPE 5
 #define SLOT_TYPE_ARRAYLEN 6
-#define SLOT_TYPE_AGGREGATE 7
-#define SLOT_TYPE_TYPEDEF 8
+#define SLOT_TYPE_CONST 7
+#define SLOT_TYPE_VOLATILE 8
+#define SLOT_TYPE_RESTRICT 9
+#define SLOT_TYPE_TYPEDEF 10
+#define SLOT_TYPE_AGGREGATE 11
 
-#define SLOT_CODEREF_STRINGIFY SLOT_TYPE_STRINGIFY
-#define SLOT_CODEREF_NUMERIC SLOT_TYPE_NUMERIC
-#define SLOT_CODEREF_SIZEOF SLOT_TYPE_SIZEOF
-#define SLOT_CODEREF_ALIGNMENT SLOT_TYPE_ALIGNMENT
-#define SLOT_CODEREF_OFFSET SLOT_TYPE_OFFSET
 #define SLOT_CODEREF_RET SLOT_TYPE_SUBTYPE
-#define SLOT_CODEREF_ARGS SLOT_TYPE_ARRAYLEN
-#define SLOT_CODEREF_SIG SLOT_TYPE_AGGREGATE
-#define SLOT_CODEREF_TYPEDEF SLOT_TYPE_TYPEDEF
+#define SLOT_CODEREF_ARGS 12
+#define SLOT_CODEREF_SIG 13
 
 #define SLOT_POINTER_ADDR 0
 #define SLOT_POINTER_SUBTYPE 1

@@ -370,13 +370,13 @@ void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
             }
         }
     } break;
-    case CONST_FLAG: { // Basically a no-op
-        SV *subtype = AXT_TYPE_SUBTYPE(type);
-        if (UNLIKELY(!sv_derived_from(subtype, "Affix::Type")))
-            croak("subtype is not of type Affix::Type");
-        len = (SvROK(data) && SvTYPE(SvRV(data)) == SVt_PVAV) ? av_count(MUTABLE_AV(data)) : 1;
-        ret = (const DCpointer)sv2ptr(aTHX_ subtype, data);
-    } break;
+        //~ case CONST_FLAG: { // Basically a no-op
+        //~ SV *subtype = AXT_TYPE_SUBTYPE(type);
+        //~ if (UNLIKELY(!sv_derived_from(subtype, "Affix::Type")))
+        //~ croak("subtype is not of type Affix::Type");
+        //~ len = (SvROK(data) && SvTYPE(SvRV(data)) == SVt_PVAV) ? av_count(MUTABLE_AV(data)) : 1;
+        //~ ret = (const DCpointer)sv2ptr(aTHX_ subtype, data);
+    //~ } break;
     case SV_FLAG: {
         SvREFCNT_inc(data); // TODO: This might leak; I'm just being lazy
         ret = MUTABLE_PTR(data);
@@ -479,10 +479,6 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
     case POINTER_FLAG: {
         SV *subtype = AXT_TYPE_SUBTYPE(type);
         char subtype_c = (char)AXT_TYPE_NUMERIC(subtype);
-        while (subtype_c == CONST_FLAG) {
-            subtype = AXT_TYPE_SUBTYPE(subtype);
-            subtype_c = AXT_TYPE_NUMERIC(subtype);
-        }
         size_t len = AXT_TYPE_ARRAYLEN(type);
         switch (subtype_c) {
         case POINTER_FLAG: {
@@ -520,12 +516,6 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
             }
         }
         }
-    } break;
-    case CONST_FLAG: { // No-Op
-        SV *subtype = AXT_TYPE_SUBTYPE(type);
-        if (UNLIKELY(!sv_derived_from(subtype, "Affix::Type")))
-            croak("subtype is not of type Affix::Type");
-        ret = ptr2sv(aTHX_ subtype, ptr);
     } break;
     case SV_FLAG:
         ret = MUTABLE_SV(ptr);
@@ -661,10 +651,6 @@ SV *ptr2svx(pTHX_ DCpointer ptr, SV *type) {
         case POINTER_FLAG: {
             SV *subtype = AXT_TYPE_SUBTYPE(type);
             char subtype_c = (char)AXT_TYPE_NUMERIC(subtype);
-            if (subtype_c == CONST_FLAG) {
-                subtype = AXT_TYPE_SUBTYPE(subtype);
-                subtype_c = AXT_TYPE_NUMERIC(subtype);
-            }
             switch (subtype_c) {
             case CHAR_FLAG:
             case SCHAR_FLAG:
@@ -731,9 +717,6 @@ SV *ptr2svx(pTHX_ DCpointer ptr, SV *type) {
                     #define AFFIX_TYPE_STD_STRING 50
                     #define AFFIX_TYPE_INSTANCE_OF 52
                     */
-        case CONST_FLAG:
-            retval = ptr2sv(aTHX_ AXT_TYPE_SUBTYPE(type), ptr);
-            break;
         default:
             croak("Unhandled type: %s in ptr2sv", AXT_TYPE_STRINGIFY(type));
         }

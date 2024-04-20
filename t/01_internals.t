@@ -113,8 +113,8 @@ subtest 'types' => sub {
     };
     subtest 'String' => sub {
         isa_ok my $string = String, ['Affix::Type'];
-        is $string,     'Pointer[ Const [ Char ] ]', 'stringify';
-        is chr $string, 'P',                         'numify';
+        is $string,     'Pointer[ Const[ Char ] ]', 'stringify';
+        is chr $string, 'P',                        'numify';
     };
 };
 subtest 'compiled lib' => sub {

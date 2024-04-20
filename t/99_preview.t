@@ -6,15 +6,12 @@ BEGIN { chdir '../' if !-d 't'; }
 use t::lib::helper;
 $|++;
 use Data::Dump;
-isa_ok my $ptr = Affix::sv2ptr( Pointer [Char], 'This is a test' ), ['Affix::Pointer'],
-    'This is a test';
-is $ptr->raw( Affix::Platform::SIZEOF_CHAR() * 14 ), 'This is a test',
-    '$ptr->raw( ' . Affix::Platform::SIZEOF_CHAR() * 14 . ' )';
+isa_ok my $ptr = Affix::sv2ptr( Pointer [Char], 'This is a test' ), ['Affix::Pointer'], 'This is a test';
+is $ptr->raw( Affix::Platform::SIZEOF_CHAR() * 14 ), 'This is a test', '$ptr->raw( ' . Affix::Platform::SIZEOF_CHAR() * 14 . ' )';
 free $ptr;
 {
     my @types = (
-        Affix::Void(),  Affix::Bool(),   Affix::Char(), Affix::SChar(), Affix::UChar(),
-        Affix::Short(), Affix::UShort(), Affix::Int(),  Affix::UInt(),
+        Affix::Void(), Affix::Bool(), Affix::Char(), Affix::SChar(), Affix::UChar(), Affix::Short(), Affix::UShort(), Affix::Int(), Affix::UInt(),
 
         # ...
         Affix::Pointer [ Affix::Bool() ]
@@ -30,10 +27,8 @@ free $ptr;
         subtest $name => sub {
             plan 3;
             ok my $lib    = compile_test_lib($c), 'build test lib';
-            isa_ok my $fn = Affix::wrap( $lib, 'fn', $arg_types, $ret_type ), [qw[Affix]],
-                'my $fn = ...';
-            is $fn->( defined $arg1 ? ref $arg1 eq 'ARRAY' ? @$arg1 : $arg1 : () ), $ret_check,
-                'return from $fn->(...) is correct';
+            isa_ok my $fn = Affix::wrap( $lib, 'fn', $arg_types, $ret_type ), [qw[Affix]], 'my $fn = ...';
+            is $fn->( defined $arg1 ? ref $arg1 eq 'ARRAY' ? @$arg1 : $arg1 : () ), $ret_check, 'return from $fn->(...) is correct';
         }
     }
     build_and_test 'char fn(char)' => <<'', [Char], Char, 'a', 'b';
@@ -46,6 +41,11 @@ char fn(char i) {
 }
 
 }
+is Affix::String, 'Pointer[ Const[ Char ] ]', 'stringify const char *';
+use Data::Dump;
+ddx CodeRef [ [] => Void ];
+
+#~ diag CodeRef [ [] => Void ];
 warn 'left';
 done_testing;
 __END__

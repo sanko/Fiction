@@ -121,90 +121,11 @@ package Affix 0.50 {    # 'FFI' is my middle name!
 
         # Aggregates
         @Affix::Type::Struct::ISA = @Affix::Type::Union::ISA
-
-            # Qualifiers
-            = @Affix::Flag::Const::ISA = @Affix::Flag::Volatile::ISA = @Affix::Flag::Restrict::ISA = @Affix::Flag::Reference::ISA
             #
             = @Affix::Type::Pointer::ISA = @Affix::Type::CodeRef::ISA = @Affix::Type::Function::ISA = 'Affix::Type::Parameterized';
         @Affix::CC::Reset::ISA = @Affix::CC::This::ISA = @Affix::CC::Ellipsis::ISA = @Affix::CC::Varargs::ISA = @Affix::CC::CDecl::ISA
             = @Affix::CC::STDcall::ISA = @Affix::CC::MSFastcall::ISA = @Affix::CC::GNUFastcall::ISA = @Affix::CC::MSThis::ISA
             = @Affix::CC::GNUThis::ISA = @Affix::CC::Arm::ISA = @Affix::CC::Thumb::ISA = @Affix::CC::Syscall::ISA = 'Affix::CC';
-
-        # Qualifier flags
-        sub Const : prototype(;$) {    # [ text, id, size, align, offset, subtype, sizeof, package ]
-
-            #~ use Data::Dump;
-            #~ ddx \@_;
-            my $sizeof  = 0;
-            my $packed  = 0;
-            my $subtype = undef;
-            if (@_) {
-                ($subtype) = @{ +shift };
-
-                #~ ddx $subtype;
-                my $__sizeof = $subtype->sizeof;
-                my $__align  = $subtype->align;
-                $sizeof += $packed ? 0 : Affix::Platform::padding_needed_for( $sizeof, $__align > $__sizeof ? $__sizeof : $__align );
-                $sizeof += $__sizeof;
-            }
-            else {
-                warn scalar caller;
-                Carp::croak 'Const requires a type' unless scalar caller =~ /^Affix(::.+)?$/;
-                $subtype = Void();    # Defaults to Pointer[Void]
-            }
-            bless( [ 'Const [ ' . $subtype . ' ]', CONST_FLAG(), $subtype->sizeof(), $subtype->align(), undef, $subtype, $sizeof, undef ],
-                'Affix::Flag::Const' );
-        }
-
-        sub Volatile : prototype(;$) {    # [ text, id, size, align, offset, subtype, sizeof, package ]
-
-            #~ use Data::Dump;
-            #~ ddx \@_;
-            my $sizeof  = 0;
-            my $packed  = 0;
-            my $subtype = undef;
-            if (@_) {
-                ($subtype) = @{ +shift };
-
-                #~ ddx $subtype;
-                my $__sizeof = $subtype->sizeof;
-                my $__align  = $subtype->align;
-                $sizeof += $packed ? 0 : padding_needed_for( $sizeof, $__align > $__sizeof ? $__sizeof : $__align );
-                $sizeof += $__sizeof;
-            }
-            else {
-                warn scalar caller;
-                Carp::croak 'Volatile requires a type' unless scalar caller =~ /^Affix(::.+)?$/;
-                $subtype = Void();    # Defaults to Pointer[Void]
-            }
-            bless( [ 'Volatile [ ' . $subtype . ' ]', VOLATILE_FLAG(), $subtype->sizeof(), $subtype->align(), undef, $subtype, $sizeof, undef ],
-                'Affix::Flag::Volatile' );
-        }
-
-        sub Restrict : prototype(;$) {    # [ text, id, size, align, offset, subtype, sizeof, package ]
-
-            #~ use Data::Dump;
-            #~ ddx \@_;
-            my $sizeof  = 0;
-            my $packed  = 0;
-            my $subtype = undef;
-            if (@_) {
-                ($subtype) = @{ +shift };
-
-                #~ ddx $subtype;
-                my $__sizeof = $subtype->sizeof;
-                my $__align  = $subtype->align;
-                $sizeof += $packed ? 0 : padding_needed_for( $sizeof, $__align > $__sizeof ? $__sizeof : $__align );
-                $sizeof += $__sizeof;
-            }
-            else {
-                warn scalar caller;
-                Carp::croak 'Restrict qualifier requires a type' unless scalar caller =~ /^Affix(::.+)?$/;
-                $subtype = Void();    # Defaults to Pointer[Void]
-            }
-            bless( [ 'Restrict [ ' . $subtype . ' ]', RESTRICT_FLAG(), $subtype->sizeof(), $subtype->align(), undef, $subtype, $sizeof, undef ],
-                'Affix::Flag::Restrict' );
-        }
 
         sub Reference : prototype(;$) {    # [ text, id, size, align, offset, subtype, sizeof, package ]
 

@@ -795,7 +795,6 @@ DLLEXPORT SV* inc(SV * arg) {
     return arg;
 }
 END
-
             skip 'Failed to build library' unless $lib;
             diag '$lib: ' . $lib;
             ok my $_lib = load_library($lib),                                   'lib is loaded [debugging]';

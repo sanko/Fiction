@@ -277,10 +277,11 @@ sub process_cxx {
         push @objs,    # misses headers but that's okay
             ( ( !-f $obj ) || ( stat($source)->mtime > stat($obj)->mtime ) || ( stat(__FILE__)->mtime > stat($obj)->mtime ) ) ?
             $builder->compile(
-            'C++'                => ( $source =~ /\.cxx$/ ? 1 : 0 ),
-            source               => $source,
-            defines              => { VERSION => qq/"$version"/, XS_VERSION => qq/"$version"/ },
-            include_dirs         => [ curdir, path('./dyncall')->realpath->stringify, dirname($source), $pre->child( $opt{meta}->name, 'include' )->stringify ],
+            'C++'        => ( $source =~ /\.cxx$/ ? 1 : 0 ),
+            source       => $source,
+            defines      => { VERSION => qq/"$version"/, XS_VERSION => qq/"$version"/ },
+            include_dirs =>
+                [ curdir, path('./dyncall')->realpath->stringify, dirname($source), $pre->child( $opt{meta}->name, 'include' )->stringify ],
             extra_compiler_flags => (
                 '-fPIC -std=c++14 ' . ( $opt{config}->get('osname') =~ /bsd/ ? '' : $CFLAGS ) . ( $DEBUG ? ' -ggdb3 -g -Wall -Wextra -pedantic' : '' )
             )
