@@ -63,6 +63,17 @@ DLLEXPORT int * ptr_return() {
     return flags;
 }
 
+typedef struct {
+    int i;
+} oy;
+
+DLLEXPORT int * ptr_return_struct() {
+    oy* flags = (oy*)malloc(sizeof(oy) * 5);
+    for (int i = 0; i<=5; i++) flags[i].i = i;
+    //flags[2] = 200;
+    return flags;
+}
+
 DLLEXPORT bool * ptr_return_NULL() {
     return NULL;
 }
@@ -75,36 +86,20 @@ END
     };
     my $ptr = Affix::wrap( $lib, 'ptr_return', [], Pointer [Int] )->();
     ddx $ptr;
+    my $ptr_structs = Affix::wrap( $lib, 'ptr_return_struct', [], Pointer [ Struct [ i => Int ] ] )->();
 
     package Affix::Pointer {    # [address, type, length = 0, offset = 0]
         use overload
+            '++' => sub { $_[0][3]++; $_[0]; },
+            '--' => sub { $_[0][3]--; $_[0]; },
+            '""' => sub { $_[0][0] + ( $_[0][3] * $_[0][1]->sizeof ); },    # return address (address + (offset * sizeof(type))
 
-            #~ '=' =>sub{
-            #~ use Data::Dump;
-            #~ ddx \@_;
-            #~ \shift;
-            #~ },
-            '++' => sub {
-            $_[0][3]++;
-            $_[0];
-            },
-            '--' => sub {
-            $_[0][3]--;
-            $_[0];
-            },
-            '""' => sub ( $ptr, $x, $mutate = () ) {
-            $ptr->[0] + ( $ptr->[3] * $ptr->[1]->sizeof );
-            },    # return address (address + (offset * sizeof(type))
-            'int' => sub {...},    # return address (address + (offset * sizeof(type))
-            '${}' => sub {
-            \shift->sv();
-            },                     # return current element (address + (offset * sizeof(type))
-            'bool'   => sub { return 1; ... },    # return true if ! NULL
-            fallback => 1;
+            #~ 'int' => sub {...},    # return address (address + (offset * sizeof(type))
+            '${}'    => sub { \shift->sv(); },                              # return current element (address + (offset * sizeof(type))
+            'bool'   => sub { return 1; ... },                              # return true if ! NULL
+            fallback => 2;
         #
-        sub cast( $ptr, $new_type ) {
-        }
-
+        #~ sub cast( $ptr, $new_type ) {        }
         #~ DESTROY { warn '# TODO: call free(...)' }
     };
 
@@ -120,6 +115,10 @@ END
     is $$ptr, 1;
     ok $ptr++;
     is $$ptr, 200;
+    #
+    ddx $ptr_structs;
+
+    #~ ddx $$ptr_structs
 };
 
 #~ diag CodeRef [ [] => Void ];
