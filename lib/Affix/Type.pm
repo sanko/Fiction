@@ -112,11 +112,11 @@ package Affix::Type 0.5 {
             $type->[4] = $sizeof;    # offset
             $sizeof += $__sizeof;
         }
-        bless(
-            [   sprintf( 'Struct[ %s ]', join ', ', @fields ),
-                Affix::STRUCT_FLAG(), $sizeof, $sizeof + Affix::Platform::padding_needed_for( $sizeof, Affix::Platform::BYTE_ALIGN() ), \@types
-            ],
-            'Affix::Type::Struct'
+        Affix::Type::Struct->new(
+            sprintf( 'Struct[ %s ]', join ', ', @fields ), Affix::STRUCT_FLAG(), $sizeof,
+            $sizeof + Affix::Platform::padding_needed_for( $sizeof, Affix::Platform::BYTE_ALIGN() ), 0,    # offset
+            \@types,                                                                                       # subtype
+            1                                                                                              # array_len
         );
     }
 

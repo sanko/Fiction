@@ -117,8 +117,7 @@ END
     is $$ptr, 200;
     #
     ddx $ptr_structs;
-
-    #~ ddx $$ptr_structs
+    ddx $$ptr_structs;
 };
 
 #~ diag CodeRef [ [] => Void ];

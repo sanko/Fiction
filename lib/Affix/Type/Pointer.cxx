@@ -126,9 +126,9 @@ XS_INTERNAL(Affix_Pointer_sv) {
             IV tmp = SvIV(MUTABLE_SV(SvRV(ptr_sv)));
             //~ warn("AXT_POINTER_POSITION(xsub_tmp_sv) = %d", AXT_POINTER_POSITION(xsub_tmp_sv));
             //~ warn("AXT_TYPE_SIZEOF(AXT_POINTER_SUBTYPE(xsub_tmp_sv)) = %d",
-                 //~ AXT_TYPE_SIZEOF(AXT_POINTER_SUBTYPE(xsub_tmp_sv)));
+            //~ AXT_TYPE_SIZEOF(AXT_POINTER_SUBTYPE(xsub_tmp_sv)));
             //~ warn("AXT_TYPE_SIZEOF(AXT_TYPE_SUBTYPE(AXT_POINTER_SUBTYPE(xsub_tmp_sv))) = %d",
-                 //~ AXT_TYPE_SIZEOF(AXT_TYPE_SUBTYPE(AXT_POINTER_SUBTYPE(xsub_tmp_sv))));
+            //~ AXT_TYPE_SIZEOF(AXT_TYPE_SUBTYPE(AXT_POINTER_SUBTYPE(xsub_tmp_sv))));
 
             tmp += (AXT_TYPE_SIZEOF(AXT_TYPE_SUBTYPE(AXT_POINTER_SUBTYPE(xsub_tmp_sv))) *
                     AXT_POINTER_POSITION(xsub_tmp_sv));
