@@ -116,7 +116,13 @@ END
     ok $ptr++;
     is $$ptr, 200;
     #
-    ddx $ptr_structs;
+    #~ ddx $ptr_structs;
+    diag Int->sizeof;
+    diag Struct( [ i => Int ] )->sizeof;
+    ddx $$ptr_structs;
+    $ptr_structs++;
+    ddx $$ptr_structs;
+    $ptr_structs++;
     ddx $$ptr_structs;
 };
 

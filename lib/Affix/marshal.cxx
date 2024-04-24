@@ -580,25 +580,22 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
             ;
     } break;
     case STRUCT_FLAG: {
-        warn("TODO: unmarshal struct");
+        //~ warn("TODO: unmarshal struct");
 
         ret = newSV(0);
         HV *RETVAL_ = newHV_mortal();
         HV *_type = MUTABLE_HV(SvRV(type));
         AV *fields = MUTABLE_AV(SvRV(AXT_TYPE_SUBTYPE(type)));
-        sv_dump(AXT_TYPE_SUBTYPE(type));
+        //~ sv_dump(AXT_TYPE_SUBTYPE(type));
         size_t field_count = av_count(fields);
-        warn("field_count: %d", field_count);
-        for (size_t i = 0; i < field_count; ++i) {
-            sv_dump(*av_fetch(fields, i, 0));
-            /*AV *field = MUTABLE_AV(SvRV(*av_fetch(fields, i, 0)));
-            SV *name = *av_fetch(field, 0, 0);
-            SV *subtype = *av_fetch(field, 1, 0);
+        //~ warn("field_count: %d", field_count);
+        for (size_t i = 0; i < field_count; i += 2) {
+            SV *name = *av_fetch(fields, i, 0);
+            SV *subtype = *av_fetch(fields, i + 1, 0);
             (void)hv_store_ent(
                 RETVAL_, name,
-                ptr2sv(aTHX_ subtype,
-                       INT2PTR(DCpointer, PTR2IV(ptr) + AXT_TYPE_OFFSET(subtype))),
-                0);*/
+                ptr2sv(aTHX_ subtype, INT2PTR(DCpointer, PTR2IV(ptr) + AXT_TYPE_OFFSET(subtype))),
+                0);
         }
         SvSetSV(ret, newRV(MUTABLE_SV(RETVAL_)));
     } break;
