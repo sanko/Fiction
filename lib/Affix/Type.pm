@@ -108,10 +108,15 @@ package Affix::Type 0.5 {
             push @fields, sprintf '%s => %s', $field, $type;
             my $__sizeof = $type->sizeof;
             my $__align  = $type->align;
+
             $sizeof += $packed ? 0 : Affix::Platform::padding_needed_for( $sizeof, $__align > $__sizeof ? $__sizeof : $__align );
-            $type->[4] = $sizeof;    # offset
-            $sizeof += $__sizeof;
+                        $type->[Affix::SLOT_TYPE_OFFSET] = $sizeof;    # offset
+
+        warn "----------------------> $sizeof";
+
+             $sizeof += $__sizeof;
         }
+        warn "----------------------> $sizeof";
         Affix::Type::Struct->new(
             sprintf( 'Struct[ %s ]', join ', ', @fields ), Affix::STRUCT_FLAG(), $sizeof,
             $sizeof + Affix::Platform::padding_needed_for( $sizeof, Affix::Platform::BYTE_ALIGN() ), 0,    # offset
