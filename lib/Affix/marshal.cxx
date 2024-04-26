@@ -505,16 +505,19 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
             if (len) ret = wchar2utf(aTHX_(wchar_t *) ptr, len);
         } break;
         default: {
+            warn("FDJSKFLDSJKFLSDJFKL:DJKLF:SDJSKFLL:FJFKLSF:JFLKSDFJFKLSF len: %d", len);
             if (len == 1) { ret = ptr2sv(aTHX_ subtype, ptr); }
             else {
                 AV *ret_av = newAV();
                 DCpointer tmp = ptr;
                 size_t sizeof_subtype = AXT_TYPE_SIZEOF(subtype);
-                for (size_t x = 0; x < len; ++x)
+                for (size_t x = 0; x < len; ++x){
+                    warn("pointer pos: %d, ptr: %p", x, (DCpointer)INT2PTR(DCpointer,
+                                                              (x * sizeof_subtype) + PTR2IV(ptr)));
                     av_push(ret_av, ptr2sv(aTHX_ subtype,
                                            (DCpointer)INT2PTR(DCpointer,
                                                               (x * sizeof_subtype) + PTR2IV(ptr))));
-
+                }
                 ret = newRV_noinc(MUTABLE_SV(ret_av));
             }
         }
@@ -592,9 +595,17 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
         for (size_t i = 0; i < field_count; i += 2) {
             SV *name = *av_fetch(fields, i, 0);
             SV *subtype = *av_fetch(fields, i + 1, 0);
+            warn("i: %d, PTR2IV(ptr): %p, AXT_TYPE_OFFSET(subtype): %d" , i, PTR2IV(ptr), AXT_TYPE_OFFSET(subtype));
             (void)hv_store_ent(
                 RETVAL_, name,
-                ptr2sv(aTHX_ subtype, INT2PTR(DCpointer, PTR2IV(ptr) + AXT_TYPE_OFFSET(subtype))),
+                ptr2sv(aTHX_ subtype, INT2PTR(DCpointer, PTR2IV(ptr) +
+
+            (AXT_TYPE_OFFSET(subtype)) * i
+
+
+
+
+            )),
                 0);
         }
         SvSetSV(ret, newRV(MUTABLE_SV(RETVAL_)));

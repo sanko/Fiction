@@ -104,24 +104,23 @@ package Affix::Type 0.5 {
         #~ for my ( $field, $type )(@types) { # Perl 5.36
         for ( my $i = 0; $i < $#types; $i += 2 ) {
             my $field = $types[$i];
-            my $type  = $types[ $i + 1 ];
-            push @fields, sprintf '%s => %s', $field, $type;
-            my $__sizeof = $type->sizeof;
-            my $__align  = $type->align;
+            my $subtype  = $types[ $i + 1 ];
+            $subtype->[Affix::SLOT_TYPE_OFFSET] = $sizeof;    # offset
 
+            push @fields, sprintf '%s => %s', $field, $subtype;
+            my $__sizeof = $subtype->sizeof;
+            my $__align  = $subtype->align;
             $sizeof += $packed ? 0 : Affix::Platform::padding_needed_for( $sizeof, $__align > $__sizeof ? $__sizeof : $__align );
-                        $type->[Affix::SLOT_TYPE_OFFSET] = $sizeof;    # offset
-
-        warn "----------------------> $sizeof";
-
-             $sizeof += $__sizeof;
+            warn "----------------------> $sizeof";
+            $sizeof += $__sizeof;
         }
         warn "----------------------> $sizeof";
         Affix::Type::Struct->new(
-            sprintf( 'Struct[ %s ]', join ', ', @fields ), Affix::STRUCT_FLAG(), $sizeof,
-            $sizeof + Affix::Platform::padding_needed_for( $sizeof, Affix::Platform::BYTE_ALIGN() ), 0,    # offset
-            \@types,                                                                                       # subtype
-            1                                                                                              # array_len
+            sprintf( 'Struct[ %s ]', join ', ', @fields ), Affix::STRUCT_FLAG(), $sizeof,               # sizeof
+            $sizeof + Affix::Platform::padding_needed_for( $sizeof, Affix::Platform::BYTE_ALIGN() ),    # align
+            0,                                                                                          # offset
+            \@types,                                                                                    # subtype
+            1                                                                                           # array_len
         );
     }
 

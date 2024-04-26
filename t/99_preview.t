@@ -96,9 +96,9 @@ END
 
     package Affix::Pointer {    # [address, type, length = 0, offset = 0]
         use overload
-            '++' => sub { $_[0][3]++; $_[0]; },
-            '--' => sub { $_[0][3]--; $_[0]; },
-            '""' => sub { $_[0][0] + ( $_[0][3] * $_[0][1]->sizeof ); },    # return address (address + (offset * sizeof(type))
+            '++' => sub { $_[0][Affix::SLOT_TYPE_OFFSET]++; $_[0]; },
+            '--' => sub { $_[0][Affix::SLOT_TYPE_OFFSET]--; $_[0]; },
+            '""' => sub { $_[0][0] + ( $_[0][Affix::SLOT_TYPE_OFFSET] * $_[0][1]->sizeof ); },    # return address (address + (offset * sizeof(type))
 
             #~ 'int' => sub {...},    # return address (address + (offset * sizeof(type))
             '${}'    => sub { \shift->sv(); },                              # return current element (address + (offset * sizeof(type))
@@ -125,7 +125,7 @@ END
     #~ ddx $ptr_structs;
     diag Int->sizeof;
     diag Struct( [ i => Int, c=>String ] )->sizeof;
-    ddx Struct( [ i => Int, c=>String ] );
+    ddx Struct( [ i => Int ] );
     ddx $$ptr_structs;
     $ptr_structs++;
     ddx $$ptr_structs;
