@@ -101,16 +101,17 @@ package Affix::Type 0.5 {
         my $sizeof = 0;
         my $packed = 0;
 
-        #~ for my ( $field, $type )(@types) { # Perl 5.36
-        for ( my $i = 0; $i < $#types; $i += 2 ) {
-            my $field = $types[$i];
-            my $subtype  = $types[ $i + 1 ];
+        for my ( $field, $subtype )(@types) { # Perl 5.36
+        #~ for ( my $i = 0; $i < $#types; $i += 2 ) {
+            #~ my $field = $types[$i];
+            #~ my $subtype  = $types[ $i + 1 ];
             $subtype->[Affix::SLOT_TYPE_OFFSET] = $sizeof;    # offset
 
             push @fields, sprintf '%s => %s', $field, $subtype;
             my $__sizeof = $subtype->sizeof;
             my $__align  = $subtype->align;
-            $sizeof += $packed ? 0 : Affix::Platform::padding_needed_for( $sizeof, $__align > $__sizeof ? $__sizeof : $__align );
+            #~ warn sprintf 'types: %d, i: %d, fields: %d', scalar @types, $i, scalar @fields;
+            $sizeof += ($packed || (scalar @fields == scalar @types /2)) ? 0 : Affix::Platform::padding_needed_for( $sizeof, $__align > $__sizeof ? $__sizeof : $__align );
             warn "----------------------> $sizeof";
             $sizeof += $__sizeof;
         }

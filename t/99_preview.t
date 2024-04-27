@@ -72,10 +72,10 @@ typedef struct {
     const char * a;
 } qqqq;
 
-DLLEXPORT int * ptr_return_struct() {
-warn("size; %d, %d", sizeof(oy), sizeof(qqqq));
+DLLEXPORT oy * ptr_return_struct() {
+warn("================= sizeof... oy: %d, qqqq: %d", sizeof(oy), sizeof(qqqq));
     oy* flags = (oy*)malloc(sizeof(oy) * 5);
-    for (int i = 0; i<=5; i++) flags[i].i = i;
+    for (int i = 0; i<=5; i++) flags[i].i = i;346634
     //flags[2] = 200;
     return flags;
 }
@@ -96,9 +96,9 @@ END
 
     package Affix::Pointer {    # [address, type, length = 0, offset = 0]
         use overload
-            '++' => sub { $_[0][Affix::SLOT_TYPE_OFFSET]++; $_[0]; },
-            '--' => sub { $_[0][Affix::SLOT_TYPE_OFFSET]--; $_[0]; },
-            '""' => sub { $_[0][0] + ( $_[0][Affix::SLOT_TYPE_OFFSET] * $_[0][1]->sizeof ); },    # return address (address + (offset * sizeof(type))
+            '++' => sub { $_[0][Affix::SLOT_POINTER_POSITION]++; $_[0]; },
+            '--' => sub { $_[0][Affix::SLOT_POINTER_POSITION]--; $_[0]; },
+            '""' => sub { $_[0][0] + ( $_[0][Affix::SLOT_POINTER_POSITION] * $_[0][1]->sizeof ); },    # return address (address + (offset * sizeof(type))
 
             #~ 'int' => sub {...},    # return address (address + (offset * sizeof(type))
             '${}'    => sub { \shift->sv(); },                              # return current element (address + (offset * sizeof(type))
@@ -125,11 +125,15 @@ END
     #~ ddx $ptr_structs;
     diag Int->sizeof;
     diag Struct( [ i => Int, c=>String ] )->sizeof;
-    ddx Struct( [ i => Int ] );
+    ddx Struct( [ i => Int ] );00
+
+    #~ die;
     ddx $$ptr_structs;
     $ptr_structs++;
     ddx $$ptr_structs;
     $ptr_structs++;
+        #~ ddx $ptr_structs;
+
     ddx $$ptr_structs;
 };
 

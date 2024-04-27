@@ -422,8 +422,7 @@ SV *ptr2obj(pTHX_ SV *type, DCpointer ptr) {
         sv_setref_pv(TMP, NULL, ptr);
         av_store(RETVALAV, SLOT_POINTER_ADDR, TMP);
         av_store(RETVALAV, SLOT_POINTER_SUBTYPE, newSVsv(type));
-        //~ av_store(RETVALAV, SLOT_POINTER_COUNT, newSViv(AXT_POINTER_COUNT(type)));
-
+         av_store(RETVALAV, SLOT_POINTER_COUNT, newSViv(AXT_POINTER_COUNT(type)));
         av_store(RETVALAV, SLOT_POINTER_COUNT, newSViv(1));
         av_store(RETVALAV, SLOT_POINTER_POSITION, newSViv(0));
     }
@@ -511,7 +510,7 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
                 AV *ret_av = newAV();
                 DCpointer tmp = ptr;
                 size_t sizeof_subtype = AXT_TYPE_SIZEOF(subtype);
-                for (size_t x = 0; x < len; ++x){
+                for (size_t x = 0; x < len; ++x) {
                     warn("pointer pos: %d, ptr: %p", x, (DCpointer)INT2PTR(DCpointer,
                                                               (x * sizeof_subtype) + PTR2IV(ptr)));
                     av_push(ret_av, ptr2sv(aTHX_ subtype,
@@ -589,9 +588,9 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
         HV *RETVAL_ = newHV_mortal();
         HV *_type = MUTABLE_HV(SvRV(type));
         AV *fields = MUTABLE_AV(SvRV(AXT_TYPE_SUBTYPE(type)));
-        //~ sv_dump(AXT_TYPE_SUBTYPE(type));
+        sv_dump(AXT_TYPE_SUBTYPE(type));
         size_t field_count = av_count(fields);
-        //~ warn("field_count: %d", field_count);
+         warn("field_count: %d", field_count);
         for (size_t i = 0; i < field_count; i += 2) {
             SV *name = *av_fetch(fields, i, 0);
             SV *subtype = *av_fetch(fields, i + 1, 0);
