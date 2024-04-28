@@ -583,6 +583,7 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
     } break;
     case STRUCT_FLAG: {
         //~ warn("TODO: unmarshal struct");
+        warn("TODO: store field name in type inside struct; only store types in list");
 
         ret = newSV(0);
         HV *RETVAL_ = newHV_mortal();

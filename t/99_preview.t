@@ -75,7 +75,7 @@ typedef struct {
 DLLEXPORT oy * ptr_return_struct() {
 warn("================= sizeof... oy: %d, qqqq: %d", sizeof(oy), sizeof(qqqq));
     oy* flags = (oy*)malloc(sizeof(oy) * 5);
-    for (int i = 0; i<=5; i++) flags[i].i = i;346634
+    for (int i = 0; i<=5; i++) flags[i].i = i;
     //flags[2] = 200;
     return flags;
 }
@@ -125,7 +125,7 @@ END
     #~ ddx $ptr_structs;
     diag Int->sizeof;
     diag Struct( [ i => Int, c=>String ] )->sizeof;
-    ddx Struct( [ i => Int ] );00
+    ddx Struct( [ i => Int ] );
 
     #~ die;
     ddx $$ptr_structs;
