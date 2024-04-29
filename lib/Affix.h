@@ -270,6 +270,8 @@ following address will be aligned to `alignment`. */
 #define SLOT_POINTER_COUNT 2
 #define SLOT_POINTER_POSITION 3
 
+#define SLOT_STRUCT_FIELD 14
+
 #define AXT_TYPE_STRINGIFY(t) SvPV_nolen(*av_fetch(MUTABLE_AV(SvRV(t)), SLOT_TYPE_STRINGIFY, 0))
 #define AXT_TYPE_NUMERIC(t) SvIV(*av_fetch(MUTABLE_AV(SvRV(t)), SLOT_TYPE_NUMERIC, 0))
 #define AXT_TYPE_SIZEOF(t) SvIV(*av_fetch(MUTABLE_AV(SvRV(t)), SLOT_TYPE_SIZEOF, 0))
@@ -289,6 +291,31 @@ following address will be aligned to `alignment`. */
 #define AXT_POINTER_SUBTYPE(t) *av_fetch(MUTABLE_AV(SvRV(t)), SLOT_POINTER_SUBTYPE, 0)
 #define AXT_POINTER_COUNT(t) SvIV(*av_fetch(MUTABLE_AV(SvRV(t)), SLOT_POINTER_COUNT, 0))
 #define AXT_POINTER_POSITION(t) SvIV(*av_fetch(MUTABLE_AV(SvRV(t)), SLOT_POINTER_POSITION, 0))
+
+typedef struct {
+    const char *stringify;
+    char numeric;
+    size_t size;
+    size_t alignment;
+    size_t offset;
+    void *subtype; // Affix_Type
+    size_t arraylen;
+    bool const_flag;
+    bool volitile_flag;
+    bool restrict_flag;
+    const char *type_name;
+    void *aggregate; // TODO: Use dyncall's typedef
+    void **args; // list of Affix_Type
+    char *sig;
+    const char *field; // If part of a struct
+} Affix_Type;
+
+typedef struct {
+    intptr_t address;
+    Affix_Type *subtype;
+    size_t count;
+    size_t position;
+} Affix_Pointer;
 
 // marshal.cxx
 size_t padding_needed_for(size_t offset, size_t alignment);
