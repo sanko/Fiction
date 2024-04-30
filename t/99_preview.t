@@ -124,7 +124,7 @@ END
     #
     #~ ddx $ptr_structs;
     diag Int->sizeof;
-    diag Struct( [ i => Int, c=>String ] )->sizeof;
+    diag Struct( [ i => Int, c => String ] )->sizeof;
     ddx Struct( [ i => Int ] );
 
     #~ die;
@@ -132,10 +132,37 @@ END
     $ptr_structs++;
     ddx $$ptr_structs;
     $ptr_structs++;
-        #~ ddx $ptr_structs;
 
+    #~ ddx $ptr_structs;
     ddx $$ptr_structs;
 };
+
+my $type = Struct[
+  stringify => String,
+  numeric => Char
+  ];
+__END__
+typedef struct {
+    const char *stringify;
+    char numeric;
+    size_t size;
+    size_t alignment;
+    size_t offset;
+    void *subtype; // Affix_Type
+    size_t arraylen;
+    bool const_flag;
+    bool volitile_flag;
+    bool restrict_flag;
+    const char *type_name;
+    void *aggregate; // TODO: Use dyncall's typedef
+    void **args; // list of Affix_Type
+    char *sig;
+    const char *field; // If part of a struct
+} Affix_Typ
+
+
+
+
 
 #~ diag CodeRef [ [] => Void ];
 warn 'left';
