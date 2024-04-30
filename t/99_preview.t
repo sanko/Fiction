@@ -5,7 +5,17 @@ use Affix qw[:all];
 BEGIN { chdir '../' if !-d 't'; }
 use t::lib::helper;
 $|++;
+
 use Data::Dump;
+my $ttt = Affix::Typex->new(
+'Int',
+Affix::INT_FLAG()
+
+);
+ddx $ttt;
+$ttt = undef;
+die;
+__END__
 isa_ok my $ptr = Affix::sv2ptr( Pointer [Char], 'This is a test' ), ['Affix::Pointer'], 'This is a test';
 is $ptr->raw( Affix::Platform::SIZEOF_CHAR() * 14 ), 'This is a test', '$ptr->raw( ' . Affix::Platform::SIZEOF_CHAR() * 14 . ' )';
 free $ptr;
@@ -98,11 +108,12 @@ END
         use overload
             '++' => sub { $_[0][Affix::SLOT_POINTER_POSITION]++; $_[0]; },
             '--' => sub { $_[0][Affix::SLOT_POINTER_POSITION]--; $_[0]; },
-            '""' => sub { $_[0][0] + ( $_[0][Affix::SLOT_POINTER_POSITION] * $_[0][1]->sizeof ); },    # return address (address + (offset * sizeof(type))
+            '""' => sub { $_[0][0] + ( $_[0][Affix::SLOT_POINTER_POSITION] * $_[0][1]->sizeof ); }
+            ,                   # return address (address + (offset * sizeof(type))
 
             #~ 'int' => sub {...},    # return address (address + (offset * sizeof(type))
-            '${}'    => sub { \shift->sv(); },                              # return current element (address + (offset * sizeof(type))
-            'bool'   => sub { return 1; ... },                              # return true if ! NULL
+            '${}'    => sub { \shift->sv(); },    # return current element (address + (offset * sizeof(type))
+            'bool'   => sub { return 1; ... },    # return true if ! NULL
             fallback => 2;
         #
         #~ sub cast( $ptr, $new_type ) {        }

@@ -2070,6 +2070,39 @@ XS_INTERNAL(Affix_sv_dump) {
     XSRETURN_EMPTY;
 }
 
+
+
+
+
+
+
+XS_INTERNAL(Affix_Type_new) {
+        dVAR;
+    dXSARGS;
+    Affix_Type *type;
+Newxz(type, 1, Affix_Type);
+    type->stringify = SvPV_nolen(ST(1));
+    type->numeric = SvIV(ST(2));
+//~ DD(ST(1));
+    SV *LIBSV = sv_newmortal();
+    sv_setref_pv(LIBSV, SvPV_nolen(ST(0)), (DCpointer)type);
+    ST(0) = LIBSV;
+    XSRETURN(1);
+}
+
+XS_INTERNAL(Affix_Type_DESTROY) {
+    dXSARGS;
+    PERL_UNUSED_VAR(items);
+    Affix_Type *type;
+    type = INT2PTR(Affix_Type *, SvIV(SvRV(ST(0))));
+    warn("stringify: %s", type->stringify);
+    safefree(type);
+    //~ dMY_CXT;
+    //~ if (MY_CXT.cvm) dcFree(MY_CXT.cvm);
+    XSRETURN_EMPTY;
+}
+
+
 XS_EXTERNAL(boot_Affix) {
     dVAR;
 
@@ -2128,6 +2161,16 @@ XS_EXTERNAL(boot_Affix) {
     cv = newXSproto_portable("Affix::wrap", Affix_fiction, __FILE__, "$$;$$");
     XSANY.any_i32 = 1;
     export_function("Affix", "wrap", "base");
+
+
+
+
+    // Type system
+        (void)newXSproto_portable("Affix::Typex::new", Affix_Type_new,
+        __FILE__, "$$$");
+        (void)newXSproto_portable("Affix::Typex::DESTROY", Affix_Type_DESTROY,
+        __FILE__, "$");
+
 
     // general purpose flags
     export_constant("Affix", "VOID_FLAG", "flags", VOID_FLAG);

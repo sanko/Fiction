@@ -77,7 +77,8 @@ XS_INTERNAL(Affix_ptr2sv) {
             if (SvOK(ptr_sv)) {
                 IV tmp = SvIV(MUTABLE_SV(SvRV(ptr_sv)));
                 DCpointer ptr;
-                ptr = INT2PTR(DCpointer, tmp + (AXT_TYPE_SIZEOF(ST(0)) * AXT_POINTER_POSITION(ST(0))));
+                ptr = INT2PTR(DCpointer,
+                              tmp + (AXT_TYPE_SIZEOF(ST(0)) * AXT_POINTER_POSITION(ST(0))));
                 ST(0) = sv_2mortal(newRV(ptr2sv(aTHX_ ST(0), ptr)));
             }
             else
@@ -124,20 +125,22 @@ XS_INTERNAL(Affix_Pointer_sv) {
         SV *ptr_sv = AXT_POINTER_ADDR(xsub_tmp_sv);
         if (SvOK(ptr_sv)) {
             IV tmp = SvIV(MUTABLE_SV(SvRV(ptr_sv)));
-            warn("    AXT_POINTER_POSITION(xsub_tmp_sv) =                                   %d", AXT_POINTER_POSITION(xsub_tmp_sv));
+            warn("    AXT_POINTER_POSITION(xsub_tmp_sv) =                                   %d",
+                 AXT_POINTER_POSITION(xsub_tmp_sv));
             //~ warn("AXT_TYPE_SIZEOF(AXT_POINTER_SUBTYPE(xsub_tmp_sv)) = %d",
             //~ AXT_TYPE_SIZEOF(AXT_POINTER_SUBTYPE(xsub_tmp_sv)));
             warn("    AXT_TYPE_SIZEOF(AXT_TYPE_SUBTYPE(AXT_POINTER_SUBTYPE(xsub_tmp_sv))) = %d",
-            AXT_TYPE_SIZEOF(AXT_TYPE_SUBTYPE(AXT_POINTER_SUBTYPE(xsub_tmp_sv))));
+                 AXT_TYPE_SIZEOF(AXT_TYPE_SUBTYPE(AXT_POINTER_SUBTYPE(xsub_tmp_sv))));
 
-            tmp += (AXT_TYPE_SIZEOF(AXT_POINTER_SUBTYPE(xsub_tmp_sv)) * AXT_POINTER_POSITION(xsub_tmp_sv));
+            tmp += (AXT_TYPE_SIZEOF(AXT_POINTER_SUBTYPE(xsub_tmp_sv)) *
+                    AXT_POINTER_POSITION(xsub_tmp_sv));
 
             //~ warn("AXT_POINTER_POSITION(xsub_tmp_sv) == %d", AXT_POINTER_POSITION(xsub_tmp_sv));
 
-            //DD(ST(0));
+            // DD(ST(0));
             DCpointer ptr;
             ptr = INT2PTR(DCpointer, tmp);
-//~ warn("========> ptr: %p", ptr);
+            //~ warn("========> ptr: %p", ptr);
 
             ST(0) = sv_2mortal(ptr2sv(aTHX_ AXT_POINTER_SUBTYPE(xsub_tmp_sv), ptr));
         }
