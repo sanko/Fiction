@@ -306,7 +306,7 @@ typedef struct {
     const char *type_name;
     void *aggregate; // TODO: Use dyncall's typedef
     void **args; // list of Affix_Type
-    char *sig;
+    const char *sig;
     const char *field; // If part of a struct
 } Affix_Type;
 

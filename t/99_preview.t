@@ -5,12 +5,14 @@ use Affix qw[:all];
 BEGIN { chdir '../' if !-d 't'; }
 use t::lib::helper;
 $|++;
-
 use Data::Dump;
-my $ttt = Affix::Typex->new(
-'Int',
-Affix::INT_FLAG()
-
+@Affix::Type::IINNTT::ISA = qw[Affix::Typex];
+my $ttt = Affix::Type::IINNTT->new(
+    'Int',                             # stringify
+    Affix::INT_FLAG(),                 # flag
+    Affix::Platform::SIZEOF_INT(),     # sizeof
+    Affix::Platform::ALIGNOF_INT(),    # alignment
+    0                                  # offset
 );
 ddx $ttt;
 $ttt = undef;

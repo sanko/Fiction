@@ -2070,23 +2070,27 @@ XS_INTERNAL(Affix_sv_dump) {
     XSRETURN_EMPTY;
 }
 
-
-
-
-
-
-
+//~ my ( $pkg, $str, $flag, $sizeof, $align, $offset, $subtype, $array_len, $field ) = @_;
 XS_INTERNAL(Affix_Type_new) {
-        dVAR;
+    dVAR;
     dXSARGS;
+    if (items < 6 || items > 7)
+        croak_xs_usage(cv, "package, stringify, sizeof, alignment, offset, subtype, array_len, "
+                           "aggregate, typedef, cast");
+
     Affix_Type *type;
-Newxz(type, 1, Affix_Type);
+    Newxz(type, 1, Affix_Type);
+
+    SV *RETSV = sv_newmortal();
+    sv_setref_pv(RETSV, SvPV_nolen(ST(0)), (DCpointer)type);
+    ST(0) = RETSV;
+
     type->stringify = SvPV_nolen(ST(1));
     type->numeric = SvIV(ST(2));
-//~ DD(ST(1));
-    SV *LIBSV = sv_newmortal();
-    sv_setref_pv(LIBSV, SvPV_nolen(ST(0)), (DCpointer)type);
-    ST(0) = LIBSV;
+    type->size = SvIV(ST(3));
+    type->alignment = SvIV(ST(4));
+    type->offset = SvIV(ST(5));
+
     XSRETURN(1);
 }
 
@@ -2095,13 +2099,12 @@ XS_INTERNAL(Affix_Type_DESTROY) {
     PERL_UNUSED_VAR(items);
     Affix_Type *type;
     type = INT2PTR(Affix_Type *, SvIV(SvRV(ST(0))));
-    warn("stringify: %s", type->stringify);
-    safefree(type);
-    //~ dMY_CXT;
-    //~ if (MY_CXT.cvm) dcFree(MY_CXT.cvm);
+    if (type != NULL) {
+        warn("stringify: %s", type->stringify);
+        safefree(type);
+    }
     XSRETURN_EMPTY;
 }
-
 
 XS_EXTERNAL(boot_Affix) {
     dVAR;
@@ -2162,15 +2165,10 @@ XS_EXTERNAL(boot_Affix) {
     XSANY.any_i32 = 1;
     export_function("Affix", "wrap", "base");
 
-
-
-
     // Type system
-        (void)newXSproto_portable("Affix::Typex::new", Affix_Type_new,
-        __FILE__, "$$$");
-        (void)newXSproto_portable("Affix::Typex::DESTROY", Affix_Type_DESTROY,
-        __FILE__, "$");
-
+    //~ my ( $pkg, $str, $flag, $sizeof, $align, $offset, $subtype, $array_len, $field ) = @_;
+    (void)newXSproto_portable("Affix::Typex::new", Affix_Type_new, __FILE__, "$$$$$$");
+    (void)newXSproto_portable("Affix::Typex::DESTROY", Affix_Type_DESTROY, __FILE__, "$");
 
     // general purpose flags
     export_constant("Affix", "VOID_FLAG", "flags", VOID_FLAG);
