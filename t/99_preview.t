@@ -15,8 +15,10 @@ my $ttt = Affix::Type::IINNTT->new(
     0                                  # offset
 );
 ddx $ttt;
+ok $ttt;
 $ttt = undef;
-die;
+done_testing;
+exit;
 __END__
 isa_ok my $ptr = Affix::sv2ptr( Pointer [Char], 'This is a test' ), ['Affix::Pointer'], 'This is a test';
 is $ptr->raw( Affix::Platform::SIZEOF_CHAR() * 14 ), 'This is a test', '$ptr->raw( ' . Affix::Platform::SIZEOF_CHAR() * 14 . ' )';

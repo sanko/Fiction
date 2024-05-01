@@ -304,7 +304,7 @@ typedef struct {
     bool volitile_flag;
     bool restrict_flag;
     const char *type_name;
-    void *aggregate; // TODO: Use dyncall's typedef
+    DCaggr *aggregate;
     void **args; // list of Affix_Type
     const char *sig;
     const char *field; // If part of a struct
