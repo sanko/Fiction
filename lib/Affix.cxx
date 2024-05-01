@@ -2101,9 +2101,9 @@ XS_INTERNAL(Affix_Type_DESTROY) {
     type = INT2PTR(Affix_Type *, SvIV(SvRV(ST(0))));
     if (type != NULL) {
         warn("stringify: %s", type->stringify);
-        safefree((DCpointer)type->stringify);
-        if (type->subtype != NULL) safefree(type->subtype);
-        if (type->aggregate != NULL) dcFreeAggr(type->aggregate);
+        //~ safefree((DCpointer)type->stringify);
+        //~ if (type->subtype != NULL) safefree(type->subtype);
+        //~ if (type->aggregate != NULL) dcFreeAggr(type->aggregate);
         safefree(type);
     }
     XSRETURN_EMPTY;
