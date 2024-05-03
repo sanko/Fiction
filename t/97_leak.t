@@ -3,7 +3,7 @@ use Test2::Util::Importer 'Test2::Tools::Subtest' => ( subtest_streamed => { -as
 use lib '../lib', 'lib', '../blib/arch', '../blib/lib', 'blib/arch', 'blib/lib', '../../', '.';
 use Affix qw[:all];
 my $file;
-BEGIN { $file = Path::Tiny::path($0)->absolute; chdir '../' if !-d 't'; }
+BEGIN { require Path::Tiny; $file = Path::Tiny::path($0)->absolute; chdir '../' if !-d 't'; }
 use t::lib::helper;
 use Capture::Tiny ':all';
 use Path::Tiny qw[path tempfile];
@@ -16,42 +16,35 @@ my $supp;    # defined later
 
 sub leaktest($&) {
     my ( $name, $code ) = @_;
-    diag "defined test: $test" if defined $test;
     if ( !defined $test ) {
-        diag 'No defined test';
-        my @cmd = (
-            'valgrind',          '-q',                    '--suppressions=' . $supp->realpath,
-            '--leak-check=full', '--show-leak-kinds=all', '--show-reachable=yes', '--demangle=yes', '--error-limit=no', '--xml=yes', '--xml-fd=1',
-            $^X,                 $file,                   '--test=' . $name
-        );
-        diag join ' ', @cmd;
-        my ( $out, $err, $exit ) = capture { system @cmd };
+        my ( $out, $err, $exit );
+        subtest $name => sub {
+            my @cmd = (
+                'valgrind',          '-q',                    '--suppressions=' . $supp->realpath,
+                '--leak-check=full', '--show-leak-kinds=all', '--show-reachable=yes', '--demangle=yes', '--error-limit=no', '--xml=yes',
+                '--xml-fd=1',        $^X,                     $file, '--test=' . $name
+            );
+            diag join ' ', @cmd;
+            ( $out, $err, $exit ) = capture { system @cmd };
+            my $xml = parse_xml($out);
 
-        #~ diag $out;
-        diag $err;
-        use Data::Dump;
-        ddx parse_xml($out);
-        pass 'wow ' . $name;
-        return;
+            #~ ddx $xml->{valgrindoutput}{error};
+            is $xml->{valgrindoutput}{error}, U(), 'no leaks';
+        };
+        return !$exit;
     }
-    diag sprintf '---> %s vs %s', $name, $test;
     return unless $name eq $test;
-
-    #~ subtest $test => sub {
-    #~ Affix::set_destruct_level(3);
+    Affix::set_destruct_level(3);
     my $exit = $code->();
     ok $exit;
     done_testing;
     exit !$exit;
-
-    #~ };
 }
 
 sub parse_suppression {
     my $dups  = 0;
     my $known = {};
     require Digest::MD5;
-    warn "PARSE SUPPRESSION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
     my @in = split /\R/, shift;
     my $l  = 0;
     while ( $_ = shift @in ) {
@@ -107,6 +100,11 @@ elsif ( defined $generate_suppressions ) {
     exit;
 }
 else {
+    my ( $stdout, $stderr, $exit_code ) = capture {
+        system('valgrind --version');
+    };
+    plan skip_all 'Valgrind is not installed' if $exit_code;
+    diag 'Valgrind v', ( $stdout =~ m[valgrind-(.+)$] ), ' found';
     subtest 'generate supressions' => sub {
         my ( $out, $err ) = capture {
             system qq[valgrind --leak-check=full --show-reachable=yes --error-limit=no --gen-suppressions=all --log-fd=1 $^X $file --generate];
@@ -114,19 +112,13 @@ else {
         is $err, DF(), 'no errors';
         my ( $known, $dups ) = parse_suppression($out);
         diag scalar( keys %$known ) . ' suppressions';
-        diag 'filtered out ' . $dups . ' duplicates';
+        diag $dups . ' duplicates have been filtered out';
         $supp = tempfile( { realpath => 1 }, 'valgrind_suppression_XXXXXXXXXX' );
         diag 'spewing to ' . $supp;
         diag $supp->spew( join "\n\n", values %$known );
-
-        #~ ddx $known;
-        #~ diag $out;
     };
 }
-Affix::set_destruct_level(3);
 leaktest 'leaky type' => sub {
-    use Data::Dump;
-    warn 'in function';
     @Affix::Type::IINNTT::ISA = qw[Affix::Typex];
     my $ttt = Affix::Type::IINNTT->new(
         'Int',                             # stringify

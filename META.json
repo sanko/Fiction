@@ -89,8 +89,10 @@
       },
       "test" : {
          "requires" : {
+            "Capture::Tiny" : "0",
             "ExtUtils::Embed" : "0",
             "File::Temp" : "0",
+            "Path::Tiny" : "0",
             "Test2::V0" : "0.000159"
          }
       }

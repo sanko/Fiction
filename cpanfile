@@ -15,6 +15,8 @@ on 'test' => sub {
     requires 'Test2::V0' => 0.000159;
     requires 'File::Temp';         # Used in tests that compile short C/CPP files
     requires 'ExtUtils::Embed';    # Used on Pointer[SV] tests
+    requires 'Path::Tiny';
+    requires 'Capture::Tiny';
 };
 on 'configure' => sub {
     requires 'Archive::Tar';
