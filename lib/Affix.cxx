@@ -2069,6 +2069,15 @@ XS_INTERNAL(Affix_sv_dump) {
     sv_dump(sv);
     XSRETURN_EMPTY;
 }
+// Cribbed from Perl::Destruct::Level so leak testing works without yet another prereq
+XS_INTERNAL(Affix_set_destruct_level) {
+    dVAR;
+    dXSARGS;
+    // TODO: report this with a warn(...)
+    if (items != 1) croak_xs_usage(cv, "level");
+    PL_perl_destruct_level = SvIV(ST(0));
+    XSRETURN_EMPTY;
+}
 
 //~ my ( $pkg, $str, $flag, $sizeof, $align, $offset, $subtype, $array_len, $field ) = @_;
 XS_INTERNAL(Affix_Type_new) {
@@ -2104,7 +2113,7 @@ XS_INTERNAL(Affix_Type_DESTROY) {
         //~ safefree((DCpointer)type->stringify);
         //~ if (type->subtype != NULL) safefree(type->subtype);
         //~ if (type->aggregate != NULL) dcFreeAggr(type->aggregate);
-        safefree(type);
+        //safefree(type);
     }
     XSRETURN_EMPTY;
 }
@@ -2148,6 +2157,7 @@ XS_EXTERNAL(boot_Affix) {
 
     // Utilities
     (void)newXSproto_portable("Affix::sv_dump", Affix_sv_dump, __FILE__, "$");
+    (void)newXSproto_portable("Affix::set_destruct_level", Affix_set_destruct_level, __FILE__, "$");
 
     //~ export_function("Affix", "DEFAULT_ALIGNMENT", "vars");
 
