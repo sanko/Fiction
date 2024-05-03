@@ -25,10 +25,9 @@ sub leaktest($&) {
             $^X,                 $file,                   '--test=' . $name
         );
         diag join ' ', @cmd;
-        my ( $out, $err ) = capture {
-            system @cmd
-        };
-        diag $out;
+        my ( $out, $err, $exit ) = capture { system @cmd };
+
+        #~ diag $out;
         diag $err;
         use Data::Dump;
         ddx parse_xml($out);
@@ -43,7 +42,7 @@ sub leaktest($&) {
     my $exit = $code->();
     ok $exit;
     done_testing;
-    exit! $exit;
+    exit !$exit;
 
     #~ };
 }
@@ -139,6 +138,6 @@ leaktest 'leaky type' => sub {
     ddx $ttt;
     ok $ttt;
     $ttt = undef;
-    1
+    1;
 };
 done_testing;
