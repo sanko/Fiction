@@ -23,7 +23,12 @@ jobs:
           
           perlbrew install --switch --verbose --as cache-${{ inputs.os }}-${{ inputs.perl }}${{ inputs.flags }} -j 12 --notest --noman ${{ inputs.flags }} perl-${{ inputs.perl }}
       - name: Install prereqs
-        run: "curl -L https://cpanmin.us | ~/perl5/perlbrew/perls/cache-${{ inputs.os }}-${{ inputs.perl }}${{ inputs.flags }}/bin/perl - --installdeps --notest -v .\n"
+        run: |
+          if [[ $(uname -o) == GNU/Linux ]]; then
+            sudo apt-get update -y
+            sudo apt-get install -y valgrind
+          fi
+          curl -L https://cpanmin.us | ~/perl5/perlbrew/perls/cache-${{ inputs.os }}-${{ inputs.perl }}${{ inputs.flags }}/bin/perl - --installdeps --notest -v .
         shell: bash
       - env:
           AUTHOR_TESTING: 0

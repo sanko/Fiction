@@ -23,7 +23,7 @@ jobs:
             ls -lah
             whoami
             env | sort
-            sudo ${{inputs.pkg}} perl${{inputs.perl}}
+            sudo ${{inputs.pkg}} perl${{inputs.perl}}${{ inputs.arch == 'x86-64' && ' valgrind' || '' }}
             /usr/local/bin/perl${{inputs.perl}}${{ inputs.os == 'freebsd' && '.2' }} -v
             curl -L https://cpanmin.us | sudo /usr/local/bin/perl${{inputs.perl}}${{ inputs.os == 'freebsd' && '.2' || ''}} - --notest App::cpanminus Module::Build::Tiny
             sudo cpanm --installdeps --notest .
