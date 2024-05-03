@@ -2113,7 +2113,7 @@ XS_INTERNAL(Affix_Type_DESTROY) {
         //~ safefree((DCpointer)type->stringify);
         //~ if (type->subtype != NULL) safefree(type->subtype);
         //~ if (type->aggregate != NULL) dcFreeAggr(type->aggregate);
-        //safefree(type);
+        // safefree(type);
     }
     XSRETURN_EMPTY;
 }
