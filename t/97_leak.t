@@ -103,14 +103,13 @@ sub parse_xml {
 }
 #
 if ( defined $test ) {
-    #~ Affix::set_destruct_level(3);
 
+    #~ Affix::set_destruct_level(3);
     #~ die 'I should be running a test named ' . $test;
 }
 elsif ( defined $generate_suppressions ) {
     pass 'exiting...';
     done_testing;
-    Affix::set_destruct_level(3);
     exit;
 }
 else {
@@ -128,25 +127,10 @@ else {
 
         #~ ddx $known;
         #~ diag $out;
-        leaktest here => sub { warn 'here we go!' };
     };
 }
-done_testing;
-exit;
-if ( !defined $test ) {
-    diag 'generating suppressions';
-    my ( $out, $err ) = capture {
-        system qq[valgrind --leak-check=full --show-reachable=yes --error-limit=no --gen-suppressions=all --log-fd=1 $^X $file --generate];
-    };
-    my ( $known, $dups ) = parse_suppression($out);
-    diag "Read " . keys(%$known) . " suppressions";
-
-    #~ ddx $known;
-    #~ note $known->{$_} for %$known;
-    diag qq[Squashed $dups duplicate suppressions];
-    path($0)->parent->child( 't', 'src', 'valgrind.supp' )->spew( join "\n\n", values %$known );
-}
-leaktest here => sub {
+Affix::set_destruct_level(3);
+leaktest 'leaky type' => sub {
     use Data::Dump;
     warn 'in function';
     @Affix::Type::IINNTT::ISA = qw[Affix::Typex];
@@ -160,7 +144,5 @@ leaktest here => sub {
     ddx $ttt;
     ok $ttt;
     $ttt = undef;
-    done_testing;
-    exit;
 };
 done_testing;
