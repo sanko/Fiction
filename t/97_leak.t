@@ -2,26 +2,37 @@ use Test2::V0 '!subtest';
 use Test2::Util::Importer 'Test2::Tools::Subtest' => ( subtest_streamed => { -as => 'subtest' } );
 use lib '../lib', 'lib', '../blib/arch', '../blib/lib', 'blib/arch', 'blib/lib', '../../', '.';
 use Affix qw[:all];
-BEGIN { chdir '../' if !-d 't'; }
+my $file;
+BEGIN { $file = Path::Tiny::path($0)->absolute; chdir '../' if !-d 't'; }
 use t::lib::helper;
 use Capture::Tiny ':all';
+use Path::Tiny qw[path tempfile];
 use Getopt::Long;
 $|++;
 my ( $test, $generate_suppressions );
 GetOptions( 'test=s' => \$test, 'generate' => \$generate_suppressions );
+diag $test if defined $test;
+my $supp;    # defined later
 
 sub leaktest($&) {
     my ( $name, $code ) = @_;
+    diag "defined test: $test" if defined $test;
     if ( !defined $test ) {
+        diag 'No defined test';
+        my $cmd
+            = 'valgrind -q --suppressions=' .
+            $supp->realpath .
+            ' --leak-check=full ' .
+            ' --show-leak-kinds=all --show-reachable=yes --demangle=yes' .
+            ' --error-limit=no ' .
+            '  --xml=yes --xml-fd=1  ' .
+            $^X . ' ' .
+            $file .
+            ' --test ' .
+            $name;
+        diag $cmd;
         my ( $out, $err ) = capture {
-            system 'valgrind -q --suppressions=t/src/valgrind.supp --leak-check=full ' .
-                ' --show-leak-kinds=all --show-reachable=yes --demangle=yes' .
-                ' --error-limit=no ' .
-                '  --xml=yes --xml-fd=1  ' .
-                $^X . ' t/' .
-                $0 .
-                ' --test ' .
-                $name;
+            system $cmd
         };
         diag $out;
         diag $err;
@@ -30,36 +41,46 @@ sub leaktest($&) {
         pass 'wow ' . $name;
         return;
     }
+    diag sprintf '---> %s vs %s', $name, $test;
     return unless $name eq $test;
-    Affix::set_destruct_level(3);
-    exit $code->();
+
+    #~ subtest $test => sub {
+    #~ Affix::set_destruct_level(3);
+    my $exit = $code->();
+    ok $exit;
+    exit $exit;
+
+    #~ };
 }
-my $dups  = 0;
-my $known = {};
 
 sub parse_suppression {
-    my $in = shift;
-    while (<$in>) {
+    my $dups  = 0;
+    my $known = {};
+    require Digest::MD5;
+    warn "PARSE SUPPRESSION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
+    my @in = split /\R/, shift;
+    my $l  = 0;
+    while ( $_ = shift @in ) {
+        $l++;
         next unless (/^\{/);
-        my $block = $_;
-        while (<$in>) {
-            if (/^\}/) {
-                $block .= "}\n";
-                last;
-            }
-            $block .= $_;
+        my $block = $_ . "\n";
+        while ( $_ = shift @in ) {
+            $l++;
+            $block .= $_ . "\n";
+            last if /^\}/;
         }
-        last unless ( defined $block );
+        $block // last;
         if ( $block !~ /\}\n/ ) {
-            print STDERR ("Unterminated suppression at line $.\n");
+            diag "Unterminated suppression at line $l";
             last;
         }
         my $key = $block;
         $key =~ s/(\A\{[^\n]*\n)\s*[^\n]*\n/$1/;
         my $sum = Digest::MD5::md5_hex($key);
-        $dups++ if ( exists $known->{$sum} );
+        $dups++ if exists $known->{$sum};
         $known->{$sum} = $block;
     }
+    return ( $known, $dups );
 }
 
 sub parse_xml {
@@ -81,29 +102,49 @@ sub parse_xml {
     $hash;
 }
 #
-if ($generate_suppressions) {
-    diag 'generating suppressions';
-    warn
-        `valgrind --leak-check=full --show-reachable=yes --error-limit=no --gen-suppressions=all --log-file=minimalraw.log $^X t/97_leak.t --generate`;
-    require Digest::MD5;
-    if ( @ARGV >= 2 && $ARGV[0] eq '-f' ) {
-        if ( open( my $db, '<', $ARGV[1] ) ) {
-            parse_suppression($db);
-            close($db);
-        }
-        else {
-            diag "Open failed for $ARGV[1]: $!";
-            exit 1;
-        }
-        diag "Read " . keys(%$known) . " suppressions from $ARGV[1]";
-    }
-    open my $FH, 'minimalraw.log';
-    parse($FH);
-    close $FH;
-    unlink 'minimalraw.log';
-    note $known->{$_} for sort keys %$known;
-    diag qq[Squashed $dups duplicate suppressions];
+if ( defined $test ) {
+    #~ Affix::set_destruct_level(3);
+
+    #~ die 'I should be running a test named ' . $test;
+}
+elsif ( defined $generate_suppressions ) {
+    pass 'exiting...';
+    done_testing;
+    Affix::set_destruct_level(3);
     exit;
+}
+else {
+    subtest 'generate supressions' => sub {
+        my ( $out, $err ) = capture {
+            system qq[valgrind --leak-check=full --show-reachable=yes --error-limit=no --gen-suppressions=all --log-fd=1 $^X $file --generate];
+        };
+        is $err, DF(), 'no errors';
+        my ( $known, $dups ) = parse_suppression($out);
+        diag scalar( keys %$known ) . ' suppressions';
+        diag 'filtered out ' . $dups . ' duplicates';
+        $supp = tempfile( { realpath => 1 }, 'valgrind_suppression_XXXXXXXXXX' );
+        diag 'spewing to ' . $supp;
+        diag $supp->spew( join "\n\n", values %$known );
+
+        #~ ddx $known;
+        #~ diag $out;
+        leaktest here => sub { warn 'here we go!' };
+    };
+}
+done_testing;
+exit;
+if ( !defined $test ) {
+    diag 'generating suppressions';
+    my ( $out, $err ) = capture {
+        system qq[valgrind --leak-check=full --show-reachable=yes --error-limit=no --gen-suppressions=all --log-fd=1 $^X $file --generate];
+    };
+    my ( $known, $dups ) = parse_suppression($out);
+    diag "Read " . keys(%$known) . " suppressions";
+
+    #~ ddx $known;
+    #~ note $known->{$_} for %$known;
+    diag qq[Squashed $dups duplicate suppressions];
+    path($0)->parent->child( 't', 'src', 'valgrind.supp' )->spew( join "\n\n", values %$known );
 }
 leaktest here => sub {
     use Data::Dump;

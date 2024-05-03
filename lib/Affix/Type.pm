@@ -100,6 +100,7 @@ package Affix::Type 0.5 {
         my @fields;
         my $sizeof = 0;
         my $packed = 0;
+        no warnings 'experimental::for_list';
         for my ( $field, $subtype )(@types) {    # Perl 5.36
 
             #~ for ( my $i = 0; $i < $#types; $i += 2 ) {
