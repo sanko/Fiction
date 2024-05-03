@@ -19,20 +19,14 @@ sub leaktest($&) {
     diag "defined test: $test" if defined $test;
     if ( !defined $test ) {
         diag 'No defined test';
-        my $cmd
-            = 'valgrind -q --suppressions=' .
-            $supp->realpath .
-            ' --leak-check=full ' .
-            ' --show-leak-kinds=all --show-reachable=yes --demangle=yes' .
-            ' --error-limit=no ' .
-            '  --xml=yes --xml-fd=1  ' .
-            $^X . ' ' .
-            $file .
-            ' --test ' .
-            $name;
-        diag $cmd;
+        my @cmd = (
+            'valgrind',          '-q',                    '--suppressions=' . $supp->realpath,
+            '--leak-check=full', '--show-leak-kinds=all', '--show-reachable=yes', '--demangle=yes', '--error-limit=no', '--xml=yes', '--xml-fd=1',
+            $^X,                 $file,                   '--test=' . $name
+        );
+        diag join ' ', @cmd;
         my ( $out, $err ) = capture {
-            system $cmd
+            system @cmd
         };
         diag $out;
         diag $err;
@@ -48,7 +42,8 @@ sub leaktest($&) {
     #~ Affix::set_destruct_level(3);
     my $exit = $code->();
     ok $exit;
-    exit $exit;
+    done_testing;
+    exit! $exit;
 
     #~ };
 }
@@ -144,5 +139,6 @@ leaktest 'leaky type' => sub {
     ddx $ttt;
     ok $ttt;
     $ttt = undef;
+    1
 };
 done_testing;
