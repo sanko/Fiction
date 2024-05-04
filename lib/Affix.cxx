@@ -467,6 +467,7 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
 #ifdef DEBUG
     //~ warn("a->restype_c: %c", a->restype_c);
 #endif
+
     switch (a->restype_c) {
     case VOID_FLAG:
         dcCallVoid(cvm, a->entry_point);

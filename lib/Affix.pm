@@ -93,13 +93,12 @@ package Affix 0.50 {    # 'FFI' is my middle name!
             sub rettype : prototype($)  { return shift->[ Affix::SLOT_SUBTYPE() ]; }
             sub argtypes : prototype($) { return shift->[ Affix::SLOT_CODEREF_ARGS() ]; }
         }
-        @Affix::Type::Void::ISA = @Affix::Type::SV::ISA
+        @Affix::Type::SV::ISA
 
             # Numerics
-            = @Affix::Type::Bool::ISA  = @Affix::Type::Char::ISA     = @Affix::Type::SChar::ISA = @Affix::Type::UChar::ISA = @Affix::Type::WChar::ISA
-            = @Affix::Type::Short::ISA = @Affix::Type::UShort::ISA   = @Affix::Type::Int::ISA   = @Affix::Type::UInt::ISA = @Affix::Type::Long::ISA
-            = @Affix::Type::ULong::ISA = @Affix::Type::LongLong::ISA = @Affix::Type::ULongLong::ISA = @Affix::Type::Float::ISA
-            = @Affix::Type::Double::ISA
+            = @Affix::Type::SChar::ISA = @Affix::Type::UChar::ISA = @Affix::Type::WChar::ISA = @Affix::Type::Short::ISA = @Affix::Type::UShort::ISA
+            = @Affix::Type::Int::ISA   = @Affix::Type::UInt::ISA  = @Affix::Type::Long::ISA = @Affix::Type::ULong::ISA = @Affix::Type::LongLong::ISA
+            = @Affix::Type::ULongLong::ISA = @Affix::Type::Float::ISA = @Affix::Type::Double::ISA
             = @Affix::Type::Size_t::ISA
 
             # Enumerations (subclasses handled in Affix::Type::Enum)

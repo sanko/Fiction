@@ -134,6 +134,7 @@ package t::lib::helper {
                     $supp = Path::Tiny::tempfile( { realpath => 1 }, 'valgrind_suppression_XXXXXXXXXX' );
                     diag 'spewing to ' . $supp;
                     diag $supp->spew( join "\n\n", values %$known );
+                    push @cleanup, $supp;
                 };
             }
         }
@@ -149,12 +150,14 @@ package t::lib::helper {
                         '--leak-check=full', '--show-leak-kinds=all', '--show-reachable=yes', '--demangle=yes', '--error-limit=no', '--xml=yes',
                         '--xml-fd=1',        $^X,                     $file, '--test=' . $name
                     );
-                    diag join ' ', @cmd;
+                    #~ diag join ' ', @cmd;
                     ( $out, $err, $exit ) = Capture::Tiny::capture( sub { system @cmd } );
                     my $xml = parse_xml($out);
 
                     #~ ddx $xml->{valgrindoutput}{error};
                     is $xml->{valgrindoutput}{error}, U(), 'no leaks';
+                    use Data::Dump;
+                    ddx $xml;
                 };
                 return !$exit;
             }

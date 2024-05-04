@@ -28,6 +28,7 @@ package Affix::Type 0.5 {
     sub align         { shift->[ Affix::SLOT_TYPE_ALIGNMENT() ] }
 
     sub new($$$$$$;$$) {
+        ...;
         my ( $pkg, $str, $flag, $sizeof, $align, $offset, $subtype, $array_len ) = @_;
         die 'Please subclass Affix::Type' if $pkg eq __PACKAGE__;
         bless [ $str, $flag, $sizeof, $align, $offset, $subtype, $array_len // 1, !1, !1, !1, undef ], $pkg;
@@ -56,9 +57,36 @@ package Affix::Type 0.5 {
     }
 
     # Types
-    sub Void()   { Affix::Type::Void->new( 'Void', Affix::VOID_FLAG(), 0,                              0 ); }
-    sub Bool()   { Affix::Type::Bool->new( 'Bool', Affix::BOOL_FLAG(), Affix::Platform::SIZEOF_BOOL(), Affix::Platform::ALIGNOF_BOOL(), ); }
-    sub Char()   { Affix::Type::Char->new( 'Char', Affix::CHAR_FLAG(), Affix::Platform::SIZEOF_CHAR(), Affix::Platform::ALIGNOF_CHAR() ); }
+    @Affix::Type::Void::ISA =
+
+        # Numerics
+        @Affix::Type::Bool::ISA = @Affix::Type::Char::ISA =
+        #
+        qw[Affix::Typex];
+
+    sub Void() {
+        Affix::Type::Void->new(
+            'Void',                # stringify
+            Affix::VOID_FLAG(),    # flag
+            0,                     # sizeof
+            0,                     # alignment
+            0                      # offset
+        );
+    }
+
+    sub Bool() {
+        Affix::Type::Bool->new(
+            'Bool',                             # stringify
+            Affix::BOOL_FLAG(),                 # flag
+            Affix::Platform::SIZEOF_BOOL(),     # sizeof
+            Affix::Platform::ALIGNOF_BOOL(),    # alignment
+            0                                   # offset
+        );
+    }
+
+    sub Char() {
+        Affix::Type::Char->new( 'Char', Affix::CHAR_FLAG(), Affix::Platform::SIZEOF_CHAR(), Affix::Platform::ALIGNOF_CHAR(), 0 );
+    }
     sub SChar()  { Affix::Type::SChar->new( 'SChar', Affix::SCHAR_FLAG(), Affix::Platform::SIZEOF_SCHAR(), Affix::Platform::ALIGNOF_SCHAR() ); }
     sub UChar()  { Affix::Type::UChar->new( 'UChar', Affix::UCHAR_FLAG(), Affix::Platform::SIZEOF_UCHAR(), Affix::Platform::ALIGNOF_UCHAR() ); }
     sub WChar()  { Affix::Type::WChar->new( 'WChar', Affix::WCHAR_FLAG(), Affix::Platform::SIZEOF_WCHAR(), Affix::Platform::ALIGNOF_WCHAR() ); }
@@ -109,7 +137,7 @@ package Affix::Type 0.5 {
             #~ for ( my $i = 0; $i < $#types; $i += 2 ) {
             #~ my $field = $types[$i];
             #~ my $subtype  = $types[ $i + 1 ];
-            $subtype->[Affix::SLOT_TYPE_OFFSET] = $sizeof;    # offset
+            $subtype->[ Affix::SLOT_TYPE_OFFSET() ] = $sizeof;    # offset
             push @fields, sprintf '%s => %s', $field, $subtype;
             my $__sizeof = $subtype->sizeof;
             my $__align  = $subtype->align;

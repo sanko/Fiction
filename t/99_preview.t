@@ -1,19 +1,15 @@
 use Test2::V0 '!subtest';
 use Test2::Util::Importer 'Test2::Tools::Subtest' => ( subtest_streamed => { -as => 'subtest' } );
-use lib '../lib', 'lib', '../blib/arch', '../blib/lib', 'blib/arch', 'blib/lib', '../../', '.';
+use lib './lib', '../lib', '../blib/arch/', 'blib/arch', '../', '.';
 use Affix qw[:all];
-BEGIN { chdir '../' if !-d 't'; }
 use t::lib::helper;
 $|++;
 use Data::Dump;
-@Affix::Type::IINNTT::ISA = qw[Affix::Typex];
-my $ttt = Affix::Type::IINNTT->new(
-    'Int',                             # stringify
-    Affix::INT_FLAG(),                 # flag
-    Affix::Platform::SIZEOF_INT(),     # sizeof
-    Affix::Platform::ALIGNOF_INT(),    # alignment
-    0                                  # offset
-);
+ddx Void;
+ddx Bool;
+ddx Char;
+die;
+my $ttt = Bool();
 ddx $ttt;
 ok $ttt;
 $ttt = undef;
