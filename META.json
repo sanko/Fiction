@@ -88,8 +88,11 @@
          }
       },
       "test" : {
-         "requires" : {
+         "recommends" : {
             "Capture::Tiny" : "0",
+            "Getopt::Long" : "0"
+         },
+         "requires" : {
             "ExtUtils::Embed" : "0",
             "File::Temp" : "0",
             "Path::Tiny" : "0",
