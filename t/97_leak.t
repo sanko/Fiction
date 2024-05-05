@@ -4,12 +4,9 @@ use lib './lib', '../lib', '../blib/arch/', 'blib/arch', '../', '.';
 use Affix          qw[:all];
 use t::lib::helper qw[leaktest compile_test_lib];
 $|++;
-
 #
-
 leaktest 'leaky type' => sub {
-
-        my $lib = compile_test_lib(<<'END');
+    my $lib = compile_test_lib(<<'END');
 #include "std.h"
 // ext: .c
 
@@ -19,18 +16,17 @@ DLLEXPORT void leak() {
 }
 
 END
-        diag '$lib: ' . $lib;
-        ok my $_lib = load_library($lib), 'lib is loaded [debugging]';
-        diag $_lib;
-        ok Affix::affix( $lib => 'leak', [  ] => Void ), 'int ptrptr(char **)';
-        #~ is ptrptr($ptr), 3, 'C understood we have 3 lines of text';
+    diag '$lib: ' . $lib;
+    ok my $_lib = load_library($lib), 'lib is loaded [debugging]';
+    diag $_lib;
+    ok Affix::affix( $lib => 'leak', [] => Void ), 'int ptrptr(char **)';
 
-leak();
-
+    #~ is ptrptr($ptr), 3, 'C understood we have 3 lines of text';
+    leak();
 };
 done_testing;
 exit;
-        die;
+die;
 #
 leaktest 'leaky type' => sub {
     Void;

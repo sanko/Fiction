@@ -195,17 +195,15 @@ XS_INTERNAL(Affix_fiction) {
             symbol = *av_fetch(tmp, 0, false);
             if (!SvPOK(symbol)) { croak("Undefined symbol name"); }
 
-
-            {SV* ret__ = *av_fetch(tmp, 0, false);
-            if (sv_isobject(ret__) && sv_derived_from(ret__, "Affix::Typex")) {
-                        IV tmp = SvIV((SV *)SvRV(ret__));
-                            DD(ret__);
-                            croak("WORKING!!!!!!!!!!!!!!!!!!");
-                        //~ ret->lib = INT2PTR(DLLib *, tmp);
-                        }
-                    }
-
-
+            {
+                SV *ret__ = *av_fetch(tmp, 0, false);
+                if (sv_isobject(ret__) && sv_derived_from(ret__, "Affix::Typex")) {
+                    IV tmp = SvIV((SV *)SvRV(ret__));
+                    DD(ret__);
+                    croak("WORKING!!!!!!!!!!!!!!!!!!");
+                    //~ ret->lib = INT2PTR(DLLib *, tmp);
+                }
+            }
 
             ret->symbol = SvPV_nolen(*av_fetch(tmp, 0, false));
             name = SvPV_nolen(*av_fetch(tmp, 1, false));
@@ -226,19 +224,15 @@ XS_INTERNAL(Affix_fiction) {
     {
         ret->restype_c = VOID_FLAG;
 
-
         switch (items) {
         case 4:
-            ret->restype = newSVsv(ST(3));
-                            DD(ret->restype);
+            ret->restype = ST(3);
+            if (sv_isobject(ret->restype) && sv_derived_from(ret->restype, "Affix::Typex")) {
+                IV tmp = SvIV((SV *)SvRV(ret->restype));
+                Affix_Type *t = (Affix_Type *)INT2PTR(DLLib *, tmp);
+                ret->restype_c = t->numeric;
+            }
 
-
-        if (sv_isobject(ret->restype) && sv_derived_from(ret->restype, "Affix::Typex")) {
-                        IV tmp = SvIV((SV *)SvRV(ret->restype));
-                        //~ ret->lib = INT2PTR(DLLib *, tmp);
-                        }
-
-            ret->restype_c = AXT_TYPE_NUMERIC(ret->restype);
             switch (ret->restype_c) {
             case WCHAR_FLAG:
             case WSTRING_FLAG:
@@ -266,8 +260,14 @@ XS_INTERNAL(Affix_fiction) {
                 char scalar = '$';
                 char array = '@';
                 char code = '&';
+                SV * type;
                 for (size_t i = 0; i < sig_len; i++) {
-                    c_type = AXT_TYPE_NUMERIC(*av_fetch(ret->argtypes, i, 0));
+                    type = *av_fetch(ret->argtypes, i, 0);
+                    if (sv_isobject(type) && sv_derived_from(type, "Affix::Typex")) {
+                        IV tmp = SvIV((SV *)SvRV(type));
+                        Affix_Type *t = (Affix_Type *)INT2PTR(DLLib *, tmp);
+                        c_type = t->numeric;
+                    }
                     Copy(&c_type, ret->signature + i, 1, char);
                     // TODO: Generate a valid prototype w/ Array, Callbacks, etc.
                     Copy(&scalar, prototype + i, 1, char);

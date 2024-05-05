@@ -150,6 +150,7 @@ package t::lib::helper {
                         '--leak-check=full', '--show-leak-kinds=all', '--show-reachable=yes', '--demangle=yes', '--error-limit=no', '--xml=yes',
                         '--xml-fd=1',        $^X,                     $file, '--test=' . $name
                     );
+
                     #~ diag join ' ', @cmd;
                     ( $out, $err, $exit ) = Capture::Tiny::capture( sub { system @cmd } );
                     my $xml = parse_xml($out);
