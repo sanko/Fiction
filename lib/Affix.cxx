@@ -179,6 +179,7 @@ XS_INTERNAL(Affix_fiction) {
             XSRETURN_UNDEF;
         }
     }
+
     {
         SV *symbol;
         SV *const xsub_tmp_sv = ST(1);
@@ -193,6 +194,19 @@ XS_INTERNAL(Affix_fiction) {
             }
             symbol = *av_fetch(tmp, 0, false);
             if (!SvPOK(symbol)) { croak("Undefined symbol name"); }
+
+
+            {SV* ret__ = *av_fetch(tmp, 0, false);
+            if (sv_isobject(ret__) && sv_derived_from(ret__, "Affix::Typex")) {
+                        IV tmp = SvIV((SV *)SvRV(ret__));
+                            DD(ret__);
+                            croak("WORKING!!!!!!!!!!!!!!!!!!");
+                        //~ ret->lib = INT2PTR(DLLib *, tmp);
+                        }
+                    }
+
+
+
             ret->symbol = SvPV_nolen(*av_fetch(tmp, 0, false));
             name = SvPV_nolen(*av_fetch(tmp, 1, false));
         }
@@ -210,13 +224,20 @@ XS_INTERNAL(Affix_fiction) {
     }
 
     {
-        ret->signature = NULL;
-        ret->restype = NULL;
         ret->restype_c = VOID_FLAG;
+
 
         switch (items) {
         case 4:
             ret->restype = newSVsv(ST(3));
+                            DD(ret->restype);
+
+
+        if (sv_isobject(ret->restype) && sv_derived_from(ret->restype, "Affix::Typex")) {
+                        IV tmp = SvIV((SV *)SvRV(ret->restype));
+                        //~ ret->lib = INT2PTR(DLLib *, tmp);
+                        }
+
             ret->restype_c = AXT_TYPE_NUMERIC(ret->restype);
             switch (ret->restype_c) {
             case WCHAR_FLAG:

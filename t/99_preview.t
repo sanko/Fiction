@@ -4,6 +4,30 @@ use lib './lib', '../lib', '../blib/arch/', 'blib/arch', '../', '.';
 use Affix qw[:all];
 use t::lib::helper;
 $|++;
+
+
+        my $lib = compile_test_lib(<<'END');
+#include "std.h"
+// ext: .c
+
+DLLEXPORT void leak() {
+     void * ptr = malloc(1024);
+    free(ptr);
+}
+
+END
+        diag '$lib: ' . $lib;
+        ok my $_lib = load_library($lib), 'lib is loaded [debugging]';
+        diag $_lib;
+        warn;
+        ok Affix::affix( $lib => 'leak', [  ] => Void ), 'int ptrptr(char **)';
+        warn;
+        #~ is ptrptr($ptr), 3, 'C understood we have 3 lines of text';
+
+leak();
+warn;
+
+__END__
 use Data::Dump;
 ddx Void;
 ddx Bool;
