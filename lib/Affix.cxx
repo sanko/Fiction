@@ -2105,8 +2105,8 @@ XS_INTERNAL(Affix_set_destruct_level) {
 XS_INTERNAL(Affix_Type_new) {
     dVAR;
     dXSARGS;
-    if (items < 6 || items > 7)
-        croak_xs_usage(cv, "package, stringify, sizeof, alignment, offset, subtype, array_len, "
+    if (items < 4 || items > 10)
+        croak_xs_usage(cv, "package, stringify, sizeof, alignment, offset, subtype, arraylen, "
                            "aggregate, typedef, cast");
 
     Affix_Type *type;
@@ -2120,7 +2120,10 @@ XS_INTERNAL(Affix_Type_new) {
     type->numeric = SvIV(ST(2));
     type->size = SvIV(ST(3));
     type->alignment = SvIV(ST(4));
-    type->offset = SvIV(ST(5));
+
+    if (SvIOK(ST(5))) type->offset = SvIV(ST(5));
+    // TODO: store subtype, inc refcnt
+    if (SvIOK(ST(7))) type->arraylen = SvIV(ST(7));
 
     XSRETURN(1);
 }

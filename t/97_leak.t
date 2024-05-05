@@ -11,22 +11,19 @@ leaktest 'leaky type' => sub {
 // ext: .c
 
 DLLEXPORT void leak() {
-     void * ptr = malloc(1024);
-    free(ptr);
+    void * ptr = malloc(1024);
+    //free(ptr);
 }
 
 END
     diag '$lib: ' . $lib;
     ok my $_lib = load_library($lib), 'lib is loaded [debugging]';
     diag $_lib;
-    ok Affix::affix( $lib => 'leak', [] => Void ), 'int ptrptr(char **)';
+    ok Affix::affix( $lib => 'leak', [] => Void ), 'void leak()';
 
     #~ is ptrptr($ptr), 3, 'C understood we have 3 lines of text';
     leak();
 };
-done_testing;
-exit;
-die;
 #
 leaktest 'leaky type' => sub {
     Void;

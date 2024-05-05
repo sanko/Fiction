@@ -60,7 +60,11 @@ package Affix::Type 0.5 {
     @Affix::Type::Void::ISA =
 
         # Numerics
-        @Affix::Type::Bool::ISA = @Affix::Type::Char::ISA =
+        @Affix::Type::Bool::ISA = @Affix::Type::Char::ISA = @Affix::Type::SChar::ISA = @Affix::Type::UChar::ISA = @Affix::Type::WChar::ISA
+        = @Affix::Type::Short::ISA  = @Affix::Type::UShort::ISA   = @Affix::Type::Int::ISA       = @Affix::Type::UInt::ISA = @Affix::Type::Long::ISA
+        = @Affix::Type::ULong::ISA  = @Affix::Type::LongLong::ISA = @Affix::Type::ULongLong::ISA = @Affix::Type::Float::ISA
+        = @Affix::Type::Double::ISA = @Affix::Type::Size_t::ISA
+        =
         #
         qw[Affix::Typex];
 
@@ -85,7 +89,7 @@ package Affix::Type 0.5 {
     }
 
     sub Char() {
-        Affix::Type::Char->new( 'Char', Affix::CHAR_FLAG(), Affix::Platform::SIZEOF_CHAR(), Affix::Platform::ALIGNOF_CHAR(), 0 );
+        Affix::Type::Char->new( 'Char', Affix::CHAR_FLAG(), Affix::Platform::SIZEOF_CHAR(), Affix::Platform::ALIGNOF_CHAR() );
     }
     sub SChar()  { Affix::Type::SChar->new( 'SChar', Affix::SCHAR_FLAG(), Affix::Platform::SIZEOF_SCHAR(), Affix::Platform::ALIGNOF_SCHAR() ); }
     sub UChar()  { Affix::Type::UChar->new( 'UChar', Affix::UCHAR_FLAG(), Affix::Platform::SIZEOF_UCHAR(), Affix::Platform::ALIGNOF_UCHAR() ); }

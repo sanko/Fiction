@@ -8,9 +8,11 @@ my $lib = compile_test_lib(<<'END');
 #include "std.h"
 // ext: .c
 
-DLLEXPORT void leak() {
+DLLEXPORT int leak(int i) {
+warn("i == %d", i);
     void * ptr = malloc(1024);
     free(ptr);
+    return 222;
 }
 
 END
@@ -18,11 +20,11 @@ diag '$lib: ' . $lib;
 ok my $_lib = load_library($lib), 'lib is loaded [debugging]';
 diag $_lib;
 warn;
-ok Affix::affix( $lib => 'leak', [] => Void ), 'int ptrptr(char **)';
+ok Affix::affix( $lib => 'leak', [Int] => Int ), 'int ptrptr(char **)';
 warn;
 
 #~ is ptrptr($ptr), 3, 'C understood we have 3 lines of text';
-leak();
+diag leak(3);
 warn;
 __END__
 use Data::Dump;

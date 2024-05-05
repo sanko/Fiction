@@ -95,11 +95,7 @@ package Affix 0.50 {    # 'FFI' is my middle name!
         }
         @Affix::Type::SV::ISA
 
-            # Numerics
-            = @Affix::Type::SChar::ISA = @Affix::Type::UChar::ISA = @Affix::Type::WChar::ISA = @Affix::Type::Short::ISA = @Affix::Type::UShort::ISA
-            = @Affix::Type::Int::ISA   = @Affix::Type::UInt::ISA  = @Affix::Type::Long::ISA = @Affix::Type::ULong::ISA = @Affix::Type::LongLong::ISA
-            = @Affix::Type::ULongLong::ISA = @Affix::Type::Float::ISA = @Affix::Type::Double::ISA
-            = @Affix::Type::Size_t::ISA
+
 
             # Enumerations (subclasses handled in Affix::Type::Enum)
             = @Affix::Type::Enum::ISA
