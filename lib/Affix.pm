@@ -95,8 +95,6 @@ package Affix 0.50 {    # 'FFI' is my middle name!
         }
         @Affix::Type::SV::ISA
 
-
-
             # Enumerations (subclasses handled in Affix::Type::Enum)
             = @Affix::Type::Enum::ISA
 

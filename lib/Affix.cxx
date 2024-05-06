@@ -260,7 +260,7 @@ XS_INTERNAL(Affix_fiction) {
                 char scalar = '$';
                 char array = '@';
                 char code = '&';
-                SV * type;
+                SV *type;
                 for (size_t i = 0; i < sig_len; i++) {
                     type = *av_fetch(ret->argtypes, i, 0);
                     if (sv_isobject(type) && sv_derived_from(type, "Affix::Typex")) {

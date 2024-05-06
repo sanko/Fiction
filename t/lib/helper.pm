@@ -88,7 +88,7 @@ package t::lib::helper {
     }
     {
         my $supp;    # defined later
-        my ( $test, $generate_suppressions );
+        my ( $test, $generate_suppressions, $count );
         my $valgrind = 0;
         my $file;
 
@@ -100,7 +100,8 @@ package t::lib::helper {
             return plan skip_all 'Capture::Tiny is not installed' unless eval 'require Capture::Tiny';
             return plan skip_all 'Path::Tiny is not installed'    unless eval 'require Path::Tiny';
             require Getopt::Long;
-            Getopt::Long::GetOptions( 'test=s' => \$test, 'generate' => \$generate_suppressions );
+            Getopt::Long::GetOptions( 'test=s' => \$test, 'generate' => \$generate_suppressions, 'count=i' => \$count );
+            Test2::API::test2_stack()->top->{count} = $count if defined $count;
 
             if ( defined $test ) {
 
@@ -108,6 +109,7 @@ package t::lib::helper {
                 #~ die 'I should be running a test named ' . $test;
             }
             elsif ( defined $generate_suppressions ) {
+                no Test2::Plugin::ExitSummary;
                 pass 'exiting...';
                 done_testing;
                 exit;
@@ -120,22 +122,27 @@ package t::lib::helper {
                 );
                 plan skip_all 'Valgrind is not installed' if $exit_code;
                 diag 'Valgrind v', ( $stdout =~ m[valgrind-(.+)$] ), ' found';
-                subtest 'generate supressions' => sub {
-                    my ( $out, $err ) = Capture::Tiny::capture(
-                        sub {
-                            system
-                                qq[valgrind --leak-check=full --show-reachable=yes --error-limit=no --gen-suppressions=all --log-fd=1 $^X $file --generate];
-                        }
-                    );
-                    is $err, DF(), 'no errors';
-                    my ( $known, $dups ) = parse_suppression($out);
-                    diag scalar( keys %$known ) . ' suppressions';
-                    diag $dups . ' duplicates have been filtered out';
-                    $supp = Path::Tiny::tempfile( { realpath => 1 }, 'valgrind_suppression_XXXXXXXXXX' );
-                    diag 'spewing to ' . $supp;
-                    diag $supp->spew( join "\n\n", values %$known );
-                    push @cleanup, $supp;
-                };
+                diag 'Generating suppressions...';
+                my ( $out, $err, @res ) = Capture::Tiny::capture(
+                    sub {
+                        system
+                            qq[valgrind --leak-check=full --show-reachable=yes --error-limit=no --gen-suppressions=all --log-fd=1 $^X $file --generate --count=]
+                            . Test2::API::test2_stack()->top->{count};
+                    }
+                );
+                my ( $known, $dups ) = parse_suppression($out);
+
+                #~ diag $out;
+                #~ diag $err;
+                is $err, DF(), scalar( keys %$known ) . ' suppressions';
+                diag $dups . ' duplicates have been filtered out';
+                $supp = Path::Tiny::tempfile( { realpath => 1 }, 'valgrind_suppression_XXXXXXXXXX' );
+                diag 'spewing to ' . $supp;
+                diag $supp->spew( join "\n\n", values %$known );
+                push @cleanup, $supp;
+                Test2::API::test2_stack()->top->{count};
+
+                #~ Test2::API::test2_stack()->top->{count}++;
             }
         }
 
@@ -143,30 +150,39 @@ package t::lib::helper {
             init_valgrind();
             my ( $name, $code ) = @_;
             if ( !defined $test ) {
-                my ( $out, $err, $exit );
-                subtest $name => sub {
-                    my @cmd = (
-                        'valgrind',          '-q',                    '--suppressions=' . $supp->realpath,
-                        '--leak-check=full', '--show-leak-kinds=all', '--show-reachable=yes', '--demangle=yes', '--error-limit=no', '--xml=yes',
-                        '--xml-fd=1',        $^X,                     $file, '--test=' . $name
-                    );
+                my @cmd = (
+                    'valgrind',                          '-q',
+                    '--suppressions=' . $supp->realpath, '--leak-check=full',
+                    '--show-leak-kinds=all',             '--show-reachable=yes',
+                    '--demangle=yes',                    '--error-limit=no',
+                    '--xml=yes',                         '--xml-fd=2',
+                    $^X,                                 $file,
+                    '--test=' . $name,                   '--count=' . Test2::API::test2_stack()->top->{count}
+                );
 
-                    #~ diag join ' ', @cmd;
-                    ( $out, $err, $exit ) = Capture::Tiny::capture( sub { system @cmd } );
-                    my $xml = parse_xml($out);
+                #~ diag join ' ', @cmd;
+                my ( $out, $err, $exit ) = Capture::Tiny::capture( sub { system @cmd } );
+                print $out;
+                my $xml = parse_xml($err);
+                Test2::API::test2_stack()->top->{count}++;
 
-                    #~ ddx $xml->{valgrindoutput}{error};
-                    is $xml->{valgrindoutput}{error}, U(), 'no leaks';
-                    use Data::Dump;
-                    ddx $xml;
-                };
+                #~ use Data::Dump;
+                #~ ddx
+                #~ $xml;
+                #~ ddx $xml->{valgrindoutput}{error};
+                is $xml->{valgrindoutput}{error}, U(), 'no leaks in subtest "' . $name . '"';
+
+                #~ use Data::Dump;
+                #~ ddx $xml;
                 return !$exit;
             }
             return unless $name eq $test;
+            no Test2::Plugin::ExitSummary;
             Affix::set_destruct_level(3);
-            my $exit = $code->();
-            ok $exit;
-            done_testing;
+            my $exit = subtest $test => $code;
+            Test2::API::test2_stack()->top->{count}++;
+
+            #~ done_testing;
             exit !$exit;
         }
 
