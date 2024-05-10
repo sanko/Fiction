@@ -2106,9 +2106,8 @@ XS_INTERNAL(Affix_Type_new) {
     dVAR;
     dXSARGS;
     if (items < 4 || items > 10)
-        croak_xs_usage(cv, "package, stringify, sizeof, alignment, offset, subtype, arraylen, "
+        croak_xs_usage(cv, "package, stringify, numeric, sizeof, alignment, offset, subtype, arraylen, "
                            "aggregate, typedef, cast");
-
     Affix_Type *type;
     Newxz(type, 1, Affix_Type);
 
@@ -2122,24 +2121,94 @@ XS_INTERNAL(Affix_Type_new) {
     type->alignment = SvIV(ST(4));
 
     if (SvIOK(ST(5))) type->offset = SvIV(ST(5));
+
     // TODO: store subtype, inc refcnt
-    if (SvIOK(ST(7))) type->arraylen = SvIV(ST(7));
+    if (items == 8 && SvIOK(ST(7))) type->arraylen = SvIV(ST(7));
 
     XSRETURN(1);
 }
 
-XS_INTERNAL(Affix_Type_DESTROY) {
+XS_INTERNAL(Affix_Type_offset) {
     dXSARGS;
     PERL_UNUSED_VAR(items);
     Affix_Type *type;
-    type = INT2PTR(Affix_Type *, SvIV(SvRV(ST(0))));
-    if (type != NULL) {
-        warn("stringify: %s", type->stringify);
-        //~ safefree((DCpointer)type->stringify);
-        //~ if (type->subtype != NULL) safefree(type->subtype);
-        //~ if (type->aggregate != NULL) dcFreeAggr(type->aggregate);
-        safefree(type);
+    switch (items) {
+    case 1:
+        if (LIKELY(SvROK(ST(0)) && sv_derived_from(ST(0), "Affix::Type")))
+            type = INT2PTR(Affix_Type *, SvIV(SvRV(ST(0))));
+    // fallthrough
+    case 2:
+        if (type != NULL) {
+            if (SvIOK(ST(1))) type->offset = SvIV(ST(1));
+            break;
+        }
+    // fallthrough
+    default:
+        croak_xs_usage(cv, "type, [offset]");
     }
+    warn("Returning...");
+    XSRETURN_IV(type->offset);
+}
+
+XS_INTERNAL(Affix_Type_alignment) {
+    dXSARGS;
+    PERL_UNUSED_VAR(items);
+    Affix_Type *type;
+    switch (items) {
+    case 1:
+        if (LIKELY(SvROK(ST(0)) && sv_derived_from(ST(0), "Affix::Type")))
+            type = INT2PTR(Affix_Type *, SvIV(SvRV(ST(0))));
+    // fallthrough
+    case 2:
+        if (type != NULL) {
+            if (SvIOK(ST(1))) type->alignment = SvIV(ST(1));
+            break;
+        }
+    // fallthrough
+    default:
+        croak_xs_usage(cv, "type, [alignment]");
+    }
+    warn("Returning...");
+    XSRETURN_IV(type->alignment);
+}
+
+XS_INTERNAL(Affix_Type_sizeof) {
+    dXSARGS;
+    PERL_UNUSED_VAR(items);
+    Affix_Type *type;
+    switch (items) {
+    case 1:
+        if (LIKELY(SvROK(ST(0)) && sv_derived_from(ST(0), "Affix::Type")))
+            type = INT2PTR(Affix_Type *, SvIV(SvRV(ST(0))));
+    // fallthrough
+    case 2:
+        if (type != NULL) {
+            if (SvIOK(ST(1))) type->size = SvIV(ST(1));
+            break;
+        }
+    // fallthrough
+    default:
+        croak_xs_usage(cv, "type, [size]");
+    }
+    warn("Returning...");
+    XSRETURN_IV(type->size);
+}
+
+XS_INTERNAL(Affix_Type_DESTROY) {
+    dXSARGS;
+    warn("ppppppppp");
+    DD(ST(0));
+
+    PERL_UNUSED_VAR(items);
+    Affix_Type *type;
+    //~ if (LIKELY(SvROK(ST(0)) && sv_derived_from(ST(0), "Affix::Type")))
+        type = INT2PTR(Affix_Type *, SvIV(SvRV(ST(0))));
+    //~ if (type == NULL) croak_xs_usage(cv, "type");
+    warn("stringify: %s", type->stringify);
+    //~ safefree((DCpointer)type->stringify);
+    //~ if (type->subtype != NULL) safefree(type->subtype);
+    //~ if (type->aggregate != NULL) dcFreeAggr(type->aggregate);
+    safefree(type);
     XSRETURN_EMPTY;
 }
 
@@ -2206,6 +2275,9 @@ XS_EXTERNAL(boot_Affix) {
     // Type system
     //~ my ( $pkg, $str, $flag, $sizeof, $align, $offset, $subtype, $array_len, $field ) = @_;
     (void)newXSproto_portable("Affix::Typex::new", Affix_Type_new, __FILE__, "$$$$$$");
+    (void)newXSproto_portable("Affix::Typex::alignment", Affix_Type_alignment, __FILE__, "$;$");
+    (void)newXSproto_portable("Affix::Typex::offset", Affix_Type_offset, __FILE__, "$;$");
+    (void)newXSproto_portable("Affix::Typex::sizeof", Affix_Type_sizeof, __FILE__, "$;$");
     (void)newXSproto_portable("Affix::Typex::DESTROY", Affix_Type_DESTROY, __FILE__, "$");
 
     // general purpose flags

@@ -25,8 +25,13 @@ END
 };
 #
 leaktest 'leaky type' => sub {
-    ok Void, 'Void';
-    ok Bool, 'Bool';
-    ok Char, 'Char';
+    ok Void,  'Void';
+    ok Bool,  'Bool';
+    ok Char,  'Char';
+    ok SChar, 'SChar';
+    ok UChar, 'UChar';
+    ok WChar, 'WChar';
+    #
+    ok Struct [ i => Int ], 'Struct[ i => Int ]';
 };
 done_testing;

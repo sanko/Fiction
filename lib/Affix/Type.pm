@@ -65,6 +65,9 @@ package Affix::Type 0.5 {
         = @Affix::Type::ULong::ISA  = @Affix::Type::LongLong::ISA = @Affix::Type::ULongLong::ISA = @Affix::Type::Float::ISA
         = @Affix::Type::Double::ISA = @Affix::Type::Size_t::ISA
         =
+
+        # Aggregates
+        @Affix::Type::Struct::ISA = @Affix::Type::Union::ISA =
         #
         qw[Affix::Typex];
 
@@ -128,23 +131,31 @@ package Affix::Type 0.5 {
     }
 
     sub Struct : prototype($) {
+        warn;
         my (@types) = @{ +shift };
         my @fields;
         my $sizeof = 0;
         my $packed = 0;
+        warn;
 
         #~ for my ( $field, $subtype )(@types) {    # Perl 5.36
         while (@types) {
+            warn;
             my $field   = shift @types;
             my $subtype = shift @types;
+            warn;
 
             #~ for ( my $i = 0; $i < $#types; $i += 2 ) {
             #~ my $field = $types[$i];
             #~ my $subtype  = $types[ $i + 1 ];
-            $subtype->[ Affix::SLOT_TYPE_OFFSET() ] = $sizeof;    # offset
+            warn;
+            use Data::Dump;
+            ddx $subtype;
+            warn $subtype->offset($sizeof);    # offset
+            warn;
             push @fields, sprintf '%s => %s', $field, $subtype;
             my $__sizeof = $subtype->sizeof;
-            my $__align  = $subtype->align;
+            my $__align  = $subtype->alignment;
 
             #~ warn sprintf 'types: %d, i: %d, fields: %d', scalar @types, $i, scalar @fields;
             $sizeof += ( $packed || ( scalar @fields == scalar @types / 2 ) ) ? 0 :

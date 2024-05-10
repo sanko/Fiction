@@ -4,6 +4,11 @@ use lib './lib', '../lib', '../blib/arch/', 'blib/arch', '../', '.';
 use Affix qw[:all];
 use t::lib::helper;
 $|++;
+Int;
+warn Struct( [ i => Int ])->sizeof;
+warn;
+exit 0;
+__END__
 my $lib = compile_test_lib(<<'END');
 #include "std.h"
 // ext: .c
