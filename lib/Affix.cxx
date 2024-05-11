@@ -2106,8 +2106,9 @@ XS_INTERNAL(Affix_Type_new) {
     dVAR;
     dXSARGS;
     if (items < 4 || items > 10)
-        croak_xs_usage(cv, "package, stringify, numeric, sizeof, alignment, offset, subtype, arraylen, "
-                           "aggregate, typedef, cast");
+        croak_xs_usage(cv,
+                       "package, stringify, numeric, sizeof, alignment, offset, subtype, arraylen, "
+                       "aggregate, typedef, cast");
     Affix_Type *type;
     Newxz(type, 1, Affix_Type);
 
@@ -2117,7 +2118,11 @@ XS_INTERNAL(Affix_Type_new) {
 
     type->stringify = SvPV_nolen(ST(1));
     type->numeric = SvIV(ST(2));
+    DD(ST(2));
     type->size = SvIV(ST(3));
+    DD(ST(3));
+    warn("type->size == %d", type->size);
+
     type->alignment = SvIV(ST(4));
 
     if (SvIOK(ST(5))) type->offset = SvIV(ST(5));
@@ -2134,7 +2139,7 @@ XS_INTERNAL(Affix_Type_offset) {
     Affix_Type *type;
     switch (items) {
     case 1:
-        if (LIKELY(SvROK(ST(0)) && sv_derived_from(ST(0), "Affix::Type")))
+        if (LIKELY(SvROK(ST(0)) && sv_derived_from(ST(0), "Affix::Typex")))
             type = INT2PTR(Affix_Type *, SvIV(SvRV(ST(0))));
     // fallthrough
     case 2:
@@ -2156,7 +2161,7 @@ XS_INTERNAL(Affix_Type_alignment) {
     Affix_Type *type;
     switch (items) {
     case 1:
-        if (LIKELY(SvROK(ST(0)) && sv_derived_from(ST(0), "Affix::Type")))
+        if (LIKELY(SvROK(ST(0)) && sv_derived_from(ST(0), "Affix::Typex")))
             type = INT2PTR(Affix_Type *, SvIV(SvRV(ST(0))));
     // fallthrough
     case 2:
@@ -2175,10 +2180,10 @@ XS_INTERNAL(Affix_Type_alignment) {
 XS_INTERNAL(Affix_Type_sizeof) {
     dXSARGS;
     PERL_UNUSED_VAR(items);
-    Affix_Type *type;
+    Affix_Type *type = NULL;
     switch (items) {
     case 1:
-        if (LIKELY(SvROK(ST(0)) && sv_derived_from(ST(0), "Affix::Type")))
+        if (LIKELY(SvROK(ST(0)) && sv_derived_from(ST(0), "Affix::Typex")))
             type = INT2PTR(Affix_Type *, SvIV(SvRV(ST(0))));
     // fallthrough
     case 2:
@@ -2190,18 +2195,18 @@ XS_INTERNAL(Affix_Type_sizeof) {
     default:
         croak_xs_usage(cv, "type, [size]");
     }
-    warn("Returning...");
+    //~ warn("Returning... %s", type->size);
     XSRETURN_IV(type->size);
 }
 
 XS_INTERNAL(Affix_Type_DESTROY) {
     dXSARGS;
-    warn("ppppppppp");
+    warn("DESTROY");
     DD(ST(0));
 
     PERL_UNUSED_VAR(items);
     Affix_Type *type;
-    //~ if (LIKELY(SvROK(ST(0)) && sv_derived_from(ST(0), "Affix::Type")))
+    if (LIKELY(SvROK(ST(0)) && sv_derived_from(ST(0), "Affix::Typex")))
         type = INT2PTR(Affix_Type *, SvIV(SvRV(ST(0))));
     //~ if (type == NULL) croak_xs_usage(cv, "type");
     warn("stringify: %s", type->stringify);

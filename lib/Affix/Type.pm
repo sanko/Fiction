@@ -160,10 +160,8 @@ package Affix::Type 0.5 {
             #~ warn sprintf 'types: %d, i: %d, fields: %d', scalar @types, $i, scalar @fields;
             $sizeof += ( $packed || ( scalar @fields == scalar @types / 2 ) ) ? 0 :
                 Affix::Platform::padding_needed_for( $sizeof, $__align > $__sizeof ? $__sizeof : $__align );
-            warn "----------------------> $sizeof";
             $sizeof += $__sizeof;
         }
-        warn "----------------------> $sizeof";
         Affix::Type::Struct->new(
             sprintf( 'Struct[ %s ]', join ', ', @fields ), Affix::STRUCT_FLAG(), $sizeof,               # sizeof
             $sizeof + Affix::Platform::padding_needed_for( $sizeof, Affix::Platform::BYTE_ALIGN() ),    # align

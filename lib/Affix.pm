@@ -111,10 +111,8 @@ package Affix 0.50 {    # 'FFI' is my middle name!
 
         # Pointers
         @Affix::Type::Pointer::Unmanaged::ISA = 'Affix::Pointer';
-
-
-             @Affix::Type::Pointer::ISA = @Affix::Type::CodeRef::ISA = @Affix::Type::Function::ISA = 'Affix::Type::Parameterized';
-        @Affix::CC::Reset::ISA = @Affix::CC::This::ISA = @Affix::CC::Ellipsis::ISA = @Affix::CC::Varargs::ISA = @Affix::CC::CDecl::ISA
+        @Affix::Type::Pointer::ISA = @Affix::Type::CodeRef::ISA = @Affix::Type::Function::ISA = 'Affix::Type::Parameterized';
+        @Affix::CC::Reset::ISA     = @Affix::CC::This::ISA      = @Affix::CC::Ellipsis::ISA   = @Affix::CC::Varargs::ISA = @Affix::CC::CDecl::ISA
             = @Affix::CC::STDcall::ISA = @Affix::CC::MSFastcall::ISA = @Affix::CC::GNUFastcall::ISA = @Affix::CC::MSThis::ISA
             = @Affix::CC::GNUThis::ISA = @Affix::CC::Arm::ISA = @Affix::CC::Thumb::ISA = @Affix::CC::Syscall::ISA = 'Affix::CC';
 

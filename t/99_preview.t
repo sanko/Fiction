@@ -4,9 +4,10 @@ use lib './lib', '../lib', '../blib/arch/', 'blib/arch', '../', '.';
 use Affix qw[:all];
 use t::lib::helper;
 $|++;
-Int;
-warn Struct( [ i => Int ])->sizeof;
-warn;
+
+#~ Int;
+is Struct( [ i => Int ] )->sizeof, 8, 'sizeof struct';
+done_testing;
 exit 0;
 __END__
 my $lib = compile_test_lib(<<'END');
