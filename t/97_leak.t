@@ -33,5 +33,6 @@ leaktest 'leaky type' => sub {
     ok WChar, 'WChar';
     #
     ok Struct [ i => Int ], 'Struct[ i => Int ]';
+
 };
 done_testing;

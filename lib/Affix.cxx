@@ -2110,25 +2110,18 @@ XS_INTERNAL(Affix_Type_new) {
                        "package, stringify, numeric, sizeof, alignment, offset, subtype, arraylen, "
                        "aggregate, typedef, cast");
     Affix_Type *type;
-    Newxz(type, 1, Affix_Type);
+    type = new Affix_Type(
+        SvPV_nolen(ST(1)), SvIV(ST(2)),        SvIV(ST(3)),
+        SvIV(ST(4)),
+        SvIOK(ST(5)) ? SvIV(ST(5)) : 0
+    );
 
     SV *RETSV = sv_newmortal();
     sv_setref_pv(RETSV, SvPV_nolen(ST(0)), (DCpointer)type);
     ST(0) = RETSV;
 
-    type->stringify = SvPV_nolen(ST(1));
-    type->numeric = SvIV(ST(2));
-    DD(ST(2));
-    type->size = SvIV(ST(3));
-    DD(ST(3));
-    warn("type->size == %d", type->size);
-
-    type->alignment = SvIV(ST(4));
-
-    if (SvIOK(ST(5))) type->offset = SvIV(ST(5));
-
     // TODO: store subtype, inc refcnt
-    if (items == 8 && SvIOK(ST(7))) type->arraylen = SvIV(ST(7));
+    //~ if (items == 8 && SvIOK(ST(7))) type->arraylen = SvIV(ST(7));
 
     XSRETURN(1);
 }
@@ -2203,17 +2196,11 @@ XS_INTERNAL(Affix_Type_DESTROY) {
     dXSARGS;
     warn("DESTROY");
     DD(ST(0));
-
     PERL_UNUSED_VAR(items);
     Affix_Type *type;
     if (LIKELY(SvROK(ST(0)) && sv_derived_from(ST(0), "Affix::Typex")))
         type = INT2PTR(Affix_Type *, SvIV(SvRV(ST(0))));
-    //~ if (type == NULL) croak_xs_usage(cv, "type");
-    warn("stringify: %s", type->stringify);
-    //~ safefree((DCpointer)type->stringify);
-    //~ if (type->subtype != NULL) safefree(type->subtype);
-    //~ if (type->aggregate != NULL) dcFreeAggr(type->aggregate);
-    safefree(type);
+    delete type;
     XSRETURN_EMPTY;
 }
 

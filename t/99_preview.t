@@ -7,6 +7,8 @@ $|++;
 
 #~ Int;
 is Struct( [ i => Int ] )->sizeof, 8, 'sizeof struct';
+use Data::Dump;
+my $ptr = Affix::sv2ptr( Pointer [Char], 'Hi' );
 done_testing;
 exit 0;
 __END__

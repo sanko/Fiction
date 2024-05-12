@@ -69,6 +69,8 @@ package Affix::Type 0.5 {
         # Aggregates
         @Affix::Type::Struct::ISA = @Affix::Type::Union::ISA =
         #
+        @Affix::Type::Pointer::ISA =
+        #
         qw[Affix::Typex];
 
     sub Void() {
@@ -247,21 +249,17 @@ package Affix::Type 0.5 {
     sub Pointer : prototype(;$) {
         my ( $subtype, @etc ) = @_ ? @{ +shift } : Void();    # Defaults to Pointer[Void]
         Carp::croak sprintf( 'Too may arguments in Pointer[ %s, %s ]', $subtype, join ', ', @etc ) if @etc;
-        bless(
-            [   'Pointer[ ' . $subtype . ' ]',          # SLOT_STRINGIFY
-                Affix::POINTER_FLAG(),                  # SLOT_NUMERIC
-                Affix::Platform::SIZEOF_INTPTR_T(),     # SLOT_SIZEOF
-                Affix::Platform::ALIGNOF_INTPTR_T(),    # SLOT_ALIGNMENT
-                undef,                                  # SLOT_OFFSET
-                $subtype,                               # SLOT_SUBTYPE
-                1                                       # SLOT_ARRAYLEN
-            ],
-            'Affix::Type::Pointer'
+        Affix::Type::Pointer->new(
+            'Pointer', Affix::POINTER_FLAG(), Affix::Platform::SIZEOF_INTPTR_T(),    # sizeof
+            Affix::Platform::ALIGNOF_INTPTR_T(),                                     # align
+            0,                                                                       # offset
+            $subtype,                                                                # subtype
+            1                                                                        # array_len
         );
     }
 
     sub Array : prototype($) {
-        my ( $subtype, $length ) = @{ +shift };    # No defaults
+        my ( $subtype, $length ) = @{ +shift };                                      # No defaults
         bless(
             [   'Array[ ' . $subtype . ', ' . $length . ' ]',    # SLOT_STRINGIFY
                 Affix::POINTER_FLAG(),                           # SLOT_NUMERIC

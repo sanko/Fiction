@@ -292,13 +292,16 @@ following address will be aligned to `alignment`. */
 #define AXT_POINTER_COUNT(t) SvIV(*av_fetch(MUTABLE_AV(SvRV(t)), SLOT_POINTER_COUNT, 0))
 #define AXT_POINTER_POSITION(t) SvIV(*av_fetch(MUTABLE_AV(SvRV(t)), SLOT_POINTER_POSITION, 0))
 
-typedef struct {
-    const char *stringify;
+class Affix_Type
+{
+    const char *_stringify;
+    public:
     char numeric;
     size_t size;
     size_t alignment;
     size_t offset;
-    void *subtype; // Affix_Type
+    Affix_Type *subtype; // Affix_Type
+    private:
     size_t arraylen;
     bool const_flag;
     bool volitile_flag;
@@ -308,7 +311,17 @@ typedef struct {
     void **args; // list of Affix_Type
     const char *sig;
     const char *field; // If part of a struct
-} Affix_Type;
+  public:
+    Affix_Type(const char *s, char n, size_t z, size_t a, size_t o)
+        : _stringify(s), numeric(n), size(z), alignment(a), offset(o) {}
+     char * stringify(){
+        if(subtype == NULL) { return (char*)_stringify; }
+        char * kid = subtype->stringify();
+        char ret[strlen(_stringify) + 4 + strlen(kid) ];
+        sprintf(ret, "%s[ %s ]", _stringify, kid);
+        return ret;
+    }
+};
 
 typedef struct {
     intptr_t address;
@@ -321,7 +334,7 @@ typedef struct {
 size_t padding_needed_for(size_t offset, size_t alignment);
 SV *ptr2obj(pTHX_ SV *type_sv, DCpointer ptr);
 SV *ptr2sv(pTHX_ SV *type_sv, DCpointer ptr);
-DCpointer sv2ptr(pTHX_ SV *type_sv, SV *data, DCpointer ptr = NULL);
+DCpointer sv2ptr(pTHX_ Affix_Type *type, SV *data, DCpointer ptr = NULL);
 size_t _alignof(pTHX_ SV *type);
 size_t _sizeof(pTHX_ SV *type);
 size_t _offsetof(pTHX_ SV *type);
@@ -380,19 +393,30 @@ struct CodeRefWrapper {
     DCCallback *cb;
 };
 
-typedef struct {
+class Affix_Callback {
+    public:// TODO: remove once I figure out what needs to be public
     const char *signature;
     char restype_c;
     char *perl_sig;
     SV *cv;
     AV *argtypes;
     SV *retval;
-    SV *restype;
+    Affix_Type *restype;
+    public:
     dTHXfield(perl)
-} CodeRef;
+};
 
 char cbHandler(DCCallback *cb, DCArgs *args, DCValue *result, DCpointer userdata);
 DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointer userdata);
+
+class Affix_Pin { // Used in CUnion and pin()
+    public:
+    intptr_t ptr;
+    Affix_Type * type;
+    public:
+        Affix_Pin(intptr_t ptr, Affix_Type * type) : ptr(ptr), type(type){}
+};
+
 
 struct fiction {
     DLLib *lib;            // safefree

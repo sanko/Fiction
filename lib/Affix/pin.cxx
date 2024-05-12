@@ -3,23 +3,18 @@
 /* Affix::pin( ... ) System
 Bind an exported variable to a perl var */
 
-typedef struct { // Used in CUnion and pin()
-    void *ptr;
-    SV *type_sv;
-} var_ptr;
-
 int get_pin(pTHX_ SV *sv, MAGIC *mg) {
-    var_ptr *ptr = (var_ptr *)mg->mg_ptr;
-    SV *val = ptr2sv(aTHX_ ptr->type_sv, ptr->ptr);
+    Affix_Pin *ptr = (Affix_Pin *)mg->mg_ptr;
+    SV *val = ptr2sv(aTHX_ ptr->type, ptr->ptr);
     sv_setsv((sv), val);
     return 0;
 }
 
 int set_pin(pTHX_ SV *sv, MAGIC *mg) {
-    var_ptr *ptr = (var_ptr *)mg->mg_ptr;
+    Affix_Pin *ptr = (Affix_Pin *)mg->mg_ptr;
     if (SvOK(sv)) {
-        DCpointer block = sv2ptr(aTHX_ ptr->type_sv, sv);
-        Move(block, ptr->ptr, AXT_TYPE_SIZEOF(ptr->type_sv), char);
+        DCpointer block = sv2ptr(aTHX_ ptr->type, sv);
+        Move(block, ptr->ptr, AXT_TYPE_SIZEOF(ptr->type), char);
         safefree(block);
     }
     return 0;
@@ -27,9 +22,8 @@ int set_pin(pTHX_ SV *sv, MAGIC *mg) {
 
 int free_pin(pTHX_ SV *sv, MAGIC *mg) {
     PERL_UNUSED_VAR(sv);
-    var_ptr *ptr = (var_ptr *)mg->mg_ptr;
-    sv_2mortal(ptr->type_sv);
-    safefree(ptr);
+    Affix_Pin *ptr = (Affix_Pin *)mg->mg_ptr;
+    delete(ptr);
     return 0;
 }
 
@@ -90,10 +84,12 @@ XS_INTERNAL(Affix_pin) {
     if (ptr == NULL) { croak("Failed to locate '%s'", symbol); }
     MAGIC *mg = sv_magicext(ST(0), NULL, PERL_MAGIC_ext, &pin_vtbl, NULL, 0);
     {
-        var_ptr *_ptr;
-        Newx(_ptr, 1, var_ptr);
-        _ptr->ptr = ptr;
-        _ptr->type_sv = newSVsv(ST(3));
+        Affix_Pin *_ptr;
+
+    Affix_Type *type;
+    if (LIKELY(SvROK(ST(3)) && sv_derived_from(ST(3), "Affix::Typex")))
+        type = INT2PTR(Affix_Type *, SvIV(SvRV(ST(3))));
+        _ptr = new Affix_Pin(ptr, type);
         mg->mg_ptr = (char *)_ptr;
     }
     XSRETURN_YES;
