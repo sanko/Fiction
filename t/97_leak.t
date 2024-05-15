@@ -32,7 +32,7 @@ leaktest 'leaky type' => sub {
     ok UChar, 'UChar';
     ok WChar, 'WChar';
     #
-    ok Struct [ i => Int ], 'Struct[ i => Int ]';
-
+    ok Struct [ i => Int ],                                  'Struct[ i => Int ]';
+    ok Union [ i => Int, ptr => Pointer [Int], f => Float ], 'Union [ i => Int, ptr => Pointer [Int], f => Float ]';
 };
 done_testing;
