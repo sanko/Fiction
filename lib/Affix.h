@@ -301,15 +301,19 @@ class Affix_Type
     size_t alignment;
     size_t offset;
     Affix_Type *subtype; // Affix_Type
+        size_t arraylen;
+
     private:
-    size_t arraylen;
     bool const_flag;
     bool volitile_flag;
     bool restrict_flag;
     const char *type_name;
     DCaggr *aggregate;
+    public:
     void **args; // list of Affix_Type
+    private:
     const char *sig;
+    public:
     const char *field; // If part of a struct
   public:
     Affix_Type(const char *s, char n, size_t z, size_t a, size_t o)

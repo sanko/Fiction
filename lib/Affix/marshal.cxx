@@ -483,9 +483,8 @@ SV *ptr2sv(pTHX_ Affix_Type * type, DCpointer ptr) {
         ret = newSVnv(*(double *)ptr);
     } break;
     case POINTER_FLAG: {
-        SV *subtype = AXT_TYPE_SUBTYPE(type);
-        char subtype_c = (char)AXT_TYPE_NUMERIC(subtype);
-        size_t len = AXT_TYPE_ARRAYLEN(type);
+        char subtype_c = (char)type->subtype->numeric;
+        size_t len =        type->arraylen;
         switch (subtype_c) {
         case POINTER_FLAG: {
             AV *ret_av = newAV();
@@ -493,7 +492,7 @@ SV *ptr2sv(pTHX_ Affix_Type * type, DCpointer ptr) {
             int i = 0;
             do {
                 tmp = *(DCpointer *)INT2PTR(DCpointer *, (i * SIZEOF_INTPTR_T) + PTR2IV(ptr));
-                av_push(ret_av, ptr2sv(aTHX_ subtype, tmp));
+                av_push(ret_av, ptr2sv(aTHX_ type->subtype, tmp));
                 i++;
             } while (tmp != NULL);
             ret = newRV_noinc(MUTABLE_SV(ret_av));
@@ -501,7 +500,7 @@ SV *ptr2sv(pTHX_ Affix_Type * type, DCpointer ptr) {
         case CHAR_FLAG:
         case UCHAR_FLAG:
         case SCHAR_FLAG:
-            ret = ptr2sv(aTHX_ subtype, ptr);
+            ret = ptr2sv(aTHX_ type->subtype, ptr);
             break;
         case WCHAR_FLAG: {
             size_t len = wcslen((wchar_t *)ptr);
@@ -509,15 +508,15 @@ SV *ptr2sv(pTHX_ Affix_Type * type, DCpointer ptr) {
         } break;
         default: {
             warn("FDJSKFLDSJKFLSDJFKL:DJKLF:SDJSKFLL:FJFKLSF:JFLKSDFJFKLSF len: %d", len);
-            if (len == 1) { ret = ptr2sv(aTHX_ subtype, ptr); }
+            if (len == 1) { ret = ptr2sv(aTHX_ type->subtype, ptr); }
             else {
                 AV *ret_av = newAV();
                 DCpointer tmp = ptr;
-                size_t sizeof_subtype = AXT_TYPE_SIZEOF(subtype);
+                size_t sizeof_subtype = type->subtype->size;
                 for (size_t x = 0; x < len; ++x) {
                     warn("pointer pos: %d, ptr: %p", x,
                          (DCpointer)INT2PTR(DCpointer, (x * sizeof_subtype) + PTR2IV(ptr)));
-                    av_push(ret_av, ptr2sv(aTHX_ subtype,
+                    av_push(ret_av, ptr2sv(aTHX_ type->subtype,
                                            (DCpointer)INT2PTR(DCpointer,
                                                               (x * sizeof_subtype) + PTR2IV(ptr))));
                 }
@@ -590,20 +589,21 @@ SV *ptr2sv(pTHX_ Affix_Type * type, DCpointer ptr) {
         ret = newSV(0);
         HV *RETVAL_ = newHV_mortal();
         HV *_type = MUTABLE_HV(SvRV(type));
-        AV *fields = MUTABLE_AV(SvRV(AXT_TYPE_SUBTYPE(type)));
-        sv_dump(AXT_TYPE_SUBTYPE(type));
-        size_t field_count = av_count(fields);
-        warn("field_count: %d", field_count);
-        for (size_t i = 0; i < field_count; i += 2) {
-            SV *name = *av_fetch(fields, i, 0);
-            SV *subtype = *av_fetch(fields, i + 1, 0);
-            warn("i: %d, PTR2IV(ptr): %p, AXT_TYPE_OFFSET(subtype): %d", i, PTR2IV(ptr),
-                 AXT_TYPE_OFFSET(subtype));
+        //~ AV *fields = MUTABLE_AV(SvRV(AXT_TYPE_SUBTYPE(type)));
+        //~ sv_dump(AXT_TYPE_SUBTYPE(type));
+        //~ size_t field_count = av_count(fields);
+        //~ warn("field_count: %d", field_count);
+        //~ for (size_t i = 0; i < field_count; i += 2) {
+        size_t i = 0;
+        while(type->args[i] !=NULL){
+            //~ SV *name = *av_fetch(fields, i, 0);
+            //~ SV *subtype = *av_fetch(fields, i + 1, 0);
+            //~ warn("i: %d, PTR2IV(ptr): %p, AXT_TYPE_OFFSET(subtype): %d", i, PTR2IV(ptr),
+                 //~ AXT_TYPE_OFFSET(subtype));
             (void)hv_store_ent(
-                RETVAL_, name,
-                ptr2sv(aTHX_ subtype, INT2PTR(DCpointer, PTR2IV(ptr) +
-
-                                                             (AXT_TYPE_OFFSET(subtype)) * i
+                RETVAL_, newSvPV(type->args[i]->field),
+                ptr2sv(aTHX_ type->args[i]->offset, INT2PTR(DCpointer, PTR2IV(ptr) +
+                                                             (type->args[i]->offset) * i
 
                                               )),
                 0);

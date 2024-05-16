@@ -447,7 +447,14 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
                 break;
             }
             case CODEREF_FLAG: {
-                dcArgPointer(cvm, sv2ptr(aTHX_ * av_fetch(a->argtypes, st_pos, 0), ST(st_pos)));
+
+    Affix_Type *type;
+                SV * sv_type = * av_fetch(a->argtypes, st_pos, 0);
+    if (LIKELY(SvROK(sv_type)) && sv_derived_from(sv_type, "Affix::Typex"))
+        type = INT2PTR(Affix_Type *, SvIV(SvRV(sv_type)));
+
+
+                dcArgPointer(cvm, sv2ptr(aTHX_ type, ST(st_pos)));
                 break;
             }
 
@@ -463,9 +470,16 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
                 //~ sv_dump(*av_fetch(a->argtypes, st_pos, 0));
                 //~ sv_dump(AXT_TYPE_SUBTYPE(*av_fetch(a->argtypes, st_pos, 0)));
 
+
+    Affix_Type *type;
+                SV * sv_type = * av_fetch(a->argtypes, st_pos, 0);
+    if (LIKELY(SvROK(sv_type)) && sv_derived_from(sv_type, "Affix::Typex"))
+        type = INT2PTR(Affix_Type *, SvIV(SvRV(sv_type)));
+
+
                 SV *const xsub_tmp_sv = ST(st_pos);
                 SvGETMAGIC(xsub_tmp_sv);
-                dcArgPointer(cvm, sv2ptr(aTHX_ AXT_TYPE_SUBTYPE(*av_fetch(a->argtypes, st_pos, 0)),
+                dcArgPointer(cvm, sv2ptr(aTHX_ type,
                                          xsub_tmp_sv));
                 break;
             }
@@ -821,7 +835,17 @@ extern "C" void Affix_trigger(pTHX_ CV *cv) {
             SV *arg = ST(st_pos);
             if (SvOK(arg)) {
                 if (affix->temp_ptrs == NULL) Newxz(affix->temp_ptrs, num_args, DCpointer);
-                affix->temp_ptrs[st_pos] = sv2ptr(aTHX_ MUTABLE_SV(affix->arg_info[arg_pos]), arg);
+
+
+    Affix_Type *type;
+                SV *sv_type = MUTABLE_SV(affix->arg_info[arg_pos]);
+
+    if (LIKELY(SvROK(sv_type)) && sv_derived_from(sv_type, "Affix::Typex"))
+        type = INT2PTR(Affix_Type *, SvIV(SvRV(sv_type)));
+
+
+
+                affix->temp_ptrs[st_pos] = sv2ptr(aTHX_ type, arg);
                 ptr = *(DCpointer *)(affix->temp_ptrs[st_pos]);
             }
             dcArgPointer(cvm, ptr);
@@ -851,7 +875,13 @@ extern "C" void Affix_trigger(pTHX_ CV *cv) {
                 if (affix->temp_ptrs == NULL) Newxz(affix->temp_ptrs, num_args, DCpointer);
                 if (!SvROK(arg) || SvTYPE(SvRV(arg)) != SVt_PVHV)
                     croak("Type of arg %d must be an hash ref", arg_pos + 1);
-                SV *type = MUTABLE_SV(affix->arg_info[arg_pos]);
+
+    Affix_Type *type;                SV *sv_type = MUTABLE_SV(affix->arg_info[arg_pos]);
+
+    if (LIKELY(SvROK(sv_type)) && sv_derived_from(sv_type, "Affix::Typex"))
+        type = INT2PTR(Affix_Type *, SvIV(SvRV(sv_type)));
+
+
                 affix->temp_ptrs[st_pos] = sv2ptr(aTHX_ type, arg);
                 dcArgAggr(cvm, affix->aggregates[st_pos], affix->temp_ptrs[st_pos]);
             }
@@ -860,9 +890,14 @@ extern "C" void Affix_trigger(pTHX_ CV *cv) {
             PING;
             SV *arg = ST(st_pos);
             if (SvOK(arg)) {
-                PING;
+                PING;SV* sv_type=
+MUTABLE_SV(affix->arg_info[arg_pos]);
+    Affix_Type *type;
+
+    if (LIKELY(SvROK(sv_type)) && sv_derived_from(sv_type, "Affix::Typex"))
+        type = INT2PTR(Affix_Type *, SvIV(SvRV(sv_type)));
                 CodeRefWrapper *hold =
-                    (CodeRefWrapper *)sv2ptr(aTHX_ MUTABLE_SV(affix->arg_info[arg_pos]), arg);
+                    (CodeRefWrapper *)sv2ptr(aTHX_ type, arg);
                 dcArgPointer(cvm, hold->cb);
             }
             else {
@@ -892,9 +927,15 @@ extern "C" void Affix_trigger(pTHX_ CV *cv) {
                 else {
 
                     if (affix->temp_ptrs == NULL) Newxz(affix->temp_ptrs, num_args, DCpointer);
+SV* sv_type=
+MUTABLE_SV(affix->arg_info[arg_pos]);
+    Affix_Type *type;
+
+    if (LIKELY(SvROK(sv_type)) && sv_derived_from(sv_type, "Affix::Typex"))
+        type = INT2PTR(Affix_Type *, SvIV(SvRV(sv_type)));
 
                     affix->temp_ptrs[st_pos] =
-                        sv2ptr(aTHX_ MUTABLE_SV(affix->arg_info[arg_pos]), ST(st_pos));
+                        sv2ptr(aTHX_ type, ST(st_pos));
                     // safemalloc(AXT_SIZEOF(AXT_TYPE_SUBTYPE(MUTABLE_SV(affix->arg_info[arg_pos]))));
                     dcArgPointer(cvm, affix->temp_ptrs[st_pos]);
                 }
@@ -911,17 +952,23 @@ extern "C" void Affix_trigger(pTHX_ CV *cv) {
                     PING;
                     if (affix->temp_ptrs == NULL) Newxz(affix->temp_ptrs, num_args, DCpointer);
                     PING;
-                    SV *type = MUTABLE_SV(affix->arg_info[arg_pos]);
+                    SV *sv_type = MUTABLE_SV(affix->arg_info[arg_pos]);
                     PING;
-                    SV **package_ptr = AXT_TYPE_TYPEDEF(type);
+                    //~ SV **package_ptr = AXT_TYPE_TYPEDEF(sv_type);
+                    //~ PING;
+                    //~ if (UNLIKELY(package_ptr != NULL) && UNLIKELY(SvOK(arg) && sv_isobject(arg)) &&
+                        //~ SvOK(*package_ptr) && !sv_derived_from_sv(arg, *package_ptr, SVf_UTF8)) {
+                        //~ PING;
+                        //~ croak("Expected a subclass of %s in argument %d", SvPV_nolen(*package_ptr),
+                              //~ st_pos + 1);
+                    //~ }
                     PING;
-                    if (UNLIKELY(package_ptr != NULL) && UNLIKELY(SvOK(arg) && sv_isobject(arg)) &&
-                        SvOK(*package_ptr) && !sv_derived_from_sv(arg, *package_ptr, SVf_UTF8)) {
-                        PING;
-                        croak("Expected a subclass of %s in argument %d", SvPV_nolen(*package_ptr),
-                              st_pos + 1);
-                    }
-                    PING;
+
+    Affix_Type *type;
+
+    if (LIKELY(SvROK(sv_type)) && sv_derived_from(sv_type, "Affix::Typex"))
+        type = INT2PTR(Affix_Type *, SvIV(SvRV(sv_type)));
+
                     affix->temp_ptrs[st_pos] = sv2ptr(aTHX_ type, arg);
                     PING;
                     dcArgPointer(cvm, affix->temp_ptrs[st_pos]);
