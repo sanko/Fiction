@@ -14,7 +14,7 @@ int set_pin(pTHX_ SV *sv, MAGIC *mg) {
     Affix_Pin *ptr = (Affix_Pin *)mg->mg_ptr;
     if (SvOK(sv)) {
         DCpointer block = sv2ptr(aTHX_ ptr->type, sv);
-        Move(block, ptr->ptr, AXT_TYPE_SIZEOF(ptr->type), char);
+        Move(block, ptr->ptr, ptr->type->size, char);
         safefree(block);
     }
     return 0;

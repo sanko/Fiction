@@ -189,7 +189,7 @@ package Affix::Type 0.5 {
             my $__sizeof = $type->sizeof;
             if ( $sizeof < $__sizeof ) {
                 $sizeof    = $__sizeof;
-                $alignment = $type->align;
+                $alignment = $type->alignment;
             }
         }
         Affix::Type::Union->new( sprintf( 'Union[ %s ]', join ', ', @fields ), Affix::UNION_FLAG(), $sizeof, $alignment, \@types );

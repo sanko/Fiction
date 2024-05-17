@@ -582,7 +582,7 @@ SV *ptr2sv(pTHX_ Affix_Type * type, DCpointer ptr) {
             //)
             ;
     } break;
-    case STRUCT_FLAG: {
+    case STRUCT_FLAG: {/*
         //~ warn("TODO: unmarshal struct");
         warn("TODO: store field name in type inside struct; only store types in list");
 
@@ -600,6 +600,7 @@ SV *ptr2sv(pTHX_ Affix_Type * type, DCpointer ptr) {
             //~ SV *subtype = *av_fetch(fields, i + 1, 0);
             //~ warn("i: %d, PTR2IV(ptr): %p, AXT_TYPE_OFFSET(subtype): %d", i, PTR2IV(ptr),
                  //~ AXT_TYPE_OFFSET(subtype));
+
             (void)hv_store_ent(
                 RETVAL_, newSvPV(type->args[i]->field),
                 ptr2sv(aTHX_ type->args[i]->offset, INT2PTR(DCpointer, PTR2IV(ptr) +
@@ -607,13 +608,14 @@ SV *ptr2sv(pTHX_ Affix_Type * type, DCpointer ptr) {
 
                                               )),
                 0);
+
         }
-        SvSetSV(ret, newRV(MUTABLE_SV(RETVAL_)));
+        SvSetSV(ret, newRV(MUTABLE_SV(RETVAL_)));*/
     } break;
     default:
         croak("Attempt to marshal unknown/unhandled type in ptr2sv: %s ",
 
-              AXT_TYPE_STRINGIFY(type));
+              type->stringify());
     };
     return ret;
 }

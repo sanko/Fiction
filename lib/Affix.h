@@ -308,6 +308,7 @@ class Affix_Type
     bool volitile_flag;
     bool restrict_flag;
     const char *type_name;
+    public:
     DCaggr *aggregate;
     public:
     void **args; // list of Affix_Type
@@ -336,8 +337,8 @@ typedef struct {
 
 // marshal.cxx
 size_t padding_needed_for(size_t offset, size_t alignment);
-SV *ptr2obj(pTHX_ SV *type_sv, DCpointer ptr);
-SV *ptr2sv(pTHX_ SV *type_sv, DCpointer ptr);
+SV *ptr2obj(pTHX_ Affix_Type *type, DCpointer ptr);
+SV *ptr2sv(pTHX_ Affix_Type *type, DCpointer ptr);
 DCpointer sv2ptr(pTHX_ Affix_Type *type, SV *data, DCpointer ptr = NULL);
 size_t _alignof(pTHX_ SV *type);
 size_t _sizeof(pTHX_ SV *type);
@@ -415,10 +416,10 @@ DCsigchar cbHandlerXXXXX(DCCallback *cb, DCArgs *args, DCValue *result, DCpointe
 
 class Affix_Pin { // Used in CUnion and pin()
     public:
-    intptr_t ptr;
+    DCpointer ptr;
     Affix_Type * type;
     public:
-        Affix_Pin(intptr_t ptr, Affix_Type * type) : ptr(ptr), type(type){}
+        Affix_Pin(DCpointer ptr, Affix_Type * type) : ptr(ptr), type(type){}
 };
 
 

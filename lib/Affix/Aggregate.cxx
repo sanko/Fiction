@@ -1,31 +1,23 @@
 #include "../Affix.h"
 
-DCaggr *_aggregate(pTHX_ SV *type) {
+DCaggr *_aggregate(pTHX_ Affix_Type * type) {
 #if DEBUG
-    warn("_aggregate(%s)", AXT_TYPE_STRINGIFY(type));
+    warn("_aggregate(%s)", type->stringify());
 #endif
     DCaggr *retval = NULL;
-    switch (AXT_TYPE_NUMERIC(type)) {
+    switch (type->numeric) {
     case STRUCT_FLAG:
     case CPPSTRUCT_FLAG:
     case UNION_FLAG: {
-        size_t size = AXT_TYPE_SIZEOF(type);
-        SV **agg_sv_ptr = AXT_TYPE_AGGREGATE(type);
-        if (agg_sv_ptr != NULL && SvOK(*agg_sv_ptr)) {
-            PING;
-            sv_dump(*agg_sv_ptr);
-            if (sv_derived_from(*agg_sv_ptr, "Affix::Pointer")) {
-                IV tmp = SvIV((SV *)SvRV(*agg_sv_ptr));
-                return INT2PTR(DCaggr *, tmp);
-            }
-            else
-                croak("Oh, no...");
+        size_t size = type->size;
+        if (type->aggregate != NULL) {
+            return type->aggregate;
         }
         else {
             PING;
-            SV *fields = AXT_TYPE_SUBTYPE(type);
+                /* SV *fields = type;
             sv_dump(fields);
-            /*
+
 
             //~ if (t == STRUCT_FLAG) {
             //~ SV **sv_packed = hv_fetchs(MUTABLE_HV(SvRV(type)), "packed", 0);
@@ -72,17 +64,17 @@ type_as_dc(_t), offset, array_len); #endif dcAggrField(retval, type_as_dc(_t), o
                 av_store(MUTABLE_AV(SvRV(type)), 7, newSVsv(RETVALSV));
             }*/
 #if DEBUG
-            warn("/_aggregate(%s)", AXT_TYPE_STRINGIFY(type));
+            warn("/_aggregate(%s)", type->stringify());
 #endif
         }
     } break;
     default: {
-        croak("Unsupported aggregate: %s", AXT_TYPE_STRINGIFY(type));
+        croak("Unsupported aggregate: %s", type->stringify());
         break;
     }
     }
 #if DEBUG
-    warn("/_aggregate(%s) == NULL", AXT_TYPE_STRINGIFY(type));
+    warn("/_aggregate(%s) == NULL", type->stringify());
 #endif
     return retval;
 }
@@ -90,6 +82,7 @@ type_as_dc(_t), offset, array_len); #endif dcAggrField(retval, type_as_dc(_t), o
 XS_INTERNAL(Affix_Aggregate_FETCH) {
     dVAR;
     dXSARGS;
+    /*
     if (items != 2) croak_xs_usage(cv, "union, key");
     SV *RETVAL = newSV(0);
     HV *h = MUTABLE_HV(SvRV(ST(0)));
@@ -113,7 +106,7 @@ XS_INTERNAL(Affix_Aggregate_FETCH) {
             break;
         }
     }
-    ST(0) = RETVAL;
+    ST(0) = RETVAL;*/
     XSRETURN(1);
 }
 
