@@ -133,28 +133,22 @@ package Affix::Type 0.5 {
     }
 
     sub Struct : prototype($) {
-        warn;
         my (@types) = @{ +shift };
         my @fields;
         my $sizeof = 0;
         my $packed = 0;
-        warn;
 
         #~ for my ( $field, $subtype )(@types) {    # Perl 5.36
         while (@types) {
-            warn;
             my $field   = shift @types;
             my $subtype = shift @types;
-            warn;
 
             #~ for ( my $i = 0; $i < $#types; $i += 2 ) {
             #~ my $field = $types[$i];
             #~ my $subtype  = $types[ $i + 1 ];
-            warn;
             use Data::Dump;
             ddx $subtype;
             warn $subtype->offset($sizeof);    # offset
-            warn;
             push @fields, sprintf '%s => %s', $field, $subtype;
             my $__sizeof = $subtype->sizeof;
             my $__align  = $subtype->alignment;

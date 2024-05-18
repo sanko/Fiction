@@ -12,6 +12,7 @@ my $blah;
 warn;
 
 is Struct( [ i => Int ] )->sizeof, 8, 'sizeof struct';
+
 is Union ([ i => Int, ptr => Pointer [Int], f => Float ])->sizeof, 8, 'sizeof union';
 use Data::Dump;
 my $ptr = Affix::sv2ptr( Pointer [Char], 'Hi' );
