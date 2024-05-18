@@ -8,6 +8,7 @@ $|++;
 my $blah;
 {
     $blah = Struct[i => Int];
+    warn 'here';
 }
 warn;
 

@@ -588,19 +588,20 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
             case SCHAR_FLAG:
             case WCHAR_FLAG:
             case SV_FLAG:
-                sv_setsv(a->res, sv_2mortal(ptr2sv(aTHX_ a->restype, ret)));
+                //~ sv_setsv(a->res, sv_2mortal(ptr2sv(aTHX_ a->restype, ret)));
                 break;
             default:
-                sv_setsv(a->res, sv_2mortal(ptr2obj(aTHX_ a->restype, ret)));
+                ;
+                //~ sv_setsv(a->res, sv_2mortal(ptr2obj(aTHX_ a->restype, ret)));
             }
         }
     } break;
     case CODEREF_FLAG: {
         DCpointer ret = dcCallPointer(cvm, a->entry_point);
-        sv_setsv(a->res, sv_2mortal(ptr2sv(aTHX_ a->restype, ret)));
+        //~ sv_setsv(a->res, sv_2mortal(ptr2sv(aTHX_ a->restype, ret)));
     } break;
     default:
-        croak("Unknown or unhandled return type: %s", AXT_TYPE_STRINGIFY(a->restype));
+        croak("Unknown or unhandled return type: %s", a->restype->stringify());
     };
 
     //~ sv_setnv(a->res, dcCallDouble(cvm, a->entry_point));
@@ -2166,6 +2167,8 @@ XS_INTERNAL(Affix_Type_new) {
     SV *RETSV = sv_newmortal();
     sv_setref_pv(RETSV, SvPV_nolen(ST(0)), (DCpointer)type);
     ST(0) = RETSV;
+
+    SvREFCNT_inc(ST(6));// leaks!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     // TODO: store subtype, inc refcnt
     //~ if (items == 8 && SvIOK(ST(7))) type->arraylen = SvIV(ST(7));
