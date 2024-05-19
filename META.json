@@ -54,6 +54,7 @@
          },
          "requires" : {
             "CPAN::Uploader" : "0",
+            "Capture::Tiny" : "0",
             "Code::TidyAll" : "0",
             "Code::TidyAll::Plugin::ClangFormat" : "0",
             "Code::TidyAll::Plugin::PodTidy" : "0",

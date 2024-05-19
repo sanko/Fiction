@@ -60,4 +60,5 @@ on 'develop' => sub {
     requires 'Software::License::Artistic_2_0';
     requires 'Minilla';
     recommends 'Benchmark';
+    requires 'Capture::Tiny';
 };
