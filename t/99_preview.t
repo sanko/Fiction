@@ -1,19 +1,54 @@
 use Test2::V0 '!subtest';
 use Test2::Util::Importer 'Test2::Tools::Subtest' => ( subtest_streamed => { -as => 'subtest' } );
-use lib '../lib', 'lib', '../blib/arch', '../blib/lib', 'blib/arch', 'blib/lib', '../../', '.';
+use lib './lib', '../lib', '../blib/arch/', 'blib/arch', '../', '.';
 use Affix qw[:all];
-BEGIN { chdir '../' if !-d 't'; }
 use t::lib::helper;
 $|++;
+
+my $blah;
+{
+    $blah = Struct[i => Int];
+    warn 'here';
+}
+warn;
+
+is Struct( [ i => Int ] )->sizeof, 8, 'sizeof struct';
+
+is Union ([ i => Int, ptr => Pointer [Int], f => Float ])->sizeof, 8, 'sizeof union';
 use Data::Dump;
-@Affix::Type::IINNTT::ISA = qw[Affix::Typex];
-my $ttt = Affix::Type::IINNTT->new(
-    'Int',                             # stringify
-    Affix::INT_FLAG(),                 # flag
-    Affix::Platform::SIZEOF_INT(),     # sizeof
-    Affix::Platform::ALIGNOF_INT(),    # alignment
-    0                                  # offset
-);
+my $ptr = Affix::sv2ptr( Pointer [Char], 'Hi' );
+done_testing;
+exit 0;
+__END__
+my $lib = compile_test_lib(<<'END');
+#include "std.h"
+// ext: .c
+
+DLLEXPORT int leak(int i) {
+warn("i == %d", i);
+    void * ptr = malloc(1024);
+    free(ptr);
+    return 222;
+}
+
+END
+diag '$lib: ' . $lib;
+ok my $_lib = load_library($lib), 'lib is loaded [debugging]';
+diag $_lib;
+warn;
+ok Affix::affix( $lib => 'leak', [Int] => Int ), 'int ptrptr(char **)';
+warn;
+
+#~ is ptrptr($ptr), 3, 'C understood we have 3 lines of text';
+diag leak(3);
+warn;
+__END__
+use Data::Dump;
+ddx Void;
+ddx Bool;
+ddx Char;
+die;
+my $ttt = Bool();
 ddx $ttt;
 ok $ttt;
 $ttt = undef;
