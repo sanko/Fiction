@@ -186,6 +186,16 @@ the same shared library exists, the most recent should be returned.
 
 ## `dlerror( )`
 
+```perl
+my $err = dlerror( );
+say $err if $err;
+```
+
+Returns a human readable string describing the most recent error that occurred from `load_library( ... )`,
+`free_library( ... )`, etc. since the last call to `dlerror( )`.
+
+An undefined value is returned if no errors have occured.
+
 ## `libc()`
 
 Returns the path to the platform-dependant equivalent of the standard C library.

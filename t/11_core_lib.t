@@ -40,7 +40,7 @@ int verify(){return var;}
 #~ =head2 C<find_symbol( ... )>
 #~ =head2 C<free_symbol( ... )>
 {
-    my $nope    = load_library( 'totallyfakelib_' . int rand(1000) );
+    my $nope    = load_library( 'totallyfakelib_' . int rand time );
     my $dlerror = dlerror();
     ok $dlerror, 'dlerror()';
     diag $dlerror;
