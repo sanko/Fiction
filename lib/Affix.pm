@@ -55,6 +55,7 @@ package Affix 0.50 {    # 'FFI' is my middle name!
     $EXPORT_TAGS{cc} = [    # calling conventions
         'Reset', 'This', 'Ellipsis', 'Varargs', 'CDecl', 'STDCall', 'MSFastcall', 'GNUFastcall', 'MSThis', 'GNUThis', 'Arm', 'Thumb', 'Syscall'
     ];
+    $EXPORT_TAGS{pin}    = [qw[pin unpin]];
     $EXPORT_TAGS{memory} = [
         qw[
             affix wrap pin unpin

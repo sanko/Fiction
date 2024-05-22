@@ -1,10 +1,11 @@
 use Test2::V0 '!subtest';
 use Test2::Util::Importer 'Test2::Tools::Subtest' => ( subtest_streamed => { -as => 'subtest' } );
 use lib '../lib', 'lib', '../blib/arch', '../blib/lib', 'blib/arch', 'blib/lib', '../../', '.';
-use Affix qw[Int pin wrap unpin];
+use Affix qw[Int wrap :pin];
 BEGIN { chdir '../' if !-d 't'; }
 use t::lib::helper;
 $|++;
+imported_ok qw[pin unpin];
 subtest Int => sub {
     ok my $lib = compile_test_lib(<<''), 'build test lib';
 #include "std.h"

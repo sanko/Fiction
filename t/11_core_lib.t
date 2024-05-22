@@ -5,8 +5,8 @@ use Affix qw[:lib];
 BEGIN { chdir '../' if !-d 't'; }
 use t::lib::helper;
 $|++;
-subtest Int => sub {
-    ok my $lib = compile_test_lib(<<''), 'build test lib';
+imported_ok qw[load_library find_library dlerror libm libc];
+subtest Int => sub { ok my $lib = compile_test_lib(<<''), 'build test lib' };
 #include "std.h"
 // ext: .c
 extern int var;
@@ -14,46 +14,45 @@ int var = 100;
 int verify(){return var;}
 
 
-    #~ ok my $verify = wrap( $lib, 'verify', [] => Int ), 'wrap( ..., "verify", ... )';
-    #~ ok pin( my $var, $lib, 'var', Int ),                      'pin( my $var, ... )';
-    #~ is $var, 100, '$var == 100';
-    #~ subtest 200 => sub {
-    #~ is $var = 200,  200, '$var = 200';
-    #~ is $var,        200, '$var == 200';
-    #~ is $verify->(), 200, '$verify->() == 200';
-    #~ };
-    #~ subtest 120 => sub {
-    #~ is $var = 120,  120, '$var = 120';
-    #~ is $var,        120, '$var == 120';
-    #~ is $verify->(), 120, '$verify->() == 120';
-    #~ };
-    #~ subtest unpin => sub {
-    #~ ok unpin($var), 'unpin( ... )';
-    #~ is $var = 300,  300, '$var = 300';
-    #~ is $var,        300, '$var == 300';
-    #~ is $verify->(), 120, '$verify->() == 120 (still)';
-    #~ }
-    #~ find_library
-    #~ =head2 C<load_library( ... )>
-    #~ =head2 C<free_library( ... )>
-    #~ =head2 C<list_symbols( ... )>
-    #~ =head2 C<find_symbol( ... )>
-    #~ =head2 C<free_symbol( ... )>
-    {
-        my $nope    = load_library( 'totallyfakelib_' . int rand(1000) );
-        my $dlerror = dlerror();
-        ok $dlerror, 'dlerror()';
-        diag $dlerror;
-    };
-    {
-        my $libc = libc();
-        ok $libc, 'libc()';
-        diag $libc if $libc;
-    }
-    {
-        my $libm = libm();
-        ok $libm, 'libm()';
-        diag $libm if $libm;
-    }
+#~ ok my $verify = wrap( $lib, 'verify', [] => Int ), 'wrap( ..., "verify", ... )';
+#~ ok pin( my $var, $lib, 'var', Int ),                      'pin( my $var, ... )';
+#~ is $var, 100, '$var == 100';
+#~ subtest 200 => sub {
+#~ is $var = 200,  200, '$var = 200';
+#~ is $var,        200, '$var == 200';
+#~ is $verify->(), 200, '$verify->() == 200';
+#~ };
+#~ subtest 120 => sub {
+#~ is $var = 120,  120, '$var = 120';
+#~ is $var,        120, '$var == 120';
+#~ is $verify->(), 120, '$verify->() == 120';
+#~ };
+#~ subtest unpin => sub {
+#~ ok unpin($var), 'unpin( ... )';
+#~ is $var = 300,  300, '$var = 300';
+#~ is $var,        300, '$var == 300';
+#~ is $verify->(), 120, '$verify->() == 120 (still)';
+#~ }
+#~ find_library
+#~ =head2 C<load_library( ... )>
+#~ =head2 C<free_library( ... )>
+#~ =head2 C<list_symbols( ... )>
+#~ =head2 C<find_symbol( ... )>
+#~ =head2 C<free_symbol( ... )>
+{
+    my $nope    = load_library( 'totallyfakelib_' . int rand(1000) );
+    my $dlerror = dlerror();
+    ok $dlerror, 'dlerror()';
+    diag $dlerror;
 };
+{
+    my $libc = libc();
+    ok $libc, 'libc()';
+    diag $libc if $libc;
+}
+{
+    my $libm = libm();
+    ok $libm, 'libm()';
+    diag $libm if $libm;
+}
 done_testing;
