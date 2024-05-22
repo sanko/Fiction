@@ -191,6 +191,18 @@ They are exported by default but may be imported by name or with the C<:lib> tag
 Locates a library close to the way the compiler or platform-dependant runtime loader does. Where multiple versions of
 the same shared library exists, the most recent should be returned.
 
+=head2 C<load_library( ... )>
+
+=head2 C<free_library( ... )>
+
+=head2 C<list_symbols( ... )>
+
+=head2 C<find_symbol( ... )>
+
+=head2 C<free_symbol( ... )>
+
+=head2 C<dlerror( )>
+
 =head2 C<libc()>
 
 Returns the path to the platform-dependant equivalent of the standard C library.
@@ -296,6 +308,8 @@ They may be imported by name for now but might be renamed, removed, or changed i
 Dumps C<$length> bytes of raw data from a given point in memory.
 
 This is a debugging function that probably shouldn't find its way into your code and might not be public in the future.
+
+=head2 C<sv_dump( ... )>
 
 =head1 Signatures
 

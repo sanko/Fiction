@@ -1973,7 +1973,7 @@ XS_INTERNAL(Affix_affix) {
         }                                                                                          \
     }                                                                                              \
     STMT_END;
-
+// Undocumented
 XS_INTERNAL(Affix_args) {
     AFFIX_METHOD_GUTS
     ST(0) = (MUTABLE_SV(affix->arg_info));

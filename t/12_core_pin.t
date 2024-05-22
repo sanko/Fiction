@@ -1,7 +1,7 @@
 use Test2::V0 '!subtest';
 use Test2::Util::Importer 'Test2::Tools::Subtest' => ( subtest_streamed => { -as => 'subtest' } );
 use lib '../lib', 'lib', '../blib/arch', '../blib/lib', 'blib/arch', 'blib/lib', '../../', '.';
-use Affix qw[:all];
+use Affix qw[Int pin wrap unpin];
 BEGIN { chdir '../' if !-d 't'; }
 use t::lib::helper;
 $|++;
@@ -13,8 +13,8 @@ extern int var;
 int var = 100;
 int verify(){return var;}
 
-    ok my $verify = Affix::wrap( $lib, 'verify', [] => Int ), 'wrap( ..., "verify", ... )';
-    ok pin( my $var, $lib, 'var', Int ),                      'pin( my $var, ... )';
+    ok my $verify = wrap( $lib, 'verify', [] => Int ), 'wrap( ..., "verify", ... )';
+    ok pin( my $var, $lib, 'var', Int ),               'pin( my $var, ... )';
     is $var, 100, '$var == 100';
     subtest 200 => sub {
         is $var = 200,  200, '$var = 200';

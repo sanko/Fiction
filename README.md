@@ -174,6 +174,18 @@ my $ntdll = find_library( 'ntdll' ); # C:\Windows\system32\ntdll.dll
 Locates a library close to the way the compiler or platform-dependant runtime loader does. Where multiple versions of
 the same shared library exists, the most recent should be returned.
 
+## `load_library( ... )`
+
+## `free_library( ... )`
+
+## `list_symbols( ... )`
+
+## `find_symbol( ... )`
+
+## `free_symbol( ... )`
+
+## `dlerror( )`
+
 ## `libc()`
 
 Returns the path to the platform-dependant equivalent of the standard C library.
@@ -303,6 +315,8 @@ DumpHex( $ptr, $length );
 Dumps `$length` bytes of raw data from a given point in memory.
 
 This is a debugging function that probably shouldn't find its way into your code and might not be public in the future.
+
+## `sv_dump( ... )`
 
 # Signatures
 

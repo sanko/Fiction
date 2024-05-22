@@ -61,7 +61,7 @@ package Affix 0.50 {    # 'FFI' is my middle name!
             malloc calloc realloc free memchr memcmp memset memcpy sizeof offsetof
             raw hexdump]
     ];
-    $EXPORT_TAGS{lib}     = [qw[find_library libm libc]];
+    $EXPORT_TAGS{lib}     = [qw[load_library find_library dlerror libm libc]];
     $EXPORT_TAGS{default} = [
         qw[
             typedef
