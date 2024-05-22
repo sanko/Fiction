@@ -2,6 +2,7 @@ package Affix::Platform::Unix 0.5 {
     use v5.26;
     use Path::Tiny qw[path];
     use Config     qw[%Config];
+    use DynaLoader;
     use parent 'Exporter';
     our @EXPORT_OK   = qw[find_library];
     our %EXPORT_TAGS = ( all => \@EXPORT_OK );
@@ -16,7 +17,7 @@ package Affix::Platform::Unix 0.5 {
         return $header eq $elf_header;
     }
 
-    sub _findSoname_ldconfig ($) {
+    sub _findLib_ldconfig ($) {
         my ($name) = @_;
         my $machine = {
             'x86_64-64'  => 'libc6,x86-64',
@@ -31,6 +32,11 @@ package Affix::Platform::Unix 0.5 {
             /^(?:lib)?${name}(?:\-\S+)?\.\s*.*\(${machine}.*\)\s+=>\s+(.+)$/;
             defined $1 ? path($1)->realpath : ()
         } split /\R\s*/, `export LC_ALL 'C'; export LANG 'C'; /sbin/ldconfig -p 2>&1`;
+    }
+
+    sub _findLib_dynaloader($) {
+        my ($name) = @_;
+        DynaLoader::dl_findfile( '-l' . $name );
     }
 
     sub _findLib_ld($) {
@@ -70,9 +76,10 @@ package Affix::Platform::Unix 0.5 {
         }
         CORE::state $cache;
         unless ( defined $cache->{$name}{$version} ) {
-            my @ret = grep { is_elf($_) } _findSoname_ldconfig($name);
-            @ret = grep { is_elf($_) } _findLib_gcc($name) unless @ret;
-            @ret = grep { is_elf($_) } _findLib_ld($name)  unless @ret;
+            my @ret = grep { is_elf($_) } _findLib_dynaloader($name);
+            @ret = grep { is_elf($_) } _findLib_ldconfig($name) unless @ret;
+            @ret = grep { is_elf($_) } _findLib_gcc($name)      unless @ret;
+            @ret = grep { is_elf($_) } _findLib_ld($name)       unless @ret;
             return unless @ret;
             for my $lib ( map { path($_)->realpath } @ret ) {
                 next unless $lib =~ /^.*?\/lib$name.*\.$so(?:\.([\d\.\-]+))?$/;

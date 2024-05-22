@@ -8,6 +8,7 @@ package Affix::Platform::MacOS 0.5 {
 
     sub find_library ($) {
         my ($name) = @_;
+        return $name if -f $name;
         for my $file ( "lib$name.dylib", "$name.dylib", "$name.framework/$name" ) {
             my $path = DynaLoader::dl_findfile($file);
             return $path if $path;

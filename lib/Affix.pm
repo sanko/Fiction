@@ -1,6 +1,11 @@
 package Affix 0.50 {    # 'FFI' is my middle name!
 
     # ABSTRACT: A Foreign Function Interface eXtension
+    #~ G|-----------------------------------|-----------------------------------||
+    #~ D|--------------------------4---5~---|--4--------------------------------||
+    #~ A|--7~\-----4---44-/777--------------|------7/4~-------------------------||
+    #~ E|-----------------------------------|-----------------------------------||
+    #~   1 . + . 2 . + . 3 . + . 4 . + .     1 . + . 2 . + . 3 . + . 4 . + .
     use v5.26;
     use experimental 'signatures';
     use Carp qw[];
@@ -11,11 +16,19 @@ package Affix 0.50 {    # 'FFI' is my middle name!
         use XSLoader;
         $okay               = XSLoader::load();
         $DynaLoad::dl_debug = 1;
-        my $platform = 'Affix::Platform::' . (
-            $^O =~ /MSWin/ ? 'Windows' : $^O =~ /darwin/ ? 'MacOS' : $^O =~ /bsd/i ? 'BSD' :    # XXX: dragonfly, etc.
-                'Unix'
-        );
-        eval qq[require $platform; $platform->import(':all')];
+        my $platform
+            = 'Affix::Platform::' .
+            ( ( Affix::Platform::Win32() || Affix::Platform::Win64() ) ? 'Windows' :
+                Affix::Platform::macOS() ? 'MacOS' :
+                ( Affix::Platform::FreeBSD() || Affix::Platform::OpenBSD() || Affix::Platform::NetBSD() || Affix::Platform::DragonFlyBSD() ) ? 'BSD' :
+                'Unix' );
+
+        #~ warn $platform;
+        eval 'use ' . $platform . ' qw[:all];';
+        $@ && die $@;
+        our @ISA = ($platform);
+
+        #~ require ($platform); $platform->import(':all');
     }
     use lib '../lib';
     use Affix::Type       qw[:all];
@@ -62,7 +75,7 @@ package Affix 0.50 {    # 'FFI' is my middle name!
             malloc calloc realloc free memchr memcmp memset memcpy sizeof offsetof
             raw hexdump]
     ];
-    $EXPORT_TAGS{lib}     = [qw[load_library find_library dlerror libm libc]];
+    $EXPORT_TAGS{lib}     = [qw[load_library find_library find_symbol dlerror libm libc]];
     $EXPORT_TAGS{default} = [
         qw[
             typedef

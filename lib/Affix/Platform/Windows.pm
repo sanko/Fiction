@@ -55,6 +55,7 @@ package Affix::Platform::Windows 0.5 {
 
     sub find_library($) {
         my ($name) = @_;
+        return $name         if -f $name;
         return find_msvcrt() if $name eq 'c' || $name eq 'm';
         for my $dir ( split ';', $ENV{PATH} ) {
             my $file = File::Spec->catfile( $dir, $name );
