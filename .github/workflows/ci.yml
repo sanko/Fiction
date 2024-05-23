@@ -21,7 +21,7 @@ jobs:
         perl:
           - 5.38
       max-parallel: 25
-    uses: sanko/Fiction/.github/workflows/cross.yml@main
+    uses: sanko/actions/.github/workflows/affix-cross.yml@main
     with:
       arch: '${{ matrix.os.architecture }}'
       host: '${{ matrix.os.host }}'
@@ -45,7 +45,7 @@ jobs:
           - ubuntu-22.04
         perl: '${{ fromJSON(needs.setup.outputs.matrix).perl }}'
       max-parallel: 25
-    uses: sanko/Fiction/.github/workflows/unix.yml@main
+    uses: sanko/actions/.github/workflows/affix-unix.yml@main
     with:
       flags: '${{ matrix.flags }}'
       os: '${{ matrix.os }}'
@@ -66,7 +66,7 @@ jobs:
           - macos-latest
         perl: '${{ fromJSON(needs.setup.outputs.matrix).perl }}'
       max-parallel: 25
-    uses: sanko/Fiction/.github/workflows/unix.yml@main
+    uses: sanko/actions/.github/workflows/affix-unix.yml@main
     with:
       flags: '${{ matrix.flags }}'
       os: '${{ matrix.os }}'
@@ -140,7 +140,7 @@ jobs:
           - windows-2022
         perl: '${{ fromJSON(needs.setup.outputs.matrix).perl }}'
       max-parallel: 25
-    uses: sanko/Fiction/.github/workflows/win32.yml@main
+    uses: sanko/actions/.github/workflows/affix-win32.yml@main
     with:
       flags: '${{ matrix.flags }}'
       os: '${{ matrix.os }}'
