@@ -33,7 +33,11 @@ package t::lib::helper {
             push @cleanup, $opt unless $keep;
             my ( $package, $filename, $line ) = caller;
             $line++;
-            $opt->spew_utf8( qq[#line $line "$filename"\n] . $name );
+            $opt->spew_utf8(
+
+                #qq[#line $line "$filename"\n] .
+                $name
+            );
         }
         if ( !$opt ) {
             diag 'Failed to locate test source';
