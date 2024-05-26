@@ -190,11 +190,10 @@ XS_INTERNAL(Affix_Pointer_DESTROY) {
     if (items != 1) croak_xs_usage(cv, "ptr");
     SV *const xsub_tmp_sv = ST(0);
     SvGETMAGIC(xsub_tmp_sv);
-    if (!(SvROK(xsub_tmp_sv) && SvTYPE(SvRV(xsub_tmp_sv)) == SVt_PVAV &&
-          sv_derived_from(xsub_tmp_sv, "Affix::Pointer")))
+    if (!(SvROK(xsub_tmp_sv) && sv_derived_from(xsub_tmp_sv, "Affix::Pointer")))
         croak("ptr is not of type Affix::Pointer");
     DCpointer ptr;
-    SV *ptr_sv = AXT_POINTER_ADDR(xsub_tmp_sv);
+    SV *ptr_sv = (xsub_tmp_sv);
     if (SvOK(ptr_sv)) {
         IV tmp = SvIV(MUTABLE_SV(SvRV(ptr_sv)));
         ptr = INT2PTR(DCpointer, tmp);
@@ -214,20 +213,18 @@ XS_INTERNAL(Affix_free) {
 
     SV *const xsub_tmp_sv = ST(0);
     SvGETMAGIC(xsub_tmp_sv);
-    if (!(SvROK(xsub_tmp_sv) && SvTYPE(SvRV(xsub_tmp_sv)) == SVt_PVAV &&
-          sv_derived_from(xsub_tmp_sv, "Affix::Pointer")))
+    if (!(SvROK(xsub_tmp_sv) && sv_derived_from(xsub_tmp_sv, "Affix::Pointer")))
         croak("ptr is not of type Affix::Pointer");
-    {
-        SV *ptr_sv = AXT_POINTER_ADDR(xsub_tmp_sv);
-        if (SvOK(ptr_sv)) {
-            DCpointer ptr;
-            IV tmp = SvIV(MUTABLE_SV(SvRV(ptr_sv)));
 
-            ptr = INT2PTR(DCpointer, tmp);
-            if (ptr != NULL) {
-                safefree(ptr);
-                ptr = NULL;
-            }
+    SV *ptr_sv = ((xsub_tmp_sv));
+    if (SvOK(ptr_sv)) {
+        DCpointer ptr;
+        IV tmp = SvIV(MUTABLE_SV(SvRV(ptr_sv)));
+
+        ptr = INT2PTR(DCpointer, tmp);
+        if (ptr != NULL) {
+            safefree(ptr);
+            ptr = NULL;
         }
     }
 

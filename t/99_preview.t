@@ -4,6 +4,11 @@ use lib './lib', '../lib', '../blib/arch/', 'blib/arch', '../', '.';
 use Affix qw[:all];
 use t::lib::helper;
 $|++;
+isa_ok my $ptr = malloc(1024), ['Affix::Pointer'];
+diag $ptr;
+is free $ptr, U(), 'free';
+done_testing;
+__END__
 my $blah;
 {
     $blah = Struct [ i => Int ];
