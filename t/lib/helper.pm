@@ -175,9 +175,32 @@ package t::lib::helper {
                 #~ $xml;
                 #~ ddx $xml->{valgrindoutput}{error};
                 is $xml->{valgrindoutput}{error}, U(), 'no leaks in subtest "' . $name . '"';
+                if ( $xml->{valgrindoutput}{error} ) {
+                    require Test2::Util::Table;
+                    #~ use Data::Dump;
+                    #~ ddx $xml;
+                    #~ ddx $xml->{valgrindoutput}{error};
+                    my @table = Test2::Util::Table::table(
+                        max_width => 120,
+                        collapse  => 1,                                              # Do not show empty columns
+                        header    => [ 'kind', 'aprox. size', 'aprox. location' ],
+                        rows      => [
+                            map {
+                                ddx $_;
+                                [   $_->{kind}, $_->{xwhat}{leakedbytes},
 
-                #~ use Data::Dump;
-                #~ ddx $xml;
+                                    #~ 'todo'
+                                    $_->{stack}{frame}[2]{fn} . ' at ' .
+                                        $_->{stack}{frame}[2]{dir} . '/' .
+                                        $_->{stack}{frame}[2]{file} .
+                                        ' line ' .
+                                        $_->{stack}{frame}[2]{line}
+                                ]
+                                } @{ $xml->{valgrindoutput}{error} }
+                        ],
+                    );
+                    diag $_ for @table;
+                }
                 return !$exit;
             }
             return unless $name eq $test;
@@ -232,6 +255,7 @@ package t::lib::helper {
                         ref $hash->{$tag} eq 'HASH' ? [ $hash->{$tag}, $content ] :
                             ref $hash->{$tag} eq 'ARRAY' ? [ @{ $hash->{$tag} }, $content ] :
                             [$content] :
+                        $tag eq 'error' ? [$content] :
                         $content ) :
                     undef;
             }
