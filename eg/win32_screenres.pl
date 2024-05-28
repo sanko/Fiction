@@ -4,7 +4,7 @@ use lib '../lib', '../blib/arch', '../blib/lib';
 use Affix;
 $|++;
 #
-sub GetSystemMetrics : Native('C:\Windows\System32\user32.dll') : Signature([Int]=>Int);
+affix 'user32', GetSystemMetrics => [Int] => Int;
 #
 CORE::say 'width = ' . GetSystemMetrics(0);
 CORE::say 'height = ' . GetSystemMetrics(1);
