@@ -131,6 +131,24 @@ a brief message. The message box returns an integer value that indicates which b
 
 See L<https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-messageboxa>
 
+=head2 Send Simulated Keystrokes
+
+This example sends synthetic keystrokes to emulate pressing a mute button on the keyboard.
+
+    use Affix;
+    use constant {
+        VK_VOLUME_DOWN  => 0xAE,
+        VK_VOLUME_UP    => 0xAF,
+        VK_VOLUME_MUTE  => 0xAD,
+        KEYEVENTF_KEYUP => 2
+    };
+    #
+    affix 'user32', keybd_event => [ UChar, UChar, Int, Pointer [ULong] ] => Void;
+    #
+    keybd_event( VK_VOLUME_MUTE, 0, 0,                 undef );
+    keybd_event( VK_VOLUME_MUTE, 0, KEYEVENTF_KEYUP(), undef );
+
+See L<https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-keybd_event>
 
 =head1 See Also
 
