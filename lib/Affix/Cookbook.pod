@@ -24,6 +24,7 @@ L<libVLC|https://www.videolan.org/vlc/libvlc.html> ourselves!
 Here's a very rough sketch to get you started:
 
     use Affix;
+    #
     affix( 'vlc', [ 'libvlc_get_version', 'VLC::get_version' ], [], Str );
     affix( 'vlc', [ 'libvlc_new', 'VLC::new' ], [ Int, Int ], Pointer [Void] );
     affix(
@@ -82,6 +83,54 @@ If you have a local file you'd like to listen to, here's a snippet that'll play 
 
 VLC can gather play length on local files but it takes a moment. Here, we move on as soon as the mp3 is finished
 playing. And as a bonus, you could use this exact same code to play a video!
+
+=head1 Microsoft Windows
+
+Turn Microsoft's DLL Hell into JAPH's Paradise with a few lines of code!
+
+=head2 Gather Screen Dimensions
+
+    use Affix;
+    #
+    affix 'user32', GetSystemMetrics => [Int] => Int;
+    #
+    say 'width = ' . GetSystemMetrics(0);
+    say 'height = ' . GetSystemMetrics(1);
+    say 'number of monitors = ' . GetSystemMetrics(80); # SM_CMONITORS
+
+See L<https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getsystemmetrics>
+
+=head2 Display a MessageBox
+
+Windows exposes a simple API to display a modal dialog box that contains an optional system icon, a set of buttons, and
+a brief message. The message box returns an integer value that indicates which button the user clicked.
+
+    use Affix;
+    #
+    affix 'user32', 'MessageBoxA', [ Pointer [Void], String, String, UInt ] => Int;
+    #
+    use constant {
+        MB_ICONWARNING       => 0x00000030,
+        MB_CANCELTRYCONTINUE => 0x00000006,
+        MB_DEFBUTTON2        => 0x00000100,
+        IDCANCEL             => 2,
+        IDTRYAGAIN           => 10,
+        IDCONTINUE           => 11
+    };
+    #
+    my $msgboxID = MessageBoxA(
+        undef,
+        "Resource not available\nDo you want to try again?",
+        "Account Details",
+        MB_ICONWARNING | MB_CANCELTRYCONTINUE | MB_DEFBUTTON2
+    );
+    if   ( $msgboxID == IDCANCEL )   {...}
+    if   ( $msgboxID == IDTRYAGAIN ) {...}
+    if   ( $msgboxID == IDCONTINUE ) {...}
+    else                             {...}
+
+See L<https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-messageboxa>
+
 
 =head1 See Also
 
