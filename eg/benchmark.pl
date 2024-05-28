@@ -14,10 +14,12 @@ our $libfile;
 
 BEGIN {
     $libfile
-        = $^O eq 'MSWin32'        ? 'ntdll.dll' :
-        $^O eq 'darwin'           ? '/usr/lib/libm.dylib' :
-        $^O eq 'bsd'              ? '/usr/lib/libm.so' :
-        $Config{archname} =~ /64/ ? -e '/lib64/libm.so.6' ? '/lib64/libm.so.6' :
+        = $^O eq 'MSWin32' ? 'ntdll.dll' :
+        $^O eq 'darwin'    ? '/usr/lib/libm.dylib' :
+        $^O eq 'bsd'       ? '/usr/lib/libm.so' :
+        $Config{archname} =~ /64/ ?
+        -e '/lib64/libm.so.6' ?
+            '/lib64/libm.so.6' :
             '/lib/' . $Config{archname} . '-gnu/libm.so.6' :
         '/lib/libm.so.6';
 }
