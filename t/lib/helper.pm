@@ -32,12 +32,9 @@ package t::lib::helper {
             $opt = tempfile( UNLINK => !$keep, SUFFIX => $name =~ m[^\s*//\s*ext:\s*\.c$]ms ? '.c' : '.cxx' )->absolute;
             push @cleanup, $opt unless $keep;
             my ( $package, $filename, $line ) = caller;
+            $filename = path($filename)->canonpath;
             $line++;
-            $opt->spew_utf8(
-
-                #qq[#line $line "$filename"\n] .
-                $name
-            );
+            $opt->spew_utf8(qq[#line $line "$filename"\r\n$name]);
         }
         if ( !$opt ) {
             diag 'Failed to locate test source';
