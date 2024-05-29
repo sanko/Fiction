@@ -177,26 +177,24 @@ package t::lib::helper {
                 is $xml->{valgrindoutput}{error}, U(), 'no leaks in subtest "' . $name . '"';
                 if ( $xml->{valgrindoutput}{error} ) {
                     require Test2::Util::Table;
+
                     #~ use Data::Dump;
                     #~ ddx $xml;
                     #~ ddx $xml->{valgrindoutput}{error};
                     my @table = Test2::Util::Table::table(
                         max_width => 120,
-                        collapse  => 1,                                              # Do not show empty columns
-                        header    => [ 'kind', 'aprox. size', 'aprox. location' ],
+                        collapse  => 1,                                # Do not show empty columns
+                        header    => [ 'kind', 'size', 'location' ],
                         rows      => [
                             map {
-                                ddx $_;
+                                #~ use Data::Dump;
+                                #~ ddx $_;
                                 [   $_->{kind}, $_->{xwhat}{leakedbytes},
 
                                     #~ 'todo'
-                                    $_->{stack}{frame}[2]{fn} . ' at ' .
-                                        $_->{stack}{frame}[2]{dir} . '/' .
-                                        $_->{stack}{frame}[2]{file} .
-                                        ' line ' .
-                                        $_->{stack}{frame}[2]{line}
+                                    join " =>\n  ", map { $_->{fn} } @{ $_->{stack}{frame} }
                                 ]
-                                } @{ $xml->{valgrindoutput}{error} }
+                            } @{ $xml->{valgrindoutput}{error} }
                         ],
                     );
                     diag $_ for @table;

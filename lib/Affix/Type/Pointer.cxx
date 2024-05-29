@@ -192,14 +192,18 @@ XS_INTERNAL(Affix_Pointer_DESTROY) {
     SvGETMAGIC(xsub_tmp_sv);
     if (!(SvROK(xsub_tmp_sv) && sv_derived_from(xsub_tmp_sv, "Affix::Pointer")))
         croak("ptr is not of type Affix::Pointer");
-    DCpointer ptr;
-    SV *ptr_sv = (xsub_tmp_sv);
-    if (SvOK(ptr_sv)) {
-        IV tmp = SvIV(MUTABLE_SV(SvRV(ptr_sv)));
-        ptr = INT2PTR(DCpointer, tmp);
-        if (ptr != NULL) {
-            // safefree(ptr);
-            ptr = NULL;
+
+    if ((SvROK(xsub_tmp_sv) && SvTYPE(SvRV(xsub_tmp_sv)) == SVt_PVAV &&
+         sv_derived_from(xsub_tmp_sv, "Affix::Pointer"))) {
+        SV *ptr_sv = AXT_POINTER_ADDR(xsub_tmp_sv);
+        if (SvOK(ptr_sv)) {
+            DCpointer ptr;
+            IV tmp = SvIV(MUTABLE_SV(SvRV(ptr_sv)));
+            ptr = INT2PTR(DCpointer, tmp);
+            if (ptr != NULL) {
+                // safefree(ptr);
+                ptr = NULL;
+            }
         }
     }
     XSRETURN_EMPTY;
@@ -213,18 +217,21 @@ XS_INTERNAL(Affix_free) {
 
     SV *const xsub_tmp_sv = ST(0);
     SvGETMAGIC(xsub_tmp_sv);
-    if (!(SvROK(xsub_tmp_sv) && sv_derived_from(xsub_tmp_sv, "Affix::Pointer")))
+
+    if (!(SvROK(xsub_tmp_sv) && SvTYPE(SvRV(xsub_tmp_sv)) == SVt_PVAV &&
+          sv_derived_from(xsub_tmp_sv, "Affix::Pointer")))
         croak("ptr is not of type Affix::Pointer");
 
-    SV *ptr_sv = ((xsub_tmp_sv));
-    if (SvOK(ptr_sv)) {
-        DCpointer ptr;
-        IV tmp = SvIV(MUTABLE_SV(SvRV(ptr_sv)));
-
-        ptr = INT2PTR(DCpointer, tmp);
-        if (ptr != NULL) {
-            safefree(ptr);
-            ptr = NULL;
+    {
+        SV *ptr_sv = AXT_POINTER_ADDR(xsub_tmp_sv);
+        if (SvOK(ptr_sv)) {
+            DCpointer ptr;
+            IV tmp = SvIV(MUTABLE_SV(SvRV(ptr_sv)));
+            ptr = INT2PTR(DCpointer, tmp);
+            if (ptr != NULL) {
+                safefree(ptr);
+                ptr = NULL;
+            }
         }
     }
 
@@ -283,7 +290,6 @@ XS_INTERNAL(Affix_Pointer_minus) {
 XS_INTERNAL(Affix_malloc) {
     dVAR;
     dXSARGS;
-    PING;
 
     if (items != 1) croak_xs_usage(cv, "size");
 
@@ -294,12 +300,26 @@ XS_INTERNAL(Affix_malloc) {
         if (RETVAL == NULL) XSRETURN_EMPTY;
     }
     {
-        SV *RETVALSV;
-        RETVALSV = sv_newmortal();
-        sv_setref_pv(RETVALSV, "Affix::Pointer::Unmanaged", RETVAL);
-        ST(0) = RETVALSV;
-    }
+        dSP;
+        int count;
+        ENTER;
+        SAVETMPS;
 
+        PUSHMARK(SP);
+        PUTBACK;
+        count = call_pv("Affix::Void", G_SCALAR);
+        SPAGAIN;
+        if (count != 1) croak("Failed to create Void type; this is a major problem");
+        SV *void_sv = POPs;
+
+        av_store(MUTABLE_AV(SvRV(void_sv)), SLOT_TYPE_SIZEOF, sv_2mortal(newSViv(size)));
+
+        ST(0) = ptr2obj(aTHX_ void_sv, RETVAL);
+
+        PUTBACK;
+        FREETMPS;
+        LEAVE;
+    }
     XSRETURN(1);
 }
 

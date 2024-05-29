@@ -422,7 +422,7 @@ SV *ptr2obj(pTHX_ SV *type, DCpointer ptr) {
         sv_setref_pv(TMP, NULL, ptr);
         av_store(RETVALAV, SLOT_POINTER_ADDR, TMP);
         av_store(RETVALAV, SLOT_POINTER_SUBTYPE, newSVsv(type));
-        av_store(RETVALAV, SLOT_POINTER_COUNT, newSViv(AXT_POINTER_COUNT(type)));
+        //~ av_store(RETVALAV, SLOT_POINTER_COUNT, newSViv(AXT_POINTER_COUNT(type)));
         av_store(RETVALAV, SLOT_POINTER_COUNT, newSViv(1));
         av_store(RETVALAV, SLOT_POINTER_POSITION, newSViv(0));
     }
