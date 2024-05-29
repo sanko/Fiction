@@ -2,27 +2,27 @@
 
 SV *_Void(pTHX_ DCpointer ptr, size_t size) {
     SV *ret;
-    {
-        dSP;
-        int count;
-        ENTER;
-        SAVETMPS;
 
-        PUSHMARK(SP);
-        PUTBACK;
-        count = call_pv("Affix::Void", G_SCALAR);
-        SPAGAIN;
-        if (count != 1) croak("Failed to create Void type; this is a major problem");
-        SV *void_sv = POPs;
+    dSP;
+    int count;
+    ENTER;
+    SAVETMPS;
 
-        av_store(MUTABLE_AV(SvRV(void_sv)), SLOT_TYPE_SIZEOF, sv_2mortal(newSViv(size)));
+    PUSHMARK(SP);
+    PUTBACK;
+    count = call_pv("Affix::Void", G_SCALAR);
+    SPAGAIN;
+    if (count != 1) croak("Failed to create Void type; this is a major problem");
+    SV *void_sv = POPs;
 
-        ret = ptr2obj(aTHX_ void_sv, ptr);
+    av_store(MUTABLE_AV(SvRV(void_sv)), SLOT_TYPE_SIZEOF, sv_2mortal(newSViv(size)));
 
-        PUTBACK;
-        FREETMPS;
-        LEAVE;
-    }
+    ret = ptr2obj(aTHX_ void_sv, ptr);
+
+    PUTBACK;
+    FREETMPS;
+    LEAVE;
+
     return ret;
 }
 
@@ -68,21 +68,14 @@ XS_INTERNAL(Affix_sv2ptr) {
     SvGETMAGIC(xsub_tmp_sv);
 
     {
-        AV *RETVALAV = newAV();
-        {
-            SV *TMP = newSV(0);
-            DCpointer ptr = sv2ptr(aTHX_ ST(0), xsub_tmp_sv);
-            if (ptr != NULL) DumpHex(ptr, 16);
-            sv_setref_pv(TMP, NULL, ptr);
-            av_store(RETVALAV, SLOT_POINTER_ADDR, TMP);
-            av_store(RETVALAV, SLOT_POINTER_SUBTYPE, newSVsv(ST(0)));
-            av_store(RETVALAV, SLOT_POINTER_COUNT, newSViv(1));
-            av_store(RETVALAV, SLOT_POINTER_POSITION, newSViv(0));
-        }
-        SV *RETVAL = newRV_noinc(MUTABLE_SV(RETVALAV)); // Create a reference to the AV
-        sv_bless(RETVAL, gv_stashpvn("Affix::Pointer::Unmanaged", 25, GV_ADD));
-        ST(0) = sv_2mortal(RETVAL);
+        SV *TMP;
+        DCpointer ptr = sv2ptr(aTHX_ ST(0), xsub_tmp_sv);
+
+        TMP = ptr2obj(aTHX_ ST(0), ptr);
+        ST(0) = (TMP);
     }
+
+    ST(0) = sv_2mortal(ST(0));
     XSRETURN(1);
 }
 
@@ -150,24 +143,10 @@ XS_INTERNAL(Affix_Pointer_sv) {
     {
         SV *ptr_sv = AXT_POINTER_ADDR(xsub_tmp_sv);
         if (SvOK(ptr_sv)) {
-            IV tmp = SvIV(MUTABLE_SV(SvRV(ptr_sv)));
-            warn("    AXT_POINTER_POSITION(xsub_tmp_sv) =                                   %d",
-                 AXT_POINTER_POSITION(xsub_tmp_sv));
-            //~ warn("AXT_TYPE_SIZEOF(AXT_POINTER_SUBTYPE(xsub_tmp_sv)) = %d",
-            //~ AXT_TYPE_SIZEOF(AXT_POINTER_SUBTYPE(xsub_tmp_sv)));
-            warn("    AXT_TYPE_SIZEOF(AXT_TYPE_SUBTYPE(AXT_POINTER_SUBTYPE(xsub_tmp_sv))) = %d",
-                 AXT_TYPE_SIZEOF(AXT_TYPE_SUBTYPE(AXT_POINTER_SUBTYPE(xsub_tmp_sv))));
-
-            tmp += (AXT_TYPE_SIZEOF(AXT_POINTER_SUBTYPE(xsub_tmp_sv)) *
-                    AXT_POINTER_POSITION(xsub_tmp_sv));
-
-            //~ warn("AXT_POINTER_POSITION(xsub_tmp_sv) == %d", AXT_POINTER_POSITION(xsub_tmp_sv));
-
-            // DD(ST(0));
-            DCpointer ptr;
-            ptr = INT2PTR(DCpointer, tmp);
-            //~ warn("========> ptr: %p", ptr);
-
+            IV tmp = SvIV(MUTABLE_SV(SvRV(ptr_sv))) +
+                     (AXT_TYPE_SIZEOF(AXT_POINTER_SUBTYPE(xsub_tmp_sv)) *
+                      AXT_POINTER_POSITION(xsub_tmp_sv));
+            DCpointer ptr = INT2PTR(DCpointer, tmp);
             ST(0) = sv_2mortal(ptr2sv(aTHX_ AXT_POINTER_SUBTYPE(xsub_tmp_sv), ptr));
         }
         else
@@ -562,13 +541,9 @@ XS_INTERNAL(Affix_memmove) {
 XS_INTERNAL(Affix_strdup) {
     dVAR;
     dXSARGS;
-    PING;
-
     if (items != 1) croak_xs_usage(cv, "str1");
-
     DCpointer RETVAL;
     char *str1 = (char *)SvPV_nolen(ST(0));
-
     RETVAL = strdup(str1);
     {
         SV *RETVALSV;
@@ -581,28 +556,27 @@ XS_INTERNAL(Affix_strdup) {
 
 void boot_Affix_Pointer(pTHX_ CV *cv) {
     PERL_UNUSED_VAR(cv);
-    {
-        (void)newXSproto_portable("Affix::malloc", Affix_malloc, __FILE__, "$");
-        export_function("Affix", "malloc", "memory");
-        (void)newXSproto_portable("Affix::calloc", Affix_calloc, __FILE__, "$$");
-        export_function("Affix", "calloc", "memory");
-        (void)newXSproto_portable("Affix::realloc", Affix_realloc, __FILE__, "$$");
-        export_function("Affix", "realloc", "memory");
-        (void)newXSproto_portable("Affix::free", Affix_free, __FILE__, "$");
-        export_function("Affix", "free", "memory");
-        (void)newXSproto_portable("Affix::memchr", Affix_memchr, __FILE__, "$$$");
-        export_function("Affix", "memchr", "memory");
-        (void)newXSproto_portable("Affix::memcmp", Affix_memcmp, __FILE__, "$$$");
-        export_function("Affix", "memcmp", "memory");
-        (void)newXSproto_portable("Affix::memset", Affix_memset, __FILE__, "$$$");
-        export_function("Affix", "memset", "memory");
-        (void)newXSproto_portable("Affix::memcpy", Affix_memcpy, __FILE__, "$$$");
-        export_function("Affix", "memcpy", "memory");
-        (void)newXSproto_portable("Affix::memmove", Affix_memmove, __FILE__, "$$$");
-        export_function("Affix", "memmove", "memory");
-        (void)newXSproto_portable("Affix::strdup", Affix_strdup, __FILE__, "$");
-        export_function("Affix", "strdup", "memory");
-    }
+
+    (void)newXSproto_portable("Affix::malloc", Affix_malloc, __FILE__, "$");
+    export_function("Affix", "malloc", "memory");
+    (void)newXSproto_portable("Affix::calloc", Affix_calloc, __FILE__, "$$");
+    export_function("Affix", "calloc", "memory");
+    (void)newXSproto_portable("Affix::realloc", Affix_realloc, __FILE__, "$$");
+    export_function("Affix", "realloc", "memory");
+    (void)newXSproto_portable("Affix::free", Affix_free, __FILE__, "$");
+    export_function("Affix", "free", "memory");
+    (void)newXSproto_portable("Affix::memchr", Affix_memchr, __FILE__, "$$$");
+    export_function("Affix", "memchr", "memory");
+    (void)newXSproto_portable("Affix::memcmp", Affix_memcmp, __FILE__, "$$$");
+    export_function("Affix", "memcmp", "memory");
+    (void)newXSproto_portable("Affix::memset", Affix_memset, __FILE__, "$$$");
+    export_function("Affix", "memset", "memory");
+    (void)newXSproto_portable("Affix::memcpy", Affix_memcpy, __FILE__, "$$$");
+    export_function("Affix", "memcpy", "memory");
+    (void)newXSproto_portable("Affix::memmove", Affix_memmove, __FILE__, "$$$");
+    export_function("Affix", "memmove", "memory");
+    (void)newXSproto_portable("Affix::strdup", Affix_strdup, __FILE__, "$");
+    export_function("Affix", "strdup", "memory");
 
     (void)newXSproto_portable("Affix::sv2ptr", Affix_sv2ptr, __FILE__, "$$");
     (void)newXSproto_portable("Affix::ptr2sv", Affix_ptr2sv, __FILE__, "$$");

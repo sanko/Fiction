@@ -69,7 +69,6 @@ void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
     } break;
     case UCHAR_FLAG: {
         if (SvOK(data)) {
-
             if (SvROK(data) && SvTYPE(SvRV(data)) == SVt_PVAV) {
                 AV *array = MUTABLE_AV(SvRV(data));
                 len = av_count(array);
@@ -414,12 +413,11 @@ void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
 }
 
 SV *ptr2obj(pTHX_ SV *type, DCpointer ptr) {
-    if (ptr == NULL) return newSV(0); // Don't waste any time on NULL pointers
     SV *ret;
     AV *RETVALAV = newAV();
     {
         SV *TMP = newSV(0);
-        sv_setref_pv(TMP, NULL, ptr);
+        if (ptr != NULL) sv_setref_pv(TMP, NULL, ptr);
         av_store(RETVALAV, SLOT_POINTER_ADDR, TMP);
         av_store(RETVALAV, SLOT_POINTER_SUBTYPE, newSVsv(type));
         //~ av_store(RETVALAV, SLOT_POINTER_COUNT, newSViv(AXT_POINTER_COUNT(type)));
@@ -511,8 +509,8 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
                 DCpointer tmp = ptr;
                 size_t sizeof_subtype = AXT_TYPE_SIZEOF(subtype);
                 for (size_t x = 0; x < len; ++x) {
-                    warn("pointer pos: %d, ptr: %p", x,
-                         (DCpointer)INT2PTR(DCpointer, (x * sizeof_subtype) + PTR2IV(ptr)));
+                    //~ warn("pointer pos: %d, ptr: %p", x,
+                    //~ (DCpointer)INT2PTR(DCpointer, (x * sizeof_subtype) + PTR2IV(ptr)));
                     av_push(ret_av, ptr2sv(aTHX_ subtype,
                                            (DCpointer)INT2PTR(DCpointer,
                                                               (x * sizeof_subtype) + PTR2IV(ptr))));
@@ -560,10 +558,10 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
                 prototype[i + 1] = '$';
                 //~ Copy(&scalar, prototype + i, 1, char);
             }
-            warn("ret->signature: %s", cb->signature);
-            warn("     prototype: %s", prototype);
-            warn("ret->restype_c: %c", cb->restype_c);
-            warn("t->entry_point: %p", cb->entry_point);
+            //~ warn("ret->signature: %s", cb->signature);
+            //~ warn("     prototype: %s", prototype);
+            //~ warn("ret->restype_c: %c", cb->restype_c);
+            //~ warn("t->entry_point: %p", cb->entry_point);
         }
         CV *cv;
 
