@@ -1,5 +1,31 @@
 #include "../../Affix.h"
 
+SV *_Void(pTHX_ DCpointer ptr, size_t size) {
+    SV *ret;
+    {
+        dSP;
+        int count;
+        ENTER;
+        SAVETMPS;
+
+        PUSHMARK(SP);
+        PUTBACK;
+        count = call_pv("Affix::Void", G_SCALAR);
+        SPAGAIN;
+        if (count != 1) croak("Failed to create Void type; this is a major problem");
+        SV *void_sv = POPs;
+
+        av_store(MUTABLE_AV(SvRV(void_sv)), SLOT_TYPE_SIZEOF, sv_2mortal(newSViv(size)));
+
+        ret = ptr2obj(aTHX_ void_sv, ptr);
+
+        PUTBACK;
+        FREETMPS;
+        LEAVE;
+    }
+    return ret;
+}
+
 XS_INTERNAL(Affix_cast) {
     dVAR;
     dXSARGS;
@@ -290,36 +316,12 @@ XS_INTERNAL(Affix_Pointer_minus) {
 XS_INTERNAL(Affix_malloc) {
     dVAR;
     dXSARGS;
-
     if (items != 1) croak_xs_usage(cv, "size");
-
     DCpointer RETVAL;
     size_t size = (size_t)SvUV(ST(0));
-    {
-        RETVAL = safemalloc(size);
-        if (RETVAL == NULL) XSRETURN_EMPTY;
-    }
-    {
-        dSP;
-        int count;
-        ENTER;
-        SAVETMPS;
-
-        PUSHMARK(SP);
-        PUTBACK;
-        count = call_pv("Affix::Void", G_SCALAR);
-        SPAGAIN;
-        if (count != 1) croak("Failed to create Void type; this is a major problem");
-        SV *void_sv = POPs;
-
-        av_store(MUTABLE_AV(SvRV(void_sv)), SLOT_TYPE_SIZEOF, sv_2mortal(newSViv(size)));
-
-        ST(0) = ptr2obj(aTHX_ void_sv, RETVAL);
-
-        PUTBACK;
-        FREETMPS;
-        LEAVE;
-    }
+    RETVAL = safemalloc(size);
+    if (RETVAL == NULL) XSRETURN_EMPTY;
+    ST(0) = _Void(aTHX_ RETVAL, size);
     XSRETURN(1);
 }
 
