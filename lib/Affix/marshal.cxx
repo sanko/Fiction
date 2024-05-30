@@ -580,7 +580,7 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
     } break;
     case STRUCT_FLAG: {
         //~ warn("TODO: unmarshal struct");
-        warn("TODO: store field name in type inside struct; only store types in list");
+        //~ warn("TODO: store field name in type inside struct; only store types in list");
 
         ret = newSV(0);
         HV *RETVAL_ = newHV_mortal();
@@ -588,19 +588,16 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
         AV *fields = MUTABLE_AV(SvRV(AXT_TYPE_SUBTYPE(type)));
         //~ sv_dump(AXT_TYPE_SUBTYPE(type));
         size_t field_count = av_count(fields);
-        warn("field_count: %d", field_count);
+        //~ warn("field_count: %d", field_count);
         for (size_t i = 0; i < field_count; i += 2) {
             SV *name = *av_fetch(fields, i, 0);
             SV *subtype = *av_fetch(fields, i + 1, 0);
-            warn("i: %d, PTR2IV(ptr): %p, AXT_TYPE_OFFSET(subtype): %d", i, PTR2IV(ptr),
-                 AXT_TYPE_OFFSET(subtype));
+            //~ warn("i: %d, PTR2IV(ptr): %p, AXT_TYPE_OFFSET(subtype): %d", i, PTR2IV(ptr),
+            //~ AXT_TYPE_OFFSET(subtype));
             (void)hv_store_ent(
                 RETVAL_, name,
-                ptr2sv(aTHX_ subtype, INT2PTR(DCpointer, PTR2IV(ptr) +
-
-                                                             (AXT_TYPE_OFFSET(subtype)) * i
-
-                                              )),
+                ptr2sv(aTHX_ subtype,
+                       INT2PTR(DCpointer, PTR2IV(ptr) + (AXT_TYPE_OFFSET(subtype)) * i)),
                 0);
         }
         SvSetSV(ret, newRV(MUTABLE_SV(RETVAL_)));
@@ -775,10 +772,10 @@ void *sv2ptrx(pTHX_ SV *type, SV *data) {
     DD(type);
     DD(data);
     PING;
-    warn("Here %d", __LINE__);
+    //~ warn("Here %d", __LINE__);
     DCpointer ret = NULL;
     PING;
-    warn("Here %d", __LINE__);
+    //~ warn("Here %d", __LINE__);
 
     //~ while (SvROK(type))
     //~ type = SvRV(type);
@@ -787,12 +784,12 @@ void *sv2ptrx(pTHX_ SV *type, SV *data) {
     //~ sv_dump(data);
 
     char type_c = AXT_TYPE_NUMERIC(type);
-    warn("Here %d", __LINE__);
+    //~ warn("Here %d", __LINE__);
 
-    warn("type: %d/%c", type_c, type_c);
+    //~ warn("type: %d/%c", type_c, type_c);
     PING;
     size_t size = AXT_TYPE_SIZEOF(type);
-    warn("after size: %d", size);
+    //~ warn("after size: %d", size);
     PING;
 #if DEBUG
     warn("sv2ptr(%s, ...) at %s line %d", AXT_TYPE_STRINGIFY(type), __FILE__, __LINE__);
