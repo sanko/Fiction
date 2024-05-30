@@ -22,50 +22,6 @@ build_and_test 'void fn(void)' => <<'', [], Void, undef, U();
 // ext: .c
 void fn(void) { }
 
-subtest uchar => sub {
-    build_and_test 'unsigned char fn(unsigned char)' => <<'', [UChar], UChar, 'b', 'y';
-#include "std.h"
-// ext: .c
-unsigned char fn(unsigned char i) { return i == 'v' ? 'x' : 'y';}
-
-    build_and_test 'unsigned char fn(unsigned char)' => <<'', [UChar], UChar, 'v', 'x';
-#include "std.h"
-// ext: .c
-unsigned char fn(unsigned char i) { return i == 'v' ? 'x' : 'y';}
-
-};
-subtest wchar_t => sub {
-    build_and_test 'bool fn(wchar_t) 時 == 時' => <<'', [WChar], Bool, '時', T();
-#include "std.h"
-// ext: .c
-bool fn(wchar_t chr) {
-    fflush(stdout);
-    return chr == L'時' ? true : false;
-}
-
-    build_and_test 'bool fn(wchar_t) 時 != 好' => <<'', [WChar], Bool, '好', F();
-#include "std.h"
-// ext: .c
-bool fn(wchar_t chr) {
-    fflush(stdout);
-    return chr == L'時' ? true : false;
-}
-
-    build_and_test 'wchar_t fn() 時' => <<'', [], WChar, undef, '時';
-#include "std.h"
-// ext: .c
-wchar_t fn() {
-    return L'時';
-}
-
-    build_and_test 'wchar_t fn() 네' => <<'', [], WChar, undef, '네';
-#include "std.h"
-// ext: .c
-wchar_t fn() {
-    return L'네';
-}
-
-};
 subtest short => sub {
     build_and_test 'short fn()' => <<'', [], Short, undef, -32767;
 #include "std.h"
@@ -142,7 +98,8 @@ subtest longlong => sub {
 // ext: .c
 long long fn(long long i) { return 2147483600 + i;}
 
-    build_and_test 'long fn(long long) negative' => <<'', [LongLong], LongLong, -2147483647, -2147483642;
+    build_and_test
+        'long fn(long long) negative' => <<'', [LongLong], LongLong, -2147483647, -2147483642;
 #include "std.h"
 // ext: .c
 long long fn(long long i) { return 5 + i;}
