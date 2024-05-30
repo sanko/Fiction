@@ -297,8 +297,8 @@ const wchar_t * fn(cb *CodeRef) {
 
 };
 subtest sv => sub {
-    my $todo = todo 'Might fail';
-    use ExtUtils::Embed;
+
+    #~ my $todo  = todo 'Might fail';
     my $flags = `$^X -MExtUtils::Embed -e ccopts -e ldopts`;
     $flags =~ s[\R][ ]g;
     build_and_test

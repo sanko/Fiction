@@ -93,6 +93,7 @@ sub alien {
                 last;
             }
             CORE::say($_) && system($_) for $configure, $make;
+
             # TODO: use Path::Tiny to visit all headers instad
             my %libs = (
                 dyncall => [
