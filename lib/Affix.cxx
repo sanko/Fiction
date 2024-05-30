@@ -584,11 +584,10 @@ extern "C" void Affix_trigger(pTHX_ CV *cv) {
     if (!affix->ellipsis) {
         int __num_args = num_args;
         if (affix->_cpp_struct && !affix->_cpp_constructor) ++__num_args;
-        if (UNLIKELY(items != __num_args)) {
-            if (UNLIKELY(items > __num_args))
-                croak("Too many arguments; wanted %d, found %d", __num_args, items);
-            croak("Not enough arguments; wanted %d, found %d", __num_args, items);
-        }
+        if (UNLIKELY(items != __num_args))
+            croak((UNLIKELY(items > __num_args) ? "Too many arguments; wanted %d, found %ld"
+                                                : "Not enough arguments; wanted %d, found %ld"),
+                  __num_args, items);
     }
 
     dMY_CXT;
@@ -827,7 +826,7 @@ extern "C" void Affix_trigger(pTHX_ CV *cv) {
                 PING;
                 if (affix->temp_ptrs == NULL) Newxz(affix->temp_ptrs, num_args, DCpointer);
                 if (!SvROK(arg) || SvTYPE(SvRV(arg)) != SVt_PVHV)
-                    croak("Type of arg %d must be an hash ref", arg_pos + 1);
+                    croak("Type of arg %ld must be an hash ref", arg_pos + 1);
                 SV *type = MUTABLE_SV(affix->arg_info[arg_pos]);
                 affix->temp_ptrs[st_pos] = sv2ptr(aTHX_ type, arg);
                 dcArgAggr(cvm, affix->aggregates[st_pos], affix->temp_ptrs[st_pos]);
@@ -848,28 +847,20 @@ extern "C" void Affix_trigger(pTHX_ CV *cv) {
             }
         } break;
         case POINTER_FLAG: {
-            PING;
-            warn("POINTER!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             SV *arg = ST(st_pos);
             if (UNLIKELY(!SvOK(arg) && SvREADONLY(arg))) { // explicit undef
-                warn("ASEEEA");
                 PING;
                 dcArgPointer(cvm, NULL);
                 break;
             }
             if (SvROK(arg)) { // Might be a reference which we will handle as an lvalue on return
-                PING;
-                warn("EADFEA");
-
                 arg = MUTABLE_SV(SvRV(arg));
                 if (UNLIKELY(!SvOK(arg) && SvREADONLY(arg))) { // explicit undef
                     dcArgPointer(cvm, NULL);
                     break;
                 }
                 else {
-
                     if (affix->temp_ptrs == NULL) Newxz(affix->temp_ptrs, num_args, DCpointer);
-
                     affix->temp_ptrs[st_pos] =
                         sv2ptr(aTHX_ MUTABLE_SV(affix->arg_info[arg_pos]), ST(st_pos));
                     // safemalloc(AXT_SIZEOF(AXT_TYPE_SUBTYPE(MUTABLE_SV(affix->arg_info[arg_pos]))));
@@ -895,7 +886,7 @@ extern "C" void Affix_trigger(pTHX_ CV *cv) {
                     if (UNLIKELY(package_ptr != NULL) && UNLIKELY(SvOK(arg) && sv_isobject(arg)) &&
                         SvOK(*package_ptr) && !sv_derived_from_sv(arg, *package_ptr, SVf_UTF8)) {
                         PING;
-                        croak("Expected a subclass of %s in argument %d", SvPV_nolen(*package_ptr),
+                        croak("Expected a subclass of %s in argument %ld", SvPV_nolen(*package_ptr),
                               st_pos + 1);
                     }
                     PING;
