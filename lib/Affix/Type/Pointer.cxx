@@ -2,27 +2,21 @@
 
 SV *_Void(pTHX_ DCpointer ptr, size_t size) {
     SV *ret;
-
     dSP;
     int count;
     ENTER;
     SAVETMPS;
-
     PUSHMARK(SP);
     PUTBACK;
-    count = call_pv("Affix::Void", G_SCALAR);
+    count = call_pv("Affix::_Void_Pointer", G_SCALAR);
     SPAGAIN;
     if (count != 1) croak("Failed to create Void type; this is a major problem");
     SV *void_sv = POPs;
-
-    av_store(MUTABLE_AV(SvRV(void_sv)), SLOT_TYPE_SIZEOF, sv_2mortal(newSViv(size)));
-
+    av_store(MUTABLE_AV(SvRV(void_sv)), SLOT_TYPE_SIZEOF, newSViv(size));
     ret = ptr2obj(aTHX_ void_sv, ptr);
-
     PUTBACK;
     FREETMPS;
     LEAVE;
-
     return ret;
 }
 

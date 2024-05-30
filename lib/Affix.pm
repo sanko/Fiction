@@ -205,6 +205,7 @@ package Affix 0.50 {    # 'FFI' is my middle name!
             bless( [ 'Syscall', SYSCALL_FLAG(), undef, undef, undef ], 'Affix::CC::Syscall' );
         }
         #
+        sub _Void_Pointer { Pointer [Void] }
     }
     #
     sub libm() { CORE::state $m //= find_library('m'); $m }
