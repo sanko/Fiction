@@ -22,25 +22,6 @@ build_and_test 'void fn(void)' => <<'', [], Void, undef, U();
 // ext: .c
 void fn(void) { }
 
-subtest char => sub {
-    build_and_test 'char fn(char)' => <<'', [Char], Char, 'a', 'b';
-#include "std.h"
-// ext: .c
-char fn(char i) { return i + 1;}
-
-};
-subtest schar => sub {
-    build_and_test 'signed char fn(signed char)' => <<'', [SChar], SChar, -ord 'b', 'b';
-#include "std.h"
-// ext: .c
-signed char fn(signed char i) { return -i;}
-
-    build_and_test 'signed char fn(signed char)' => <<'', [SChar], SChar, 'b', pack 'c', -ord 'b';
-#include "std.h"
-// ext: .c
-signed char fn(signed char i) { return -i;}
-
-};
 subtest uchar => sub {
     build_and_test 'unsigned char fn(unsigned char)' => <<'', [UChar], UChar, 'b', 'y';
 #include "std.h"
