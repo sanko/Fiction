@@ -502,7 +502,6 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
             if (len) ret = wchar2utf(aTHX_(wchar_t *) ptr, len);
         } break;
         default: {
-            warn("FDJSKFLDSJKFLSDJFKL:DJKLF:SDJSKFLL:FJFKLSF:JFLKSDFJFKLSF len: %d", len);
             if (len == 1) { ret = ptr2sv(aTHX_ subtype, ptr); }
             else {
                 AV *ret_av = newAV();
@@ -587,7 +586,7 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
         HV *RETVAL_ = newHV_mortal();
         HV *_type = MUTABLE_HV(SvRV(type));
         AV *fields = MUTABLE_AV(SvRV(AXT_TYPE_SUBTYPE(type)));
-        sv_dump(AXT_TYPE_SUBTYPE(type));
+        //~ sv_dump(AXT_TYPE_SUBTYPE(type));
         size_t field_count = av_count(fields);
         warn("field_count: %d", field_count);
         for (size_t i = 0; i < field_count; i += 2) {

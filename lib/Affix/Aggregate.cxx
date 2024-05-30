@@ -13,7 +13,7 @@ DCaggr *_aggregate(pTHX_ SV *type) {
         SV **agg_sv_ptr = AXT_TYPE_AGGREGATE(type);
         if (agg_sv_ptr != NULL && SvOK(*agg_sv_ptr)) {
             PING;
-            sv_dump(*agg_sv_ptr);
+            //~ sv_dump(*agg_sv_ptr);
             if (sv_derived_from(*agg_sv_ptr, "Affix::Pointer")) {
                 IV tmp = SvIV((SV *)SvRV(*agg_sv_ptr));
                 return INT2PTR(DCaggr *, tmp);
@@ -24,7 +24,7 @@ DCaggr *_aggregate(pTHX_ SV *type) {
         else {
             PING;
             SV *fields = AXT_TYPE_SUBTYPE(type);
-            sv_dump(fields);
+            //~ sv_dump(fields);
             /*
 
             //~ if (t == STRUCT_FLAG) {

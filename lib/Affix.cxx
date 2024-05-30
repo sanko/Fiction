@@ -483,7 +483,6 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
         (void)SvUPGRADE(a->res, SVt_PVIV);
         SvIV_set(a->res, ((IV)value[0]));
         SvIOK_on(a->res);
-        sv_dump(a->res);
     } break;
     case UCHAR_FLAG: {
         char value[1];
@@ -2062,8 +2061,6 @@ XS_INTERNAL(Affix_END) { // cleanup
 XS_INTERNAL(Affix_sv_dump) {
     dVAR;
     dXSARGS;
-    PING;
-
     if (items != 1) croak_xs_usage(cv, "sv");
     SV *sv = ST(0);
     sv_dump(sv);
