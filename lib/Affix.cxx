@@ -448,7 +448,15 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
                                          xsub_tmp_sv));
                 break;
             }
+            case STRUCT_FLAG: {
+                sv_dump(*av_fetch(a->argtypes, st_pos, 0));
+                DCaggr *aggr = _aggregate(aTHX_ * av_fetch(a->argtypes, st_pos, 0));
+
+                croak("STRUCT!!!!!!!!!!!!!!!!");
+                break;
+            }
             default:
+                sv_dump(*av_fetch(a->argtypes, st_pos, 0));
                 croak("Unhandled type! %c", a->signature[sig_pos]);
             }
         }
@@ -2225,6 +2233,7 @@ XS_EXTERNAL(boot_Affix) {
     export_constant("Affix", "SLOT_TYPE_VOLATILE", "flags", SLOT_TYPE_VOLATILE);
     export_constant("Affix", "SLOT_TYPE_RESTRICT", "flags", SLOT_TYPE_RESTRICT);
     export_constant("Affix", "SLOT_TYPE_AGGREGATE", "flags", SLOT_TYPE_AGGREGATE);
+    export_constant("Affix", "SLOT_TYPE_FIELD", "flags", SLOT_TYPE_FIELD);
     export_constant("Affix", "SLOT_TYPE_TYPEDEF", "flags", SLOT_TYPE_TYPEDEF);
     export_constant("Affix", "SLOT_CODEREF_ARGS", "flags", SLOT_CODEREF_ARGS);
     export_constant("Affix", "SLOT_CODEREF_SIG", "flags", SLOT_CODEREF_SIG);

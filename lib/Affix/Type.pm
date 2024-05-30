@@ -100,16 +100,18 @@ package Affix::Type 0.5 {
         my @fields;
         my $sizeof = 0;
         my $packed = 0;
+        my @store;
 
         #~ for my ( $field, $subtype )(@types) {    # Perl 5.36
-        while (@types) {
-            my $field   = shift @types;
-            my $subtype = shift @types;
-
-            #~ for ( my $i = 0; $i < $#types; $i += 2 ) {
-            #~ my $field = $types[$i];
-            #~ my $subtype  = $types[ $i + 1 ];
+        #~ while (@types) {
+        #~ my $field   = shift @types;
+        #~ my $subtype = shift @types;
+        for ( my $i = 0; $i < $#types; $i += 2 ) {
+            my $field   = $types[$i];
+            my $subtype = $types[ $i + 1 ];
             $subtype->[Affix::SLOT_TYPE_OFFSET] = $sizeof;    # offset
+            $subtype->[Affix::SLOT_TYPE_FIELD]  = $field;     # field name
+            push @store, $subtype;
             push @fields, sprintf '%s => %s', $field, $subtype;
             my $__sizeof = $subtype->sizeof;
             my $__align  = $subtype->align;
@@ -121,12 +123,16 @@ package Affix::Type 0.5 {
             $sizeof += $__sizeof;
         }
         warn "----------------------> $sizeof";
-        Affix::Type::Struct->new(
-            sprintf( 'Struct[ %s ]', join ', ', @fields ), Affix::STRUCT_FLAG(), $sizeof,               # sizeof
-            $sizeof + Affix::Platform::padding_needed_for( $sizeof, Affix::Platform::BYTE_ALIGN() ),    # align
-            0,                                                                                          # offset
-            \@types,                                                                                    # subtype
-            1                                                                                           # array_len
+        bless(
+            [   sprintf( 'Struct[ %s ]', join ', ', @fields ),                                              # SLOT_STRINGIFY
+                Affix::STRUCT_FLAG(),                                                                       # SLOT_NUMERIC
+                $sizeof,                                                                                    # SLOT_SIZEOF
+                $sizeof + Affix::Platform::padding_needed_for( $sizeof, Affix::Platform::BYTE_ALIGN() ),    # SLOT_ALIGNMENT
+                undef,                                                                                      # SLOT_OFFSET
+                \@store,                                                                                    # SLOT_SUBTYPE
+                1                                                                                           # SLOT_ARRAYLEN
+            ],
+            'Affix::Type::Struct'
         );
     }
 

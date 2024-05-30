@@ -260,6 +260,7 @@ following address will be aligned to `alignment`. */
 #define SLOT_TYPE_RESTRICT 9
 #define SLOT_TYPE_TYPEDEF 10
 #define SLOT_TYPE_AGGREGATE 11
+#define SLOT_TYPE_FIELD 12 // Field name if in a Struct or Union
 
 #define SLOT_CODEREF_RET SLOT_TYPE_SUBTYPE
 #define SLOT_CODEREF_ARGS 12
@@ -269,8 +270,6 @@ following address will be aligned to `alignment`. */
 #define SLOT_POINTER_SUBTYPE 1
 #define SLOT_POINTER_COUNT 2
 #define SLOT_POINTER_POSITION 3
-
-#define SLOT_STRUCT_FIELD 14
 
 #define AXT_TYPE_STRINGIFY(t) SvPV_nolen(*av_fetch(MUTABLE_AV(SvRV(t)), SLOT_TYPE_STRINGIFY, 0))
 #define AXT_TYPE_NUMERIC(t) SvIV(*av_fetch(MUTABLE_AV(SvRV(t)), SLOT_TYPE_NUMERIC, 0))
