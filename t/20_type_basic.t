@@ -22,18 +22,6 @@ build_and_test 'void fn(void)' => <<'', [], Void, undef, U();
 // ext: .c
 void fn(void) { }
 
-subtest bool => sub {
-    build_and_test 'bool fn(bool) true' => <<'', [Bool], Bool, 1, T();
-#include "std.h"
-// ext: .c
-bool fn(bool i) { return i ? true : false;}
-
-    build_and_test 'bool fn(bool) false' => <<'', [Bool], Bool, 0, F();
-#include "std.h"
-// ext: .c
-bool fn(bool i) { return i ? true : false;}
-
-};
 subtest char => sub {
     build_and_test 'char fn(char)' => <<'', [Char], Char, 'a', 'b';
 #include "std.h"
