@@ -33,9 +33,6 @@ int verify(){return var;}
 #~ is $var,        300, '$var == 300';
 #~ is $verify->(), 120, '$verify->() == 120 (still)';
 #~ }
-use DynaLoader;
-diag 'Test m: ' . DynaLoader::dl_findfile('-lm');
-diag 'Test c: ' . DynaLoader::dl_findfile('-lc');
 subtest find_library => sub {
     subtest system => sub {
         my $loc = find_library('m');

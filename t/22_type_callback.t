@@ -17,7 +17,8 @@ sub build_and_test {
             is $fn->(
                 sub {
                     is \@_, $arg1, '@_ in $fn is correct';
-                    diag $ret;
+
+                    #~ diag $ret;
                     return $ret;
                 }
                 ),

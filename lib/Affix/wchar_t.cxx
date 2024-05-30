@@ -20,7 +20,7 @@ SV *wchar2utf(pTHX_ wchar_t *src, size_t len) {
             d = uvchr_to_utf8(d, *src++);
     }
     sv_setpv(RETVAL, (char *)dst);
-    sv_dump(RETVAL);
+    //~ sv_dump(RETVAL);
     sv_utf8_decode(RETVAL);
     safefree(dst);
 #endif

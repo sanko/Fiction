@@ -814,7 +814,7 @@ void fn(cb *CodeRef) {
     CodeRef();
 }
 int snag(int i){
-    warn("# Inside the snag");
+    //warn("# Inside the snag");
     if(i == 100) return 50;
     return 100;
 }
@@ -822,7 +822,7 @@ int snag(int i){
 typedef void (*ptr)(void);
 
 void * getfn() {
-    warn("# Inside getfn");
+    //warn("# Inside getfn");
     return &snag;
 }
 END
