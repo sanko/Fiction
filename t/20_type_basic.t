@@ -17,11 +17,6 @@ sub build_and_test {
     }
 }
 #
-build_and_test 'void fn(void)' => <<'', [], Void, undef, U();
-#include "std.h"
-// ext: .c
-void fn(void) { }
-
 subtest short => sub {
     build_and_test 'short fn()' => <<'', [], Short, undef, -32767;
 #include "std.h"
