@@ -4,7 +4,7 @@ package t::lib::helper {
     use Test2::Plugin::UTF8;
     use Path::Tiny qw[path tempdir tempfile];
     use Exporter 'import';
-    our @EXPORT = qw[compile_test_lib compile_cpp_test_lib is_approx leaktest];
+    our @EXPORT = qw[compile_test_lib compile_cpp_test_lib is_approx valgrind];
     use Config;
     use Affix qw[];
     #
@@ -151,7 +151,7 @@ package t::lib::helper {
             }
         }
 
-        sub leaktest($&) {
+        sub valgrind($&) {
             init_valgrind();
             my ( $name, $code ) = @_;
             if ( !defined $test ) {
@@ -190,16 +190,15 @@ package t::lib::helper {
                             map {
                                 #~ use Data::Dump;
                                 #~ ddx $_;
-                                [   $_->{kind}, $_->{xwhat}{leakedbytes},
-
-                                    #~ 'todo'
-                                    join " =>\n  ", map { $_->{fn} } @{ $_->{stack}{frame} }
+                                [   $_->{kind},     $_->{xwhat}{leakedbytes},
+                                    join " =>\n  ", map { $_->{fn} // $_->{obj} } reverse @{ $_->{stack}{frame} }
                                 ]
                             } @{ $xml->{valgrindoutput}{error} }
                         ],
                     );
                     diag $_ for @table;
                 }
+                return $xml->{valgrindoutput}{error};
                 return !$exit;
             }
             return unless $name eq $test;
