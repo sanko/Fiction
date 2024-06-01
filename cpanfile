@@ -7,6 +7,7 @@ requires 'Sub::Util';
 requires 'Attribute::Handlers';
 requires 'File::Temp';            # Used in Affix::Platform::Unix::_findLib_gcc(...)
 requires 'Scalar::Util';
+requires 'Capture::Tiny';
 
 # TODO: remove this!!!!
 requires 'Data::Dump';
@@ -16,7 +17,7 @@ on 'test' => sub {
     requires 'File::Temp';         # Used in tests that compile short C/CPP files
     requires 'ExtUtils::Embed';    # Used on Pointer[SV] tests
     requires 'Path::Tiny';
-    recommends 'Capture::Tiny';
+    requires 'Capture::Tiny';
     recommends 'Getopt::Long';
 };
 on 'configure' => sub {
