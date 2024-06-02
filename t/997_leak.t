@@ -2,8 +2,18 @@ use Test2::V0 '!subtest';
 use Test2::Util::Importer 'Test2::Tools::Subtest' => ( subtest_streamed => { -as => 'subtest' } );
 use lib './lib', '../lib', '../blib/arch/', 'blib/arch', '../', '.';
 use Affix          qw[:all];
-use t::lib::helper qw[leaktest compile_test_lib];
+use t::lib::helper qw[leaktest compile_test_lib leaks];
 $|++;
+
+#~ my $test= 'wow';
+use Data::Dump;
+ddx leaks {
+    ok 1, 'fake';
+    warn 'hi???????????????????????????????????????????????????';
+};
+ok 'oy';
+done_testing;
+exit;
 #
 leaktest 'malloc and free' => sub {
     my $lib = compile_test_lib(<<'END');
@@ -41,73 +51,3 @@ leaktest 'leaky type' => sub {
     ok Union [ i => Int, ptr => Pointer [Int], f => Float ], 'Union [ i => Int, ptr => Pointer [Int], f => Float ]';
 };
 done_testing;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-use warnings;
-use strict;
-use Capture::Tiny 'capture';
-use B::Deparse;
-use Data::Dump;
-
-# Function to run anonymous sub in a new process with valgrind
-sub valgrind(&) {
-    my ($code_ref) = @_;
-
-    # Get source code of the anonymous sub (using B::Deparse)
-    #~ my $source = deparse($code_ref);
-    my $deparse = B::Deparse->new( "-p", "-sC" );
-    my $source  = $deparse->coderef2text($code_ref);
-
-    # Prepare valgrind command
-    warn $source;
-    my @valgrind_cmd = qw[valgrind --error-limit=no ];
-    @valgrind_cmd = ( $^X, '-e', $source );    # Suppress output
-    ddx \@valgrind_cmd;
-
-    # Capture output using Capture::Tiny
-    my ( $output, $error, $exit_code ) = capture { system @valgrind_cmd; };
-
-    # Check if valgrind ran successfully
-    my $success = ( $exit_code == 0 );
-    return ( $output, $success, $error );
-}
-{
-    # Example usage with anonymous sub
-    my ( $output, $success, $error ) = valgrind {
-        warn 'hi???????????????????????????????????????????????????';
-    };
-    if ($success) {
-        print "Code ran successfully in valgrind\n";
-        warn $output;
-    }
-    else {
-        print "Error running code in valgrind: $error\n";
-    }
-}
-{
-    # Example usage with anonymous sub
-    my ( $output, $success, $error ) = valgrind {
-        warn 'hi!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!';
-        print 'working';
-    };
-    if ($success) {
-        print "Code ran successfully in valgrind\n";
-        warn $output;
-    }
-    else {
-        print "Error running code in valgrind: $error\n";
-    }
-}
-
