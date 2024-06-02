@@ -128,18 +128,26 @@ package t::lib::helper {
                 plan skip_all 'Valgrind is not installed' if $exit_code;
                 diag 'Valgrind v', ( $stdout =~ m[valgrind-(.+)$] ), ' found';
                 diag 'Generating suppressions...';
+                my @cmd = (
+                    qw[valgrind --leak-check=full --show-reachable=yes --error-limit=no
+                        --gen-suppressions=all --log-fd=1], $^X, '-e',
+                    sprintf
+                        'use strict;use warnings;use lib %s;use Affix;no Test2::Plugin::ExitSummary;use Test2::V0;pass "generate valgrind suppressions";done_testing;',
+                    ( join ', ', map {"'$_'"} sort { length $a <=> length $b } map { path($_)->absolute->canonpath } @INC )
+                );
+
+                #~ use Data::Dump;
+                #~ ddx \@cmd;
                 my ( $out, $err, @res ) = Capture::Tiny::capture(
                     sub {
-                        system
-                            qq[valgrind --leak-check=full --show-reachable=yes --error-limit=no --gen-suppressions=all --log-fd=1 $^X $file --generate --count=]
-                            . Test2::API::test2_stack()->top->{count};
+                        system @cmd;
                     }
                 );
                 my ( $known, $dups ) = parse_suppression($out);
 
                 #~ diag $out;
                 #~ diag $err;
-                is $err, DF(), scalar( keys %$known ) . ' suppressions';
+                diag scalar( keys %$known ) . ' suppressions found';
                 diag $dups . ' duplicates have been filtered out';
                 $supp = Path::Tiny::tempfile( { realpath => 1 }, 'valgrind_suppression_XXXXXXXXXX' );
                 diag 'spewing to ' . $supp;
@@ -260,10 +268,7 @@ package t::lib::helper {
             $hash;
         }
 
-
-
-
-# Function to run anonymous sub in a new process with valgrind
+        # Function to run anonymous sub in a new process with valgrind
         sub leaks(&) {
             init_valgrind();
             my ($code_ref) = @_;
@@ -274,34 +279,35 @@ package t::lib::helper {
             my $deparse = B::Deparse->new( "-p", "-sC" );
             my ( $package, $file, $line ) = caller;
             my $source = sprintf
-                <<'', ( join ', ', map {"'$_'"} sort { length $a <=> length $b } map { path($_)->absolute->canonpath } @INC ), $line, $file, $deparse->coderef2text($code_ref);
+                <<'', ( join ', ', map {"'$_'"} sort { length $a <=> length $b } map { path($_)->absolute->canonpath } @INC ), Test2::API::test2_stack()->top->{count}, $line + 2, $file, $deparse->coderef2text($code_ref);
 use lib %s;
-use Test2::V0;
+use Test2::V0 -no_srand => 1;
 no Test2::Plugin::ExitSummary;
 use Affix;
-Affix::set_destruct_level(2);
+Affix::set_destruct_level(3);
+no Test2::Plugin::ExitSummary;
+Test2::API::test2_stack()->top->{count} = %d;
 #line %d %s
-subtest 'subtest' => %s;
-done_testing;
+my $exit = subtest 'leaks' => sub %s;
+Test2::API::test2_stack()->top->{count}++;
+#~ done_testing;
+exit !$exit;
 
-
-            # Prepare valgrind command
-            warn $source;
             my @cmd = (
-                'valgrind',          '-q',                    '--suppressions=' . $supp->realpath,
+                'valgrind',          '-q',                    '--suppressions=' . $supp->canonpath,
                 '--leak-check=full', '--show-leak-kinds=all', '--show-reachable=yes', '--demangle=yes', '--error-limit=no', '--xml=yes',
                 '--xml-fd=2',        $^X,                     '-e', $source
             );
             my ( $out, $err, $exit ) = Capture::Tiny::capture( sub { system @cmd } );
             print $out;
+
+            #~ diag $err;
+            #~ diag $exit;
             my $xml = parse_xml($err);
-            #~ Test2::API::test2_stack()->top->{count}++;
+            Test2::API::test2_stack()->top->{count}++;
             $xml;
         }
-       }
-
-
-
+    }
 
     END {
         for my $file ( grep {-f} @cleanup ) {
