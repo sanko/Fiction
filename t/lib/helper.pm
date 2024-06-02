@@ -281,31 +281,39 @@ package t::lib::helper {
             my $source = sprintf
                 <<'', ( join ', ', map {"'$_'"} sort { length $a <=> length $b } map { path($_)->absolute->canonpath } @INC ), Test2::API::test2_stack()->top->{count}, $line + 2, $file, $deparse->coderef2text($code_ref);
 use lib %s;
-use Test2::V0 -no_srand => 1;
+use Test2::V0 '!subtest', -no_srand => 1;
+use Test2::Util::Importer 'Test2::Tools::Subtest' => ( subtest_streamed => { -as => 'subtest' } );
+use Test2::Plugin::UTF8;
 no Test2::Plugin::ExitSummary;
 use Affix;
 Affix::set_destruct_level(3);
 no Test2::Plugin::ExitSummary;
 Test2::API::test2_stack()->top->{count} = %d;
+$|++;
 #line %d %s
 my $exit = subtest 'leaks' => sub %s;
 Test2::API::test2_stack()->top->{count}++;
-#~ done_testing;
 exit !$exit;
 
+            my $report = Path::Tiny->tempfile( { realpath => 1 }, 'valgrind_report_XXXXXXXXXX' );
+            push @cleanup, $report;
             my @cmd = (
-                'valgrind',          '-q',                    '--suppressions=' . $supp->canonpath,
+                'valgrind', '-q', '--suppressions=' . $supp->canonpath,
                 '--leak-check=full', '--show-leak-kinds=all', '--show-reachable=yes', '--demangle=yes', '--error-limit=no', '--xml=yes',
-                '--xml-fd=2',        $^X,                     '-e', $source
+                '--xml-file=' . $report->stringify,
+                $^X, '-e', $source
             );
-            my ( $out, $err, $exit ) = Capture::Tiny::capture( sub { system @cmd } );
-            print $out;
 
+            #~ my ( $out, $err, $exit ) = Capture::Tiny::capture( sub {
+            system @cmd;
+
+            #~ } );
+            #~ print $out;
             #~ diag $err;
             #~ diag $exit;
-            my $xml = parse_xml($err);
+            my $xml = parse_xml( $report->slurp_utf8 );
             Test2::API::test2_stack()->top->{count}++;
-            $xml;
+            $xml->{valgrindoutput};
         }
     }
 
