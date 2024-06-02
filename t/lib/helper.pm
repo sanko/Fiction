@@ -151,7 +151,7 @@ package t::lib::helper {
             }
         }
 
-        sub leaktest($&) {
+        sub valgrind($&) {
             init_valgrind();
             my ( $name, $code ) = @_;
             if ( !defined $test ) {
@@ -190,16 +190,15 @@ package t::lib::helper {
                             map {
                                 #~ use Data::Dump;
                                 #~ ddx $_;
-                                [   $_->{kind}, $_->{xwhat}{leakedbytes},
-
-                                    #~ 'todo'
-                                    join " =>\n  ", map { $_->{fn} } @{ $_->{stack}{frame} }
+                                [   $_->{kind},     $_->{xwhat}{leakedbytes},
+                                    join " =>\n  ", map { $_->{fn} // $_->{obj} } reverse @{ $_->{stack}{frame} }
                                 ]
                             } @{ $xml->{valgrindoutput}{error} }
                         ],
                     );
                     diag $_ for @table;
                 }
+                return $xml->{valgrindoutput}{error};
                 return !$exit;
             }
             return unless $name eq $test;

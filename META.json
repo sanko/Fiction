@@ -78,6 +78,7 @@
          },
          "requires" : {
             "Attribute::Handlers" : "0",
+            "Capture::Tiny" : "0",
             "Config" : "0",
             "Data::Dump" : "0",
             "File::Spec" : "0",
@@ -90,10 +91,10 @@
       },
       "test" : {
          "recommends" : {
-            "Capture::Tiny" : "0",
             "Getopt::Long" : "0"
          },
          "requires" : {
+            "Capture::Tiny" : "0",
             "ExtUtils::Embed" : "0",
             "File::Temp" : "0",
             "Path::Tiny" : "0",
