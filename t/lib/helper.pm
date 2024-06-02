@@ -4,7 +4,7 @@ package t::lib::helper {
     use Test2::Plugin::UTF8;
     use Path::Tiny qw[path tempdir tempfile];
     use Exporter 'import';
-    our @EXPORT = qw[compile_test_lib compile_cpp_test_lib is_approx valgrind];
+    our @EXPORT = qw[compile_test_lib compile_cpp_test_lib is_approx leaktest leaks];
     use Config;
     use Affix qw[];
     #
@@ -259,7 +259,49 @@ package t::lib::helper {
             }
             $hash;
         }
-    }
+
+
+
+
+# Function to run anonymous sub in a new process with valgrind
+        sub leaks(&) {
+            init_valgrind();
+            my ($code_ref) = @_;
+            #
+            # Get source code of the anonymous sub (using B::Deparse)
+            #~ my $source = deparse($code_ref);
+            require B::Deparse;
+            my $deparse = B::Deparse->new( "-p", "-sC" );
+            my ( $package, $file, $line ) = caller;
+            my $source = sprintf
+                <<'', ( join ', ', map {"'$_'"} sort { length $a <=> length $b } map { path($_)->absolute->canonpath } @INC ), $line, $file, $deparse->coderef2text($code_ref);
+use lib %s;
+use Test2::V0;
+no Test2::Plugin::ExitSummary;
+use Affix;
+Affix::set_destruct_level(2);
+#line %d %s
+subtest 'subtest' => %s;
+done_testing;
+
+
+            # Prepare valgrind command
+            warn $source;
+            my @cmd = (
+                'valgrind',          '-q',                    '--suppressions=' . $supp->realpath,
+                '--leak-check=full', '--show-leak-kinds=all', '--show-reachable=yes', '--demangle=yes', '--error-limit=no', '--xml=yes',
+                '--xml-fd=2',        $^X,                     '-e', $source
+            );
+            my ( $out, $err, $exit ) = Capture::Tiny::capture( sub { system @cmd } );
+            print $out;
+            my $xml = parse_xml($err);
+            #~ Test2::API::test2_stack()->top->{count}++;
+            $xml;
+        }
+       }
+
+
+
 
     END {
         for my $file ( grep {-f} @cleanup ) {
