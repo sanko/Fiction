@@ -79,3 +79,5 @@ vgcore.*
 *.session
 
 *.tdy
+*.lib
+*.dll
