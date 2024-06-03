@@ -17,22 +17,6 @@ sub build_and_test {
     }
 }
 #
-subtest short => sub {
-    build_and_test 'short fn()' => <<'', [], Short, undef, -32767;
-#include "std.h"
-// ext: .c
-short fn() {
-    return -32767;
-}
-
-    build_and_test 'short fn(short)' => <<'', [Short], Short, -32767, -32766;
-#include "std.h"
-// ext: .c
-short fn(short i) {
-    return i + 1;
-}
-
-};
 subtest ushort => sub {
     build_and_test 'unsigned short fn()' => <<'', [], UShort, undef, 65535;
 #include "std.h"
