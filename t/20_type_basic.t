@@ -17,13 +17,6 @@ sub build_and_test {
     }
 }
 #
-subtest uint => sub {
-    build_and_test 'unsigned int fn(unsigned int)' => <<'', [UInt], UInt, 3, 49;
-#include "std.h"
-// ext: .c
-unsigned int fn(unsigned int i) { return 46 + i;}
-
-};
 subtest long => sub {
     build_and_test 'long fn(long) positive' => <<'', [Long], Long, 47, 2147483647;
 #include "std.h"

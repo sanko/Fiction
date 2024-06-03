@@ -8,23 +8,22 @@ use t::lib::helper;
 use Capture::Tiny qw[capture_stderr];
 $|++;
 #
-subtest 'int fn(void)' => sub {
+subtest 'unsigned int fn(void)' => sub {
     ok my $lib = compile_test_lib(<<''), 'build test lib';
 #include "std.h"
 // ext: .c
-int fn(void) {return 99; }
+unsigned int fn(void) {return 99; }
 
-    isa_ok my $fn = Affix::wrap( $lib, 'fn', [], Int ), [qw[Affix]], 'wrap symbol in $fn';
+    isa_ok my $fn = Affix::wrap( $lib, 'fn', [], UInt ), [qw[Affix]], 'wrap symbol in $fn';
     is $fn->(), 99, 'return from $fn->() is correct';
 };
-subtest 'int fn(int)' => sub {
+subtest 'unsigned int fn(unsigned int)' => sub {
     ok my $lib = compile_test_lib(<<''), 'build test lib';
 #include "std.h"
 // ext: .c
-int fn(int i) {return i + 1; }
+unsigned int fn(unsigned int i) {return i + 1; }
 
-    isa_ok my $fn = Affix::wrap( $lib, 'fn', [Int], Int ), [qw[Affix]], 'wrap symbol in $fn';
+    isa_ok my $fn = Affix::wrap( $lib, 'fn', [UInt], UInt ), [qw[Affix]], 'wrap symbol in $fn';
     is $fn->(500938282), 500938283, 'return from $fn->(500938282) is correct';
-    is $fn->(-1),        0,         'return from $fn->(0) is correct';
 };
 done_testing;
