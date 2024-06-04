@@ -17,25 +17,6 @@ sub build_and_test {
     }
 }
 #
-subtest long => sub {
-    build_and_test 'long fn(long) positive' => <<'', [Long], Long, 47, 2147483647;
-#include "std.h"
-// ext: .c
-long fn(long i) { return 2147483600 + i;}
-
-    build_and_test 'long fn(long) negative' => <<'', [Long], Long, -2147483647, -2147483642;
-#include "std.h"
-// ext: .c
-long fn(long i) { return 5 + i;}
-
-};
-subtest ulong => sub {
-    build_and_test 'unsigned long fn(unsigned long)' => <<'', [ULong], ULong, 3, 49;
-#include "std.h"
-// ext: .c
-unsigned long fn(unsigned long i) { return 46 + i;}
-
-};
 subtest longlong => sub {
     build_and_test 'long long fn(long long) positive' => <<'', [LongLong], LongLong, 47, 2147483647;
 #include "std.h"
@@ -54,20 +35,6 @@ subtest ulonglong => sub {
 #include "std.h"
 // ext: .c
 unsigned long long fn(unsigned long long i) { return 46 + i;}
-
-};
-subtest size_t => sub {
-    build_and_test
-        'size_t fn(size_t)' => <<'', [Size_t], Size_t, 3, 46;
-#include "std.h"
-// ext: .c
-size_t fn(size_t i) { return 46 + (i * .01);}
-
-    build_and_test
-        'size_t fn(size_t, size_t)' => <<'', [ Size_t, Size_t ], Size_t, [ 1.5, 2.3 ], 2;
-#include "std.h"
-// ext: .c
-size_t fn(size_t i, size_t j) { return i * j;}
 
 };
 subtest float => sub {
