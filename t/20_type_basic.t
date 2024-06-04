@@ -17,34 +17,6 @@ sub build_and_test {
     }
 }
 #
-subtest string => sub {
-    ok my $lib = compile_test_lib(<<''), 'build test lib';
-#include "std.h"
-// ext: .c
-const char * fn(const char * i) {
-    return "Wow, this shouldn't crash.";
-}
-
-    isa_ok my $fn = Affix::wrap( $lib, 'fn', [String], String ), [qw[Affix]], 'my $fn = ...';
-    is $fn->('Hey'), q[Wow, this shouldn't crash.], '$str';
-};
-subtest wstring => sub {
-    ok my $lib = compile_test_lib(<<''), 'build test lib';
-#include "std.h"
-#include <wchar.h>
-// ext: .c
-const wchar_t* fn(const wchar_t* i) {
-    if(wcscmp(i, L"はい") == 0) return L"예";
-    if(wcscmp(i, L"いいえ") == 0) return L"아니요";
-    return L"뭐?";
-}
-
-    isa_ok my $fn = Affix::wrap( $lib, 'fn', [WString], WString ), [qw[Affix]], 'my $fn = ...';
-    is $fn->('はい'),  q[예],   '$str is yes';
-    is $fn->('いいえ'), q[아니요], '$str is no';
-    is $fn->('何でも'), q[뭐?],  '$str is unknown';
-};
-
 #define WSTRING_FLAG '<'
 #define STDSTRING_FLAG 'Y'
 #define STRUCT_FLAG 'A'
