@@ -24,5 +24,17 @@ subtest stringify => sub {
     is Enum [ 'A', 'B', [ C => 10 ], 'D', [ E => 1 ], 'F', [ G => 'F + C' ] ],
         q[Enum[ 'A', 'B', [C => '10'], 'D', [E => '1'], 'F', [G => 'F + C'] ]], 'with values';
 };
+subtest TV => sub {
+    typedef TV => Enum [ [ FOX => 11 ], [ CNN => 25 ], [ ESPN => 15 ], [ HBO => 22 ], [ NBC => 32 ] ];
+    ok my $lib = compile_test_lib(<<''), 'build test lib';
+#include "std.h"
+// ext: .c
+enum TV { FOX = 11, CNN = 25, ESPN = 15, HBO = 22, MAX = 30, NBC = 32 };
+enum TV fn(enum TV chan) { return chan == FOX ? NBC : HBO; }
+
+    isa_ok my $fn = Affix::wrap( $lib, 'fn', [ TV() ], TV() ), [qw[Affix]], 'wrap symbol in $fn';
+    is $fn->( TV::FOX() ), int TV::NBC(), 'return from $fn->(TV::FOX()) is TV::NBC()';
+    is $fn->( TV::CNN() ), int TV::HBO(), 'return from $fn->(TV::CNN()) is TV::HBO()';
+};
 #
 done_testing;

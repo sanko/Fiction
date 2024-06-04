@@ -8,6 +8,23 @@ use t::lib::helper;
 use Config;    # Check for multiplicity support
 $|++;
 #
+subtest 'int * fn(int *, int)' => sub {
+    ok my $lib = compile_test_lib(<<''), 'build test lib';
+#include "std.h"
+// ext: .c
+int* fn(int* nums, int count) {
+    int* a;
+    a = (int *) malloc(sizeof(int) * count); // leak
+    if (a != NULL) for( int i = 0; i < count; i++) a[i] = nums[count - i - 1];
+    return a;
+}
+
+    isa_ok my $fn   = Affix::wrap( $lib, 'fn', [ Pointer [Int], Int ], Array [ Int, 7 ] ), [qw[Affix]], 'wrap symbol in $fn';
+    isa_ok my $ints = $fn->( [ 1 .. 7 ], 7 ), ['Affix::Pointer'], 'return from $fn->( [ 1..7 ], 7 ) is a pointer...';
+    is $ints->sv, [ reverse 1 .. 7 ], '...containing [ 7, 6, 5, 4, 3, 2, 1 ]';
+};
+
+# Some of these tests are redundant but might catch bad math, etc.
 subtest 'Pointer[Void]' => sub {
     subtest scalar => sub {
         isa_ok my $ptr = Affix::sv2ptr( Pointer [Void], 'This is a test' ), ['Affix::Pointer'], 'This is a test';
