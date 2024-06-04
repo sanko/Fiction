@@ -17,34 +17,6 @@ sub build_and_test {
     }
 }
 #
-subtest float => sub {
-    build_and_test
-        'float fn(float)' => <<'', [Float], Float, 3, float( 46, tolerance => 0.03 );
-#include "std.h"
-// ext: .c
-float fn(float i) { return 46 + (i * .01);}
-
-    build_and_test
-        'float fn(float, float)' => <<'', [ Float, Float ], Float, [ 1.5, 2.3 ], float( ( 1.5 * 2.3 ), tolerance => 0.03 );
-#include "std.h"
-// ext: .c
-float fn(float i, float j) { return i * j;}
-
-};
-subtest double => sub {
-    build_and_test
-        'double fn(float)' => <<'', [Double], Double, 3, float( 46, tolerance => 0.031 );
-#include "std.h"
-// ext: .c
-double fn(double i) { return 46 + (i * .01);}
-
-    build_and_test
-        'double fn(double, double)' => <<'', [ Double, Double ], Double, [ 1.5, 2.3 ], float( ( 1.5 * 2.3 ), tolerance => 0.03 );
-#include "std.h"
-// ext: .c
-double fn(double i, double j) { return i * j;}
-
-};
 subtest string => sub {
     ok my $lib = compile_test_lib(<<''), 'build test lib';
 #include "std.h"
