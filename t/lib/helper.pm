@@ -29,7 +29,10 @@ package t::lib::helper {
             $opt = path($opt)->absolute;
         }
         else {
-            $opt = tempfile( UNLINK => !$keep, SUFFIX => $name =~ m[^\s*//\s*ext:\s*\.c$]ms ? '.c' : '.cxx' )->absolute;
+            $opt = tempfile(
+                UNLINK => !$keep,
+                SUFFIX => '_' . path( [ caller() ]->[1] )->basename . ( $name =~ m[^\s*//\s*ext:\s*\.c$]ms ? '.c' : '.cxx' )
+            )->absolute;
             push @cleanup, $opt unless $keep;
             my ( $package, $filename, $line ) = caller;
             $filename = path($filename)->canonpath;
