@@ -7,68 +7,49 @@ $|++;
 use t::lib::helper;
 plan skip_all 'dyncall does not support passing aggregates by value on this platform' unless Affix::Platform::AggrByValue();
 #
-subtest simple => sub {
-    typedef Example => Struct [ i => Int, f => Float ];
-
-    #~ use Data::Dump;
-    #~ ddx Example();
-    isa_ok Example(), ['Affix::Type'];
-    ok my $lib = compile_test_lib(<<''), 'build test lib';
+ok my $lib = compile_test_lib(<<''), 'build test lib';
 #include "std.h"
 // ext: .c
-typedef struct { int i; float f; } Example;
-int fn(Example ex) {
-Example whoa= {300, 120.5};
-warn("offset i: %d", offsetof(Example, i));
-warn("offset f: %d", offsetof(Example, f));
-DumpHex(&whoa, sizeof(Example));
-DumpHex(&ex, sizeof(Example)); return ex.i; }
+typedef struct {
+    bool is_true;
+    char ch;
+    unsigned char uch;
+    short s;
+    unsigned short S;
+    /*int i;
+    /*unsigned int I;
+    /*long l;
+    /*unsigned long L;
+    /*long long ll;
+    /*unsigned long long LL;
+    /*float f;
+    /*double d;
+    /*void * ptr;
+    /*const char * str;*/
+    // TODO:
+    // Union
+    // Struct
+    // WChar
+    // WString
+    // CodeRef
+    // Pointer[SV]
+} Example;
+bool get_bool(Example ex) { DumpHex(&ex, sizeof(Example));return ex.is_true; }
+char get_char(Example ex) { return ex.ch; }
+//unsigned char get_uchar(Example ex) { return ex.uc; }
+size_t SIZEOF(){return sizeof(Example);}
 
-    isa_ok my $fn = Affix::wrap( $lib, 'fn', [ Example() ], Int ), [qw[Affix]], 'wrap symbol in $fn';
-    is $fn->( { i => 300, f => 120.5 } ), 300, 'return from $fn->({ i => 300, f => 120.5 }) is 300';
-};
-subtest 'Struct[b => Bool]' => sub {
-    ok my $lib = compile_test_lib(<<''), 'build test lib';
-#include "std.h"
-// ext: .c
-typedef struct { bool b; } Example;
-bool fn(Example ex) { return ex.b; }
+typedef Example => Struct [ bool => Bool, char => Char, uchar => UChar, short => Short, ushort => UShort ];
+subtest 'affix functions' => sub {
+    isa_ok Affix::affix( $lib, 'SIZEOF',   [],            Size_t ), [qw[Affix]], 'SIZEOF';
+    isa_ok Affix::affix( $lib, 'get_bool', [ Example() ], Bool ),   [qw[Affix]], 'get_bool';
+    isa_ok Affix::affix( $lib, 'get_char', [ Example() ], Char ),   [qw[Affix]], 'get_char';
 
-    isa_ok my $fn = Affix::wrap( $lib, 'fn', [ Struct [ b => Bool ] ], Bool ), [qw[Affix]], 'wrap symbol in $fn';
-    is $fn->( { b => !1 } ), F(), 'return from $fn->({ b => !1 }) is false';
-    is $fn->( { b => 1 } ),  T(), 'return from $fn->({ b => 1 }) is true';
+    #~ isa_ok Affix::affix( $lib, 'get_uchar', [ Example() ], UChar ), [qw[Affix]], 'get_uchar';
 };
-done_testing;
-__END__
-subtest expressions => sub {
+my $struct = { bool => !0, char => 'q', uchar => 'A', short => 1000, ushort => 100, };
+is Affix::Type::sizeof( Example() ), SIZEOF(), 'our size calculation vs platform';
+is get_bool($struct),                T(),      'get_bool( $struct )';
 
-    # Taken from https://en.cppreference.com/w/c/language/enum
-    isa_ok( ( typedef CPPRef => Enum [ 'A', 'B', [ C => 10 ], 'D', [ E => 1 ], 'F', [ G => 'F + C' ] ] ),
-        ['Affix::Type::Enum'], 'enum Foo { A, B, C = 10, D, E = 1, F, G = F + C };' );
-    is int CPPRef::A(), 0,  'A == 0';
-    is int CPPRef::B(), 1,  'B == 1';
-    is int CPPRef::C(), 10, 'C == 10';
-    is int CPPRef::D(), 11, 'D == 11';
-    is int CPPRef::E(), 1,  'E == 1';
-    is int CPPRef::F(), 2,  'F == 2';
-    is int CPPRef::G(), 12, 'G == 12';
-};
-subtest stringify => sub {
-    is Enum [qw[a b c d]], q[Enum[ 'a', 'b', 'c', 'd' ]], 'simple';
-    is Enum [ 'A', 'B', [ C => 10 ], 'D', [ E => 1 ], 'F', [ G => 'F + C' ] ],
-        q[Enum[ 'A', 'B', [C => '10'], 'D', [E => '1'], 'F', [G => 'F + C'] ]], 'with values';
-};
-subtest TV => sub {
-    typedef TV => Enum [ [ FOX => 11 ], [ CNN => 25 ], [ ESPN => 15 ], [ HBO => 22 ], [ NBC => 32 ] ];
-    ok my $lib = compile_test_lib(<<''), 'build test lib';
-#include "std.h"
-// ext: .c
-enum TV { FOX = 11, CNN = 25, ESPN = 15, HBO = 22, MAX = 30, NBC = 32 };
-enum TV fn(enum TV chan) { return chan == FOX ? NBC : HBO; }
-
-    isa_ok my $fn = Affix::wrap( $lib, 'fn', [ TV() ], TV() ), [qw[Affix]], 'wrap symbol in $fn';
-    is $fn->( TV::FOX() ), int TV::NBC(), 'return from $fn->(TV::FOX()) is TV::NBC()';
-    is $fn->( TV::CNN() ), int TV::HBO(), 'return from $fn->(TV::CNN()) is TV::HBO()';
-};
-#
+#~ is $fn->( { b => 1,  padding => 0 } ), T(), 'return from $fn->({ ..., b => 1 }) is true';
 done_testing;

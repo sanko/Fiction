@@ -82,8 +82,8 @@ DCpointer sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
             }
             else {
                 char *i = SvUTF8(data) ? SvPVutf8(data, len) : SvPV(data, len);
-                if (ret == NULL) Newxz(ret, len + 1, char);
-                Copy(i, ret, len, char);
+                if (ret == NULL) Newxz(ret, len + 1, unsigned char);
+                Copy(i, ret, len, unsigned char);
             }
         }
     } break;

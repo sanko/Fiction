@@ -29,30 +29,76 @@ DCaggr *_aggregate(pTHX_ SV *type) {
 
             AV *fields = MUTABLE_AV(SvRV(AXT_TYPE_SUBTYPE(type)));
             size_t field_count = av_count(fields);
-            //~ retval = dcNewAggr(field_count, AXT_TYPE_SIZEOF(type));
-            retval = dcNewAggr(field_count, 8);
+            retval = dcNewAggr(field_count, AXT_TYPE_SIZEOF(type));
+            warn("retval = dcNewAggr(%d, %d);", field_count, AXT_TYPE_SIZEOF(type));
+
             //~
             // warn("-----------------------------------------------------------AXT_TYPE_SIZEOF(type)
             //" ~ "== %d", ~ AXT_TYPE_SIZEOF(type));
             //~ sv_dump(fields);
             for (size_t i = 0; i < field_count; ++i) {
-                //~ warn("%d of %d", i, field_count);
                 SV *field = *av_fetch(fields, i, 0);
                 //~ sv_dump(field);
                 size_t offset = AXT_TYPE_OFFSET(field);
-                int _t = AXT_TYPE_NUMERIC((field));
+                int _t = AXT_TYPE_NUMERIC(field);
+                warn("%d of %d is a %d (%s)", i, field_count, _t, AXT_TYPE_STRINGIFY(field));
+                warn("dcAggrField(retval, ..., %d, %d)", offset, 1);
                 switch (_t) {
                 case BOOL_FLAG:
                     dcAggrField(retval, DC_SIGCHAR_BOOL, offset, 1);
                     break;
+                case CHAR_FLAG:
+                    dcAggrField(retval, DC_SIGCHAR_CHAR, offset, 1);
+                    break;
+                case UCHAR_FLAG:
+                    dcAggrField(retval, DC_SIGCHAR_UCHAR, offset, 1);
+                    break;
+                case SHORT_FLAG:
+                    dcAggrField(retval, DC_SIGCHAR_SHORT, offset, 1);
+                    break;
+                case USHORT_FLAG:
+                    dcAggrField(retval, DC_SIGCHAR_USHORT, offset, 1);
                     break;
                 case INT_FLAG:
                     dcAggrField(retval, DC_SIGCHAR_INT, offset, 1);
                     break;
+                case UINT_FLAG:
+                    dcAggrField(retval, DC_SIGCHAR_UINT, offset, 1);
+                    break;
+                case LONG_FLAG:
+                    dcAggrField(retval, DC_SIGCHAR_LONG, offset, 1);
+                    break;
+                case ULONG_FLAG:
+                    dcAggrField(retval, DC_SIGCHAR_ULONG, offset, 1);
+                    break;
+                case LONGLONG_FLAG:
+                    dcAggrField(retval, DC_SIGCHAR_LONGLONG, offset, 1);
+                    break;
+                case ULONGLONG_FLAG:
+                    dcAggrField(retval, DC_SIGCHAR_ULONGLONG, offset, 1);
+                    break;
                 case FLOAT_FLAG:
                     dcAggrField(retval, DC_SIGCHAR_FLOAT, offset, 1);
                     break;
+                case DOUBLE_FLAG:
+                    dcAggrField(retval, DC_SIGCHAR_DOUBLE, offset, 1);
+                    break;
+                case POINTER_FLAG:
+                case CODEREF_FLAG:
+                case WSTRING_FLAG:
+                case SV_FLAG:
+                    dcAggrField(retval, DC_SIGCHAR_POINTER, offset, 1);
+                    break;
+                    // TODO: if Pointer[Const[Char]]
+                    //~ dcAggrField(retval, DC_SIGCHAR_STRING, offset, 1);
+                    break;
+                case STRUCT_FLAG:
+                case UNION_FLAG:
+                case CPPSTRUCT_FLAG:
+                    dcAggrField(retval, DC_SIGCHAR_AGGREGATE, offset, 1);
+                    break;
                 default:
+                    // TODO: WCHAR_FLAG
                     croak("_t == %d", _t);
                     break;
                 }

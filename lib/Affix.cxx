@@ -310,6 +310,7 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
     dMY_CXT;
     DCCallVM *cvm = MY_CXT.cvm;
     dcReset(cvm);
+
     /*
     #define WSTRING_FLAG '<'
 
@@ -450,9 +451,10 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
             }
             case STRUCT_FLAG: {
                 SV *type = *av_fetch(a->argtypes, st_pos, 0);
-                DCaggr *aggr = _aggregate(aTHX_ type);
-                DCpointer ptr = sv2ptr(aTHX_ type, ST(st_pos));
-                dcArgAggr(cvm, aggr, ptr);
+                const DCaggr *aggr = _aggregate(aTHX_ type);
+                const DCpointer __________ptr = sv2ptr(aTHX_ type, ST(st_pos));
+                DumpHex(__________ptr, 16);
+                dcArgAggr(cvm, aggr, __________ptr);
                 break;
             }
             default:
