@@ -27,6 +27,17 @@ DumpHex(&ex, sizeof(Example)); return ex.i; }
     isa_ok my $fn = Affix::wrap( $lib, 'fn', [ Example() ], Int ), [qw[Affix]], 'wrap symbol in $fn';
     is $fn->( { i => 300, f => 120.5 } ), 300, 'return from $fn->({ i => 300, f => 120.5 }) is 300';
 };
+subtest 'Struct[b => Bool]' => sub {
+    ok my $lib = compile_test_lib(<<''), 'build test lib';
+#include "std.h"
+// ext: .c
+typedef struct { bool b; } Example;
+bool fn(Example ex) { return ex.b; }
+
+    isa_ok my $fn = Affix::wrap( $lib, 'fn', [ Struct [ b => Bool ] ], Bool ), [qw[Affix]], 'wrap symbol in $fn';
+    is $fn->( { b => !1 } ), F(), 'return from $fn->({ b => !1 }) is false';
+    is $fn->( { b => 1 } ),  T(), 'return from $fn->({ b => 1 }) is true';
+};
 done_testing;
 __END__
 subtest expressions => sub {

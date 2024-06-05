@@ -415,12 +415,11 @@ DCpointer sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
         AV *fields = MUTABLE_AV(SvRV(AXT_TYPE_SUBTYPE(type)));
         size_t field_count = av_count(fields);
         //~ warn("Trying to marshal struct with %d fields to a pointer", field_count);
-        DCpointer tmp;
+        STRLEN len;
         for (size_t i = 0; i < field_count; ++i) {
             SV *field = *av_fetch(fields, i, 0);
             SV **field_name_ptr = AXT_TYPE_FIELD(field);
             if (field_name_ptr == NULL) croak("Malformed Struct[...] field; missing field name");
-            STRLEN len;
             const char *field_name = SvPV(*field_name_ptr, len);
             if (UNLIKELY(!hv_exists(struct_hv, field_name, len)))
                 croak("Malformed Struct[...] field; missing '%s' field", field_name);

@@ -32,7 +32,7 @@ DCaggr *_aggregate(pTHX_ SV *type) {
             //~ retval = dcNewAggr(field_count, AXT_TYPE_SIZEOF(type));
             retval = dcNewAggr(field_count, 8);
             //~
-            //warn("-----------------------------------------------------------AXT_TYPE_SIZEOF(type)
+            // warn("-----------------------------------------------------------AXT_TYPE_SIZEOF(type)
             //" ~ "== %d", ~ AXT_TYPE_SIZEOF(type));
             //~ sv_dump(fields);
             for (size_t i = 0; i < field_count; ++i) {
@@ -42,7 +42,9 @@ DCaggr *_aggregate(pTHX_ SV *type) {
                 size_t offset = AXT_TYPE_OFFSET(field);
                 int _t = AXT_TYPE_NUMERIC((field));
                 switch (_t) {
-                case VOID_FLAG:
+                case BOOL_FLAG:
+                    dcAggrField(retval, DC_SIGCHAR_BOOL, offset, 1);
+                    break;
                     break;
                 case INT_FLAG:
                     dcAggrField(retval, DC_SIGCHAR_INT, offset, 1);
