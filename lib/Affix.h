@@ -281,6 +281,7 @@ following address will be aligned to `alignment`. */
 #define AXT_TYPE_AGGREGATE(t) av_fetch(MUTABLE_AV(SvRV(t)), SLOT_TYPE_AGGREGATE, 0)
 #define AXT_TYPE_TYPEDEF(t) av_fetch(MUTABLE_AV(SvRV(t)), SLOT_TYPE_TYPEDEF, 0)
 #define AXT_TYPE_CAST(t) av_fetch(MUTABLE_AV(SvRV(t)), SLOT_TYPE_CAST, 0)
+#define AXT_TYPE_FIELD(t) av_fetch(MUTABLE_AV(SvRV(t)), SLOT_TYPE_FIELD, 0)
 
 #define AXT_CODEREF_ARGS(t) MUTABLE_AV(SvRV(*av_fetch(MUTABLE_AV(SvRV(t)), SLOT_CODEREF_ARGS, 0)))
 #define AXT_CODEREF_RET(t) *av_fetch(MUTABLE_AV(SvRV(t)), SLOT_CODEREF_RET, 0)

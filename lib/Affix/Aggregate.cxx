@@ -4,17 +4,20 @@ DCaggr *_aggregate(pTHX_ SV *type) {
 #if DEBUG
     warn("_aggregate(%s)", AXT_TYPE_STRINGIFY(type));
 #endif
+    //~ warn
     DCaggr *retval = NULL;
     switch (AXT_TYPE_NUMERIC(type)) {
     case STRUCT_FLAG:
     case CPPSTRUCT_FLAG:
     case UNION_FLAG: {
+        warn("Struct, Union, or something...");
         size_t size = AXT_TYPE_SIZEOF(type);
         SV **agg_sv_ptr = AXT_TYPE_AGGREGATE(type);
         if (agg_sv_ptr != NULL && SvOK(*agg_sv_ptr)) {
+            warn("Inside if");
             PING;
             //~ sv_dump(*agg_sv_ptr);
-            if (sv_derived_from(*agg_sv_ptr, "Affix::Pointer")) {
+            if (sv_derived_from(*agg_sv_ptr, "Affix::Aggregate")) {
                 IV tmp = SvIV((SV *)SvRV(*agg_sv_ptr));
                 return INT2PTR(DCaggr *, tmp);
             }
@@ -23,8 +26,37 @@ DCaggr *_aggregate(pTHX_ SV *type) {
         }
         else {
             PING;
-            SV *fields = AXT_TYPE_SUBTYPE(type);
+
+            AV *fields = MUTABLE_AV(SvRV(AXT_TYPE_SUBTYPE(type)));
+            size_t field_count = av_count(fields);
+            //~ retval = dcNewAggr(field_count, AXT_TYPE_SIZEOF(type));
+            retval = dcNewAggr(field_count, 8);
+            //~
+            //warn("-----------------------------------------------------------AXT_TYPE_SIZEOF(type)
+            //" ~ "== %d", ~ AXT_TYPE_SIZEOF(type));
             //~ sv_dump(fields);
+            for (size_t i = 0; i < field_count; ++i) {
+                //~ warn("%d of %d", i, field_count);
+                SV *field = *av_fetch(fields, i, 0);
+                //~ sv_dump(field);
+                size_t offset = AXT_TYPE_OFFSET(field);
+                int _t = AXT_TYPE_NUMERIC((field));
+                switch (_t) {
+                case VOID_FLAG:
+                    break;
+                case INT_FLAG:
+                    dcAggrField(retval, DC_SIGCHAR_INT, offset, 1);
+                    break;
+                case FLOAT_FLAG:
+                    dcAggrField(retval, DC_SIGCHAR_FLOAT, offset, 1);
+                    break;
+                default:
+                    croak("_t == %d", _t);
+                    break;
+                }
+            }
+            dcCloseAggr(retval);
+            warn("store aggregate in type object");
             /*
 
             //~ if (t == STRUCT_FLAG) {

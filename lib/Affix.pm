@@ -97,11 +97,6 @@ package Affix 0.50 {    # 'FFI' is my middle name!
     #
     {    # Type system
         package    # hide
-            Affix::Type::Parameterized {
-            sub parameterized          {1}
-            sub subtype : prototype($) { return shift->[ Affix::SLOT_SUBTYPE() ]; }
-        }
-        package    # hide
             Affix::Type::CodeRef {
             sub parameterized           {1}
             sub rettype : prototype($)  { return shift->[ Affix::SLOT_SUBTYPE() ]; }
@@ -134,7 +129,7 @@ package Affix 0.50 {    # 'FFI' is my middle name!
         @Affix::Type::Pointer::Unmanaged::ISA = 'Affix::Pointer';
 
         # Aggregates
-        @Affix::Type::Struct::ISA = @Affix::Type::Union::ISA
+        @Affix::Type::Union::ISA
             #
             = @Affix::Type::Pointer::ISA = @Affix::Type::CodeRef::ISA = @Affix::Type::Function::ISA = 'Affix::Type::Parameterized';
         @Affix::CC::Reset::ISA = @Affix::CC::This::ISA = @Affix::CC::Ellipsis::ISA = @Affix::CC::Varargs::ISA = @Affix::CC::CDecl::ISA

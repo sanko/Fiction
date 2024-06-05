@@ -848,9 +848,20 @@ END
     is $fn->(20),  100, '$fn->(20)';
     is $fn->(100), 50,  '$fn->(100)';
 };
+subtest 'int fn(struct *)' => sub {
+    typedef Example => Struct [ i => Int, f => Float ];
+    isa_ok Example(), ['Affix::Type'];
+    ok my $lib = compile_test_lib(<<''), 'build test lib';
+#include "std.h"
+// ext: .c
+typedef struct { int i; float f; } Example;
+int fn(Example *ex) { return ex->i; }
+
+    isa_ok my $fn = Affix::wrap( $lib, 'fn', [ Pointer [ Example() ] ], Int ), [qw[Affix]], 'wrap symbol in $fn';
+    is $fn->( { i => 300, f => 120.5 } ), 300, 'return from $fn->({ i => 300, f => 120.5 }) is 300';
+};
 
 #define UNION_FLAG 'u'
-#define STRUCT_FLAG 'A'
 #define CPPSTRUCT_FLAG 'B'
 #
 #define WCHAR_FLAG 'w'

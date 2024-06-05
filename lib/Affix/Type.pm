@@ -2,6 +2,15 @@ package Affix::Type 0.5 {
     use strict;
     use warnings;
     use Carp qw[];
+    {
+        package    #hide
+            Affix::Type::Parameterized 0.00 {
+            use parent -norequire, 'Affix::Type';
+            sub parameterized          {1}
+            sub subtype : prototype($) { return shift->[ Affix::SLOT_SUBTYPE() ]; }
+        }
+    }
+    use Affix::Type::Struct qw[:all];
     $Carp::Internal{ (__PACKAGE__) }++;
     use parent 'Exporter';
     our ( @EXPORT_OK, %EXPORT_TAGS );
@@ -23,9 +32,15 @@ package Affix::Type 0.5 {
         return 'Const[ ' . $ret . ' ]';
         },
         '0+' => sub { shift->[ Affix::SLOT_TYPE_NUMERIC() ] };
-    sub parameterized {0}
-    sub sizeof        { shift->[ Affix::SLOT_TYPE_SIZEOF() ] }
-    sub align         { shift->[ Affix::SLOT_TYPE_ALIGNMENT() ] }
+    sub parameterized($) {0}
+
+    sub sizeof ($) {
+        shift->[ Affix::SLOT_TYPE_SIZEOF() ];
+    }
+
+    sub align ($) {
+        shift->[ Affix::SLOT_TYPE_ALIGNMENT() ];
+    }
 
     sub new($$$$$$;$$) {
         my ( $pkg, $str, $flag, $sizeof, $align, $offset, $subtype, $array_len ) = @_;
@@ -56,18 +71,51 @@ package Affix::Type 0.5 {
     }
 
     # Types
-    sub Void()   { Affix::Type::Void->new( 'Void', Affix::VOID_FLAG(), 0,                              0 ); }
-    sub Bool()   { Affix::Type::Bool->new( 'Bool', Affix::BOOL_FLAG(), Affix::Platform::SIZEOF_BOOL(), Affix::Platform::ALIGNOF_BOOL(), ); }
-    sub Char()   { Affix::Type::Char->new( 'Char', Affix::CHAR_FLAG(), Affix::Platform::SIZEOF_CHAR(), Affix::Platform::ALIGNOF_CHAR() ); }
-    sub SChar()  { Affix::Type::SChar->new( 'SChar', Affix::SCHAR_FLAG(), Affix::Platform::SIZEOF_SCHAR(), Affix::Platform::ALIGNOF_SCHAR() ); }
-    sub UChar()  { Affix::Type::UChar->new( 'UChar', Affix::UCHAR_FLAG(), Affix::Platform::SIZEOF_UCHAR(), Affix::Platform::ALIGNOF_UCHAR() ); }
-    sub WChar()  { Affix::Type::WChar->new( 'WChar', Affix::WCHAR_FLAG(), Affix::Platform::SIZEOF_WCHAR(), Affix::Platform::ALIGNOF_WCHAR() ); }
-    sub Short()  { Affix::Type::Short->new( 'Short', Affix::SHORT_FLAG(), Affix::Platform::SIZEOF_SHORT(), Affix::Platform::ALIGNOF_SHORT() ); }
-    sub UShort() { Affix::Type::UShort->new( 'UShort', Affix::USHORT_FLAG(), Affix::Platform::SIZEOF_USHORT(), Affix::Platform::ALIGNOF_USHORT() ); }
-    sub Int ()   { Affix::Type::Int->new( 'Int', Affix::INT_FLAG(), Affix::Platform::SIZEOF_INT(), Affix::Platform::ALIGNOF_INT() ); }
-    sub UInt ()  { Affix::Type::UInt->new( 'UInt', Affix::UINT_FLAG(), Affix::Platform::SIZEOF_UINT(), Affix::Platform::ALIGNOF_UINT() ); }
-    sub Long ()  { Affix::Type::Long->new( 'Long', Affix::LONG_FLAG(), Affix::Platform::SIZEOF_LONG(), Affix::Platform::ALIGNOF_LONG() ); }
-    sub ULong () { Affix::Type::ULong->new( 'ULong', Affix::ULONG_FLAG(), Affix::Platform::SIZEOF_ULONG(), Affix::Platform::ALIGNOF_ULONG() ); }
+    sub Void() { Affix::Type::Void->new( 'Void', Affix::VOID_FLAG(), 0, 0 ); }
+
+    sub Bool() {
+        Affix::Type::Bool->new( 'Bool', Affix::BOOL_FLAG(), Affix::Platform::SIZEOF_BOOL(), Affix::Platform::ALIGNOF_BOOL(), );
+    }
+
+    sub Char() {
+        Affix::Type::Char->new( 'Char', Affix::CHAR_FLAG(), Affix::Platform::SIZEOF_CHAR(), Affix::Platform::ALIGNOF_CHAR() );
+    }
+
+    sub SChar() {
+        Affix::Type::SChar->new( 'SChar', Affix::SCHAR_FLAG(), Affix::Platform::SIZEOF_SCHAR(), Affix::Platform::ALIGNOF_SCHAR() );
+    }
+
+    sub UChar() {
+        Affix::Type::UChar->new( 'UChar', Affix::UCHAR_FLAG(), Affix::Platform::SIZEOF_UCHAR(), Affix::Platform::ALIGNOF_UCHAR() );
+    }
+
+    sub WChar() {
+        Affix::Type::WChar->new( 'WChar', Affix::WCHAR_FLAG(), Affix::Platform::SIZEOF_WCHAR(), Affix::Platform::ALIGNOF_WCHAR() );
+    }
+
+    sub Short() {
+        Affix::Type::Short->new( 'Short', Affix::SHORT_FLAG(), Affix::Platform::SIZEOF_SHORT(), Affix::Platform::ALIGNOF_SHORT() );
+    }
+
+    sub UShort() {
+        Affix::Type::UShort->new( 'UShort', Affix::USHORT_FLAG(), Affix::Platform::SIZEOF_USHORT(), Affix::Platform::ALIGNOF_USHORT() );
+    }
+
+    sub Int () {
+        Affix::Type::Int->new( 'Int', Affix::INT_FLAG(), Affix::Platform::SIZEOF_INT(), Affix::Platform::ALIGNOF_INT() );
+    }
+
+    sub UInt () {
+        Affix::Type::UInt->new( 'UInt', Affix::UINT_FLAG(), Affix::Platform::SIZEOF_UINT(), Affix::Platform::ALIGNOF_UINT() );
+    }
+
+    sub Long () {
+        Affix::Type::Long->new( 'Long', Affix::LONG_FLAG(), Affix::Platform::SIZEOF_LONG(), Affix::Platform::ALIGNOF_LONG() );
+    }
+
+    sub ULong () {
+        Affix::Type::ULong->new( 'ULong', Affix::ULONG_FLAG(), Affix::Platform::SIZEOF_ULONG(), Affix::Platform::ALIGNOF_ULONG() );
+    }
 
     sub LongLong () {
         Affix::Type::LongLong->new( 'LongLong', Affix::LONGLONG_FLAG(), Affix::Platform::SIZEOF_LONGLONG(), Affix::Platform::ALIGNOF_LONGLONG() );
@@ -77,9 +125,18 @@ package Affix::Type 0.5 {
         Affix::Type::ULongLong->new( 'ULongLong', Affix::ULONGLONG_FLAG(), Affix::Platform::SIZEOF_ULONGLONG(),
             Affix::Platform::ALIGNOF_ULONGLONG() );
     }
-    sub Float ()  { Affix::Type::Float->new( 'Float', Affix::FLOAT_FLAG(), Affix::Platform::SIZEOF_FLOAT(), Affix::Platform::ALIGNOF_FLOAT() ); }
-    sub Double () { Affix::Type::Double->new( 'Double', Affix::DOUBLE_FLAG(), Affix::Platform::SIZEOF_DOUBLE(), Affix::Platform::ALIGNOF_DOUBLE() ); }
-    sub Size_t () { Affix::Type::Size_t->new( 'Size_t', Affix::SIZE_T_FLAG(), Affix::Platform::SIZEOF_SIZE_T(), Affix::Platform::ALIGNOF_SIZE_T() ); }
+
+    sub Float () {
+        Affix::Type::Float->new( 'Float', Affix::FLOAT_FLAG(), Affix::Platform::SIZEOF_FLOAT(), Affix::Platform::ALIGNOF_FLOAT() );
+    }
+
+    sub Double () {
+        Affix::Type::Double->new( 'Double', Affix::DOUBLE_FLAG(), Affix::Platform::SIZEOF_DOUBLE(), Affix::Platform::ALIGNOF_DOUBLE() );
+    }
+
+    sub Size_t () {
+        Affix::Type::Size_t->new( 'Size_t', Affix::SIZE_T_FLAG(), Affix::Platform::SIZEOF_SIZE_T(), Affix::Platform::ALIGNOF_SIZE_T() );
+    }
 
     sub String() {
         CORE::state $type //= Pointer( [ Const( [ Char() ] ) ] );
@@ -93,47 +150,6 @@ package Affix::Type 0.5 {
 
     sub StdString () {
         Affix::Type::StdString->new( 'StdString', Affix::STD_STRING_FLAG(), Affix::Platform::SIZEOF_INTPTR_T(), Affix::Platform::ALIGNOF_INTPTR_T() );
-    }
-
-    sub Struct : prototype($) {
-        my (@types) = @{ +shift };
-        my @fields;
-        my $sizeof = 0;
-        my $packed = 0;
-        my @store;
-
-        #~ for my ( $field, $subtype )(@types) {    # Perl 5.36
-        #~ while (@types) {
-        #~ my $field   = shift @types;
-        #~ my $subtype = shift @types;
-        for ( my $i = 0; $i < $#types; $i += 2 ) {
-            my $field   = $types[$i];
-            my $subtype = $types[ $i + 1 ];
-            $subtype->[Affix::SLOT_TYPE_OFFSET] = $sizeof;    # offset
-            $subtype->[Affix::SLOT_TYPE_FIELD]  = $field;     # field name
-            push @store, $subtype;
-            push @fields, sprintf '%s => %s', $field, $subtype;
-            my $__sizeof = $subtype->sizeof;
-            my $__align  = $subtype->align;
-
-            #~ warn sprintf 'types: %d, i: %d, fields: %d', scalar @types, $i, scalar @fields;
-            $sizeof += ( $packed || ( scalar @fields == scalar @types / 2 ) ) ? 0 :
-                Affix::Platform::padding_needed_for( $sizeof, $__align > $__sizeof ? $__sizeof : $__align );
-            warn "----------------------> $sizeof";
-            $sizeof += $__sizeof;
-        }
-        warn "----------------------> $sizeof";
-        bless(
-            [   sprintf( 'Struct[ %s ]', join ', ', @fields ),                                              # SLOT_STRINGIFY
-                Affix::STRUCT_FLAG(),                                                                       # SLOT_NUMERIC
-                $sizeof,                                                                                    # SLOT_SIZEOF
-                $sizeof + Affix::Platform::padding_needed_for( $sizeof, Affix::Platform::BYTE_ALIGN() ),    # SLOT_ALIGNMENT
-                undef,                                                                                      # SLOT_OFFSET
-                \@store,                                                                                    # SLOT_SUBTYPE
-                1                                                                                           # SLOT_ARRAYLEN
-            ],
-            'Affix::Type::Struct'
-        );
     }
 
     # TODO: CPPStruct

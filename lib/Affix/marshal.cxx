@@ -1,6 +1,6 @@
 #include "../Affix.h"
 
-void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
+DCpointer sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
     //~ DD(type);
     //~ DD(data);
     if (!SvOK(data) && SvREADONLY(data)) return NULL; // explicit undef
@@ -143,7 +143,7 @@ void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
             int i;
             if (SvIOK(data)) {
                 len = 1;
-                if (ret == NULL) Newxz(ret, len, int);
+                if (ret == NULL) { Newxz(ret, len, int); }
                 i = SvIV(data);
                 Copy(&i, ret, len, int);
             }
@@ -404,6 +404,29 @@ void *sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
         len = wcslen(value);
         Renew(ret, len + 1, wchar_t);
         Copy(value, ret, len + 1, wchar_t);
+    } break;
+    case STRUCT_FLAG: {
+        if (UNLIKELY(!SvROK(data) || SvTYPE(SvRV(data)) != SVt_PVHV)) {
+            warn("Expected a hash reference to marshal into a %s", AXT_TYPE_STRINGIFY(type));
+            return NULL;
+        }
+        if (ret == NULL) ret = safecalloc(1, AXT_TYPE_SIZEOF(type));
+        HV *struct_hv = MUTABLE_HV(SvRV(data));
+        AV *fields = MUTABLE_AV(SvRV(AXT_TYPE_SUBTYPE(type)));
+        size_t field_count = av_count(fields);
+        //~ warn("Trying to marshal struct with %d fields to a pointer", field_count);
+        DCpointer tmp;
+        for (size_t i = 0; i < field_count; ++i) {
+            SV *field = *av_fetch(fields, i, 0);
+            SV **field_name_ptr = AXT_TYPE_FIELD(field);
+            if (field_name_ptr == NULL) croak("Malformed Struct[...] field; missing field name");
+            STRLEN len;
+            const char *field_name = SvPV(*field_name_ptr, len);
+            if (UNLIKELY(!hv_exists(struct_hv, field_name, len)))
+                croak("Malformed Struct[...] field; missing '%s' field", field_name);
+            (void)sv2ptr(aTHX_ field, *hv_fetch(struct_hv, field_name, len, 0),
+                         INT2PTR(DCpointer, PTR2IV(ret) + AXT_TYPE_OFFSET(field)));
+        }
     } break;
     default:
         croak("Attempt to marshal unknown/unhandled type in sv2ptr: %s", AXT_TYPE_STRINGIFY(type));

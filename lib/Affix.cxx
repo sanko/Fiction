@@ -449,10 +449,10 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
                 break;
             }
             case STRUCT_FLAG: {
-                sv_dump(*av_fetch(a->argtypes, st_pos, 0));
-                DCaggr *aggr = _aggregate(aTHX_ * av_fetch(a->argtypes, st_pos, 0));
-
-                croak("STRUCT!!!!!!!!!!!!!!!!");
+                SV *type = *av_fetch(a->argtypes, st_pos, 0);
+                DCaggr *aggr = _aggregate(aTHX_ type);
+                DCpointer ptr = sv2ptr(aTHX_ type, ST(st_pos));
+                dcArgAggr(cvm, aggr, ptr);
                 break;
             }
             default:
