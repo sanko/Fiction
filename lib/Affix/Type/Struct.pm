@@ -27,14 +27,14 @@ package Affix::Type::Struct 0.5 {
         my $packed = 0;
         my @store;
         for ( my $i = 0; $i < $#types; $i += 2 ) {
-            my $field   = $types[$i];
-            my $subtype = $types[ $i + 1 ];
-            $subtype->[Affix::SLOT_TYPE_OFFSET] = $sizeof;    # offset
-            $subtype->[Affix::SLOT_TYPE_FIELD]  = $field;     # field name
-            push @store, $subtype;
-            push @fields, sprintf '%s => %s', $field, $subtype;
+            my $field    = $types[$i];
+            my $subtype  = $types[ $i + 1 ];
             my $__sizeof = $subtype->sizeof;
             my $__align  = $subtype->align;
+            $subtype->[Affix::SLOT_TYPE_OFFSET] = $sizeof + Affix::Platform::padding_needed_for( $sizeof + $__sizeof, $__align );    # offset
+            $subtype->[Affix::SLOT_TYPE_FIELD]  = $field;                                                                            # field name
+            push @store, $subtype;
+            push @fields, sprintf '%s => %s', $field, $subtype;
 
             #~ warn sprintf 'Before: struct size: %d, element size: %d, align: %d', $sizeof, $__sizeof, $__align;
             $sizeof += $__sizeof + Affix::Platform::padding_needed_for( $sizeof + $__sizeof, $__align );

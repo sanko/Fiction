@@ -30,7 +30,7 @@ DCaggr *_aggregate(pTHX_ SV *type) {
             AV *fields = MUTABLE_AV(SvRV(AXT_TYPE_SUBTYPE(type)));
             size_t field_count = av_count(fields);
             retval = dcNewAggr(field_count, AXT_TYPE_SIZEOF(type));
-            warn("retval = dcNewAggr(%d, %d);", field_count, AXT_TYPE_SIZEOF(type));
+            //~ warn("retval = dcNewAggr(%d, %d);", field_count, AXT_TYPE_SIZEOF(type));
 
             //~
             // warn("-----------------------------------------------------------AXT_TYPE_SIZEOF(type)
