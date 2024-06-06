@@ -15,19 +15,18 @@ typedef struct {
     bool is_true;
     char ch;
     unsigned char uch;
-    /*short s;
+    short s;
     unsigned short S;
-    */
     int i;
-    /*unsigned int I;
+    unsigned int I;
     /*long l;
-    /*unsigned long L;
-    /*long long ll;
-    /*unsigned long long LL;
-    /*float f;
-    /*double d;
-    /*void * ptr;
-    /*const char * str;*/
+    unsigned long L;
+    long long ll;
+    unsigned long long LL;
+    float f;
+    double d;
+    void * ptr;
+    const char * str;*/
     // TODO:
     // Union
     // Struct
@@ -44,13 +43,13 @@ int get_int(Example ex) { DumpHex(&ex, sizeof(Example));return ex.i; }
 size_t SIZEOF(){return sizeof(Example);}
 
 typedef Example => Struct [
-    bool  => Bool,
-    char  => Char,
-    uchar => UChar,
-
-    #~ short => Short,
-    #~ ushort => UShort
-    int => Int
+    bool   => Bool,
+    char   => Char,
+    uchar  => UChar,
+    short  => Short,
+    ushort => UShort,
+    int    => Int,
+    uint   => UInt
 ];
 use Data::Dump;
 ddx Example();
@@ -62,7 +61,15 @@ subtest 'affix functions' => sub {
     #
     isa_ok Affix::affix( $lib, 'get_int', [ Example() ], Int ), [qw[Affix]], 'get_int';
 };
-my $struct = { bool => !0, char => 'q', uchar => 'Q', short => 1000, ushort => 100, int => 12345 };
+my $struct = {
+    bool   => !0,
+    char   => 'q',
+    uchar  => 'Q',
+    short  => 1000,
+    ushort => 100,
+    int    => 12345,
+    uint   => 999
+};
 is Affix::Type::sizeof( Example() ), SIZEOF(), 'our size calculation vs platform';
 is get_bool($struct),                T(),      'get_bool( $struct )';
 
