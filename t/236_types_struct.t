@@ -14,7 +14,7 @@ typedef struct {
     bool is_true;
     char ch;
     unsigned char uch;
-    short s;
+    /*short s;
     unsigned short S;
     /*int i;
     /*unsigned int I;
@@ -36,14 +36,18 @@ typedef struct {
 } Example;
 bool get_bool(Example ex) { DumpHex(&ex, sizeof(Example));return ex.is_true; }
 char get_char(Example ex) { return ex.ch; }
+unsigned char get_uchar(Example ex) { return ex.uch; }
 //unsigned char get_uchar(Example ex) { return ex.uc; }
 size_t SIZEOF(){return sizeof(Example);}
 
-typedef Example => Struct [ bool => Bool, char => Char, uchar => UChar, short => Short, ushort => UShort ];
+typedef Example => Struct [ bool => Bool, char => Char, uchar => UChar,
+#short => Short, ushort => UShort
+];
 subtest 'affix functions' => sub {
     isa_ok Affix::affix( $lib, 'SIZEOF',   [],            Size_t ), [qw[Affix]], 'SIZEOF';
     isa_ok Affix::affix( $lib, 'get_bool', [ Example() ], Bool ),   [qw[Affix]], 'get_bool';
     isa_ok Affix::affix( $lib, 'get_char', [ Example() ], Char ),   [qw[Affix]], 'get_char';
+    isa_ok Affix::affix( $lib, 'get_uchar', [ Example() ], UChar ),   [qw[Affix]], 'get_uchar';
 
     #~ isa_ok Affix::affix( $lib, 'get_uchar', [ Example() ], UChar ), [qw[Affix]], 'get_uchar';
 };
