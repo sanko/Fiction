@@ -403,6 +403,7 @@ struct fiction {
     SV *restype;
     SV *res;
     char restype_c; // TODO: Remember to safefree() this on destruction!!!!!!!!!!!!!!!!!!!!!!!!!!
+    bool aggr_restype;
 };
 
 // XS Boot

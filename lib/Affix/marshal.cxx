@@ -609,32 +609,24 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
     } break;
     case STRUCT_FLAG: {
         //~ warn("TODO: unmarshal struct");
-        //~ warn("TODO: store field name in type inside struct; only store types in list");
-
         ret = newSV(0);
         HV *RETVAL_ = newHV_mortal();
         HV *_type = MUTABLE_HV(SvRV(type));
         AV *fields = MUTABLE_AV(SvRV(AXT_TYPE_SUBTYPE(type)));
-        //~ sv_dump(AXT_TYPE_SUBTYPE(type));
         size_t field_count = av_count(fields);
-        //~ warn("field_count: %d", field_count);
-        for (size_t i = 0; i < field_count; i += 2) {
-            SV *name = *av_fetch(fields, i, 0);
-            SV *subtype = *av_fetch(fields, i + 1, 0);
-            //~ warn("i: %d, PTR2IV(ptr): %p, AXT_TYPE_OFFSET(subtype): %d", i, PTR2IV(ptr),
-            //~ AXT_TYPE_OFFSET(subtype));
+        for (size_t i = 0; i < field_count; i++) {
+            SV *subtype = *av_fetch(fields, i, 0);
             (void)hv_store_ent(
-                RETVAL_, name,
+                RETVAL_, *AXT_TYPE_FIELD(subtype),
                 ptr2sv(aTHX_ subtype,
-                       INT2PTR(DCpointer, PTR2IV(ptr) + (AXT_TYPE_OFFSET(subtype)) * i)),
+                       INT2PTR(DCpointer, PTR2IV(ptr) + AXT_TYPE_OFFSET(subtype))),
                 0);
         }
         SvSetSV(ret, newRV(MUTABLE_SV(RETVAL_)));
+        DD(ret);
     } break;
     default:
-        croak("Attempt to marshal unknown/unhandled type in ptr2sv: %s ",
-
-              AXT_TYPE_STRINGIFY(type));
+        croak("Attempt to marshal unknown/unhandled type in ptr2sv: %s ", AXT_TYPE_STRINGIFY(type));
     };
     return ret;
 }
