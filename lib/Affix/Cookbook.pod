@@ -150,6 +150,16 @@ This example sends synthetic keystrokes to emulate pressing a mute button on the
 
 See L<https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-keybd_event>
 
+=head2 Play Audio
+
+This example uses the legacy Waveform Audio API to play an audio file.
+
+    use Affix;
+    affix 'winmm', 'PlaySound' => [ String, Int, Int ], Void;
+    PlaySound( 'C:\Windows\System\Media\tada.wav', 0, 0 );
+
+See L<https://learn.microsoft.com/en-us/previous-versions//dd743680(v=vs.85)>
+
 =head1 See Also
 
 Examples found in C<eg/>.

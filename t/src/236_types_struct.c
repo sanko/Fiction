@@ -23,6 +23,7 @@ typedef struct {
     // WString
     // CodeRef
     // Pointer[SV]
+    // Array
 } Example;
 
 size_t SIZEOF() {
@@ -68,12 +69,30 @@ float get_float(Example ex) {
 double get_double(Example ex) {
     return ex.d;
 }
-//~ TODO:
 void *get_ptr(Example ex) {
-    warn("---> %p", ex.ptr);
-    if (ex.ptr != NULL) DumpHex(ex.ptr, 16);
     return ex.ptr;
 }
 const char *get_str(Example ex) {
     return ex.str;
+}
+
+Example get_struct() {
+Example ret = {
+    .is_true=1,
+    .ch = 'M',
+    .uch = 'm',
+    .s = 35,
+    .S = 88,
+    .i = 1123,
+    .I = 8890,
+    .l = 13579,
+    .L = 97531,
+    .ll = 1122334455,
+    .LL = 9988776655,
+    .f = 2.3,
+    .d = 9.7,
+    .ptr = NULL, // TODO
+    .str = "Hello!",
+};
+return ret;
 }
