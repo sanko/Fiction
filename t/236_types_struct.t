@@ -70,8 +70,9 @@ my $struct = {
     float     => 3.14,
     double    => 1.2345,
     ptr       => 'Anything can go here',
-    str       => 'Anything can go here too'
+    str       => 'Something can go here too'
 };
+#
 is Affix::Type::sizeof( Example() ), SIZEOF(),                               'our size calculation vs platform';
 is get_bool($struct),                T(),                                    'get_bool( $struct )';
 is get_char($struct),                'q',                                    'get_char( $struct )';
@@ -88,6 +89,6 @@ is get_float($struct),               float( 3.14, tolerance => 0.000001 ),   'ge
 is get_double($struct),              float( 1.2345, tolerance => 0.000001 ), 'get_double( $struct )';
 
 #~ TODO:
-#~ is get_ptr($struct),                'Anything can go here',      'get_ptr( $struct )';
-#~ is get_str($struct),                'Anything can go here',      'get_str( $struct )';
+is get_ptr($struct)->raw(20), 'Anything can go here',      'get_ptr( $struct )';
+is get_str($struct),          'Something can go here too', 'get_str( $struct )';
 done_testing;

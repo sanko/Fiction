@@ -423,8 +423,15 @@ DCpointer sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
             const char *field_name = SvPV(*field_name_ptr, len);
             if (UNLIKELY(!hv_exists(struct_hv, field_name, len)))
                 croak("Malformed Struct[...] field; missing '%s' field", field_name);
-            (void)sv2ptr(aTHX_ field, *hv_fetch(struct_hv, field_name, len, 0),
-                         INT2PTR(DCpointer, PTR2IV(ret) + AXT_TYPE_OFFSET(field)));
+            SV **field_data = hv_fetch(struct_hv, field_name, len, 0);
+            if (UNLIKELY(sv_derived_from(field, "Affix::Type::Pointer"))) {
+                DCpointer ptr = sv2ptr(aTHX_ field, *field_data);
+                Move(&ptr, INT2PTR(DCpointer, PTR2IV(ret) + AXT_TYPE_OFFSET(field)),
+                     SIZEOF_INTPTR_T, char);
+            }
+            else
+                (void)sv2ptr(aTHX_ field, *field_data,
+                             INT2PTR(DCpointer, PTR2IV(ret) + AXT_TYPE_OFFSET(field)));
         }
     } break;
     default:
