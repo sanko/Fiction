@@ -70,6 +70,8 @@ double get_double(Example ex) {
 }
 //~ TODO:
 void *get_ptr(Example ex) {
+    warn("---> %p", ex.ptr);
+    if (ex.ptr != NULL) DumpHex(ex.ptr, 16);
     return ex.ptr;
 }
 const char *get_str(Example ex) {

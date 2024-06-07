@@ -41,8 +41,8 @@ DCaggr *_aggregate(pTHX_ SV *type) {
                 //~ sv_dump(field);
                 size_t offset = AXT_TYPE_OFFSET(field);
                 int _t = AXT_TYPE_NUMERIC(field);
-                warn("%d of %d is a %d (%s)", i, field_count, _t, AXT_TYPE_STRINGIFY(field));
-                warn("dcAggrField(retval, ..., %d, %d)", offset, 1);
+                //~ warn("%d of %d is a %d (%s)", i, field_count, _t, AXT_TYPE_STRINGIFY(field));
+                //~ warn("dcAggrField(retval, ..., %d, %d)", offset, 1);
                 switch (_t) {
                 case BOOL_FLAG:
                     dcAggrField(retval, DC_SIGCHAR_BOOL, offset, 1);
@@ -86,7 +86,6 @@ DCaggr *_aggregate(pTHX_ SV *type) {
                 case POINTER_FLAG:
                 case CODEREF_FLAG:
                 case WSTRING_FLAG:
-                case SV_FLAG:
                     dcAggrField(retval, DC_SIGCHAR_POINTER, offset, 1);
                     break;
                     // TODO: if Pointer[Const[Char]]
@@ -99,12 +98,11 @@ DCaggr *_aggregate(pTHX_ SV *type) {
                     break;
                 default:
                     // TODO: WCHAR_FLAG
-                    croak("_t == %d", _t);
+                    croak("Unhandled type in Struct: %s", AXT_TYPE_STRINGIFY(field));
                     break;
                 }
             }
             dcCloseAggr(retval);
-            warn("store aggregate in type object");
             /*
 
             //~ if (t == STRUCT_FLAG) {

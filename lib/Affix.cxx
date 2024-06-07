@@ -453,7 +453,7 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
                 SV *type = *av_fetch(a->argtypes, st_pos, 0);
                 const DCaggr *aggr = _aggregate(aTHX_ type);
                 const DCpointer __________ptr = sv2ptr(aTHX_ type, ST(st_pos));
-                DumpHex(__________ptr, 16);
+                DumpHex(__________ptr, 32);
                 dcArgAggr(cvm, aggr, __________ptr);
                 break;
             }
