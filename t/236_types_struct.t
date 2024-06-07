@@ -32,6 +32,7 @@ typedef Example => Struct [
     #~ WString
     #~ CodeRef
     #~ Pointer[SV]
+    #~ Array
 ];
 use Data::Dump;
 ddx Example();
@@ -87,8 +88,6 @@ is get_longlong($struct),            2345,                                   'ge
 is get_ulonglong($struct),           11111111,                               'get_ulonglong( $struct )';
 is get_float($struct),               float( 3.14, tolerance => 0.000001 ),   'get_float( $struct )';
 is get_double($struct),              float( 1.2345, tolerance => 0.000001 ), 'get_double( $struct )';
-
-#~ TODO:
-is get_ptr($struct)->raw(20), 'Anything can go here',      'get_ptr( $struct )';
-is get_str($struct),          'Something can go here too', 'get_str( $struct )';
+is get_ptr($struct)->raw(20),        'Anything can go here',                 'get_ptr( $struct )';
+is get_str($struct),                 'Something can go here too',            'get_str( $struct )';
 done_testing;
