@@ -340,6 +340,7 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
                   items > sig_len ? "Too many" : "Not enough", a->symbol, sig_len, items);
 
         for (size_t sig_pos = 0, st_pos = 0; sig_pos < sig_len; sig_pos++, st_pos++) {
+            //~ warn("a->signature[sig_pos] == %c", a->signature[sig_pos]);
             switch (a->signature[sig_pos]) {
             case VOID_FLAG:
                 break; // ...skip?
@@ -462,10 +463,7 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
             }
             case STRUCT_FLAG: {
                 SV *type = *av_fetch(a->argtypes, st_pos, 0);
-                const DCaggr *aggr = _aggregate(aTHX_ type);
-                const DCpointer __________ptr = sv2ptr(aTHX_ type, ST(st_pos));
-                //~ DumpHex(__________ptr, 32);
-                dcArgAggr(cvm, aggr, __________ptr);
+                dcArgAggr(cvm, _aggregate(aTHX_ type), sv2ptr(aTHX_ type, ST(st_pos)));
                 break;
             }
             default:

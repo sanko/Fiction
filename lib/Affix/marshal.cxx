@@ -1,7 +1,7 @@
 #include "../Affix.h"
 
 DCpointer sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
-    //~ DD(type);
+    DD(type);
     //~ DD(data);
     if (!SvOK(data) && SvREADONLY(data)) return NULL; // explicit undef
     size_t len = 0;

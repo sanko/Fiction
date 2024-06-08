@@ -23,7 +23,8 @@ typedef Example => Struct [
     float     => Float,
     double    => Double,
     ptr       => Pointer [Void],
-    str       => String
+    str       => String,
+    struct    => Struct [ i => Int ]
 
     #~ TODO:
     #~ Union
@@ -71,7 +72,8 @@ my $struct = {
     float     => 3.14,
     double    => 1.2345,
     ptr       => 'Anything can go here',
-    str       => 'Something can go here too'
+    str       => 'Something can go here too',
+    struct    => { i => 4 }
 };
 #
 is Affix::Type::sizeof( Example() ), SIZEOF(),                               'our size calculation vs platform';

@@ -16,6 +16,9 @@ typedef struct {
     double d;
     void *ptr;
     const char *str;
+    struct {
+        int i;
+    } testing;
     // TODO:
     // Union
     // Struct
