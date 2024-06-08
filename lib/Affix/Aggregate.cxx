@@ -10,11 +10,11 @@ DCaggr *_aggregate(pTHX_ SV *type) {
     case STRUCT_FLAG:
     case CPPSTRUCT_FLAG:
     case UNION_FLAG: {
-        warn("Struct, Union, or something...");
+        //~ warn("Struct, Union, or something...");
         size_t size = AXT_TYPE_SIZEOF(type);
         SV **agg_sv_ptr = AXT_TYPE_AGGREGATE(type);
         if (agg_sv_ptr != NULL && SvOK(*agg_sv_ptr)) {
-            warn("Inside if");
+            //~ warn("Inside if");
             PING;
             //~ sv_dump(*agg_sv_ptr);
             if (sv_derived_from(*agg_sv_ptr, "Affix::Aggregate")) {

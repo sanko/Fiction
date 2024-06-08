@@ -77,22 +77,22 @@ const char *get_str(Example ex) {
 }
 
 Example get_struct() {
-Example ret = {
-    .is_true=1,
-    .ch = 'M',
-    .uch = 'm',
-    .s = 35,
-    .S = 88,
-    .i = 1123,
-    .I = 8890,
-    .l = 13579,
-    .L = 97531,
-    .ll = 1122334455,
-    .LL = 9988776655,
-    .f = 2.3,
-    .d = 9.7,
-    .ptr = NULL, // TODO
-    .str = "Hello!",
-};
-return ret;
+    Example ret = {
+        .is_true = 1,
+        .ch = 'M',
+        .uch = 'm',
+        .s = 35,
+        .S = 88,
+        .i = 1123,
+        .I = 8890,
+        .l = 13579,
+        .L = 97531,
+        .ll = 1122334455,
+        .LL = 9988776655,
+        .f = 2.3,
+        .d = 9.7,
+        .ptr = NULL, // TODO
+        .str = "Hello!",
+    };
+    return ret;
 }
