@@ -616,14 +616,22 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
         size_t field_count = av_count(fields);
         for (size_t i = 0; i < field_count; i++) {
             SV *subtype = *av_fetch(fields, i, 0);
-            (void)hv_store_ent(
-                RETVAL_, *AXT_TYPE_FIELD(subtype),
-                ptr2sv(aTHX_ subtype,
-                       INT2PTR(DCpointer, PTR2IV(ptr) + AXT_TYPE_OFFSET(subtype))),
-                0);
+            SV *val;
+            switch (AXT_TYPE_NUMERIC(subtype)) {
+            case CHAR_FLAG:
+            case SCHAR_FLAG:
+            case UCHAR_FLAG: {
+                DCpointer p = INT2PTR(DCpointer, PTR2IV(ptr) + AXT_TYPE_OFFSET(subtype));
+                val = newSVpvn_utf8((char *)p, 1, is_utf8_string((U8 *)p, 1));
+            } break;
+            default:
+                val = ptr2sv(aTHX_ subtype,
+                             INT2PTR(DCpointer, PTR2IV(ptr) + AXT_TYPE_OFFSET(subtype)));
+                break;
+            }
+            (void)hv_store_ent(RETVAL_, *AXT_TYPE_FIELD(subtype), val, 0);
         }
         SvSetSV(ret, newRV(MUTABLE_SV(RETVAL_)));
-        DD(ret);
     } break;
     default:
         croak("Attempt to marshal unknown/unhandled type in ptr2sv: %s ", AXT_TYPE_STRINGIFY(type));

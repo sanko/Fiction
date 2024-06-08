@@ -37,26 +37,25 @@ typedef Example => Struct [
 use Data::Dump;
 ddx Example();
 subtest 'affix functions' => sub {
-    isa_ok Affix::affix( $lib, 'SIZEOF',        [],            Size_t ),    [qw[Affix]], 'SIZEOF';
-    isa_ok Affix::affix( $lib, 'get_bool',      [ Example() ], Bool ),      [qw[Affix]], 'get_bool';
-    isa_ok Affix::affix( $lib, 'get_char',      [ Example() ], Char ),      [qw[Affix]], 'get_char';
-    isa_ok Affix::affix( $lib, 'get_uchar',     [ Example() ], UChar ),     [qw[Affix]], 'get_uchar';
-    isa_ok Affix::affix( $lib, 'get_short',     [ Example() ], Short ),     [qw[Affix]], 'get_short';
-    isa_ok Affix::affix( $lib, 'get_ushort',    [ Example() ], UShort ),    [qw[Affix]], 'get_ushort';
-    isa_ok Affix::affix( $lib, 'get_int',       [ Example() ], Int ),       [qw[Affix]], 'get_int';
-    isa_ok Affix::affix( $lib, 'get_uint',      [ Example() ], UInt ),      [qw[Affix]], 'get_uint';
-    isa_ok Affix::affix( $lib, 'get_long',      [ Example() ], Long ),      [qw[Affix]], 'get_long';
-    isa_ok Affix::affix( $lib, 'get_ulong',     [ Example() ], ULong ),     [qw[Affix]], 'get_ulong';
-    isa_ok Affix::affix( $lib, 'get_longlong',  [ Example() ], LongLong ),  [qw[Affix]], 'get_longlong';
-    isa_ok Affix::affix( $lib, 'get_ulonglong', [ Example() ], ULongLong ), [qw[Affix]], 'get_ulonglong';
-    isa_ok Affix::affix( $lib, 'get_float',     [ Example() ], Float ),     [qw[Affix]], 'get_float';
-    isa_ok Affix::affix( $lib, 'get_double',    [ Example() ], Double ),    [qw[Affix]], 'get_double';
-    isa_ok Affix::affix( $lib, 'get_ptr', [ Example() ], Pointer [Void] ), [qw[Affix]], 'get_ptr';
-    isa_ok Affix::affix( $lib, 'get_str', [ Example() ], String ),         [qw[Affix]], 'get_str';
+    isa_ok Affix::affix( $lib, 'SIZEOF',        [],            Size_t ),         [qw[Affix]], 'SIZEOF';
+    isa_ok Affix::affix( $lib, 'get_bool',      [ Example() ], Bool ),           [qw[Affix]], 'get_bool';
+    isa_ok Affix::affix( $lib, 'get_char',      [ Example() ], Char ),           [qw[Affix]], 'get_char';
+    isa_ok Affix::affix( $lib, 'get_uchar',     [ Example() ], UChar ),          [qw[Affix]], 'get_uchar';
+    isa_ok Affix::affix( $lib, 'get_short',     [ Example() ], Short ),          [qw[Affix]], 'get_short';
+    isa_ok Affix::affix( $lib, 'get_ushort',    [ Example() ], UShort ),         [qw[Affix]], 'get_ushort';
+    isa_ok Affix::affix( $lib, 'get_int',       [ Example() ], Int ),            [qw[Affix]], 'get_int';
+    isa_ok Affix::affix( $lib, 'get_uint',      [ Example() ], UInt ),           [qw[Affix]], 'get_uint';
+    isa_ok Affix::affix( $lib, 'get_long',      [ Example() ], Long ),           [qw[Affix]], 'get_long';
+    isa_ok Affix::affix( $lib, 'get_ulong',     [ Example() ], ULong ),          [qw[Affix]], 'get_ulong';
+    isa_ok Affix::affix( $lib, 'get_longlong',  [ Example() ], LongLong ),       [qw[Affix]], 'get_longlong';
+    isa_ok Affix::affix( $lib, 'get_ulonglong', [ Example() ], ULongLong ),      [qw[Affix]], 'get_ulonglong';
+    isa_ok Affix::affix( $lib, 'get_float',     [ Example() ], Float ),          [qw[Affix]], 'get_float';
+    isa_ok Affix::affix( $lib, 'get_double',    [ Example() ], Double ),         [qw[Affix]], 'get_double';
+    isa_ok Affix::affix( $lib, 'get_ptr',       [ Example() ], Pointer [Void] ), [qw[Affix]], 'get_ptr';
+    isa_ok Affix::affix( $lib, 'get_str',       [ Example() ], String ),         [qw[Affix]], 'get_str';
 
     # TODO
-        isa_ok Affix::affix( $lib, 'get_struct', [ ], Example() ),         [qw[Affix]], 'get_struct';
-
+    isa_ok Affix::affix( $lib, 'get_struct', [], Example() ), [qw[Affix]], 'get_struct';
 };
 my $struct = {
     bool      => !0,
@@ -92,7 +91,26 @@ is get_float($struct),               float( 3.14, tolerance => 0.000001 ),   'ge
 is get_double($struct),              float( 1.2345, tolerance => 0.000001 ), 'get_double( $struct )';
 is get_ptr($struct)->raw(20),        'Anything can go here',                 'get_ptr( $struct )';
 is get_str($struct),                 'Something can go here too',            'get_str( $struct )';
-
-# TODO:
-ddx get_struct();
+{
+    my $todo = todo "I'll get to it...";
+    is get_struct(),
+        {
+        bool      => T(),
+        char      => 'M',
+        double    => float( 9.7, tolerance => 0.00001 ),
+        float     => float( 2.3, tolerance => 0.00001 ),
+        int       => 1123,
+        long      => 13579,
+        longlong  => 1122334455,
+        ptr       => U(),
+        short     => 35,
+        str       => 'Hello!',
+        uchar     => 'm',
+        uint      => 8890,
+        ulong     => 97531,
+        ulonglong => 9988776655,
+        ushort    => 88
+        },
+        'get_struct()';
+}
 done_testing;

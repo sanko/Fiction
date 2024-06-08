@@ -213,8 +213,7 @@ XS_INTERNAL(Affix_fiction) {
         ret->signature = NULL;
         ret->restype = NULL;
         ret->restype_c = VOID_FLAG;
-ret->aggr_restype=false;
-
+        ret->aggr_restype = false;
 
         switch (items) {
         case 4:
@@ -222,7 +221,7 @@ ret->aggr_restype=false;
             ret->restype_c = AXT_TYPE_NUMERIC(ret->restype);
             switch (ret->restype_c) {
             case STRUCT_FLAG:
-                ret->aggr_restype=true; // TODO: I could cache the aggr object here
+                ret->aggr_restype = true; // TODO: I could cache the aggr object here
                 break;
             case WCHAR_FLAG:
             case WSTRING_FLAG:
@@ -328,12 +327,12 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
     #define POINTER_FLAG 'P'
     #define SV_FLAG '?'
         */
-        DCaggr * ret_aggr;
-        if(a->aggr_restype) {
-            // TODO: Store ret_aggr in call or in type?
-            ret_aggr = _aggregate(aTHX_ a->restype);
-            dcBeginCallAggr(cvm, ret_aggr);
-        }
+    DCaggr *ret_aggr;
+    if (a->aggr_restype) {
+        // TODO: Store ret_aggr in call or in type?
+        ret_aggr = _aggregate(aTHX_ a->restype);
+        dcBeginCallAggr(cvm, ret_aggr);
+    }
     if (a->signature != NULL) {
         size_t sig_len = strlen(a->signature);
         if (items != sig_len)
@@ -585,20 +584,13 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
         sv_setsv(a->res, sv_2mortal(ptr2sv(aTHX_ a->restype, ret)));
     } break;
     case STRUCT_FLAG: {
-        warn("Make space to hold struct...");
         DCpointer ret = safecalloc(1, AXT_TYPE_SIZEOF(a->restype));
-        warn("Cool. Now call entry point...");
         dcCallAggr(cvm, a->entry_point, ret_aggr, ret);
-        warn("Good. Now set ret to the pointer...");
         DumpHex(ret, AXT_TYPE_SIZEOF(a->restype));
-        SV * HOLD =  ptr2sv(aTHX_ a->restype, ret);
-        sv_dump(a->res);
-        sv_dump(HOLD);
+        SV *HOLD = ptr2sv(aTHX_ a->restype, ret);
         //~ sv_setsv(a->res, sv_2mortal(MUTABLE_SV(HOLD)));
-        a->res= sv_2mortal(HOLD);
-        warn("Nice. Let's go back");
-    }
-    break;
+        a->res = sv_2mortal(HOLD);
+    } break;
     default:
         croak("Unknown or unhandled return type: %s", AXT_TYPE_STRINGIFY(a->restype));
     };
