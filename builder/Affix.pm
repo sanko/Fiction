@@ -77,7 +77,6 @@ sub alien {
             ( $opt{config}->get('osname') =~ /bsd/ ? '' : $LDFLAGS ) . '"';
         if ( $opt{config}->get('osname') eq 'MSWin32' ) {
             require Devel::CheckBin;
-            warn 'DONE!!!!!!!!!!!';
             for my $exe ( $make, qw[gmake nmake mingw32-make] ) {
                 next unless Devel::CheckBin::check_bin($exe);
                 $make      = $exe;

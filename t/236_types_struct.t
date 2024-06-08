@@ -34,8 +34,9 @@ typedef Example => Struct [
     #~ Pointer[SV]
     #~ Array
 ];
-use Data::Dump;
-ddx Example();
+
+#~ use Data::Dump;
+#~ ddx Example();
 subtest 'affix functions' => sub {
     isa_ok Affix::affix( $lib, 'SIZEOF',        [],            Size_t ),         [qw[Affix]], 'SIZEOF';
     isa_ok Affix::affix( $lib, 'get_bool',      [ Example() ], Bool ),           [qw[Affix]], 'get_bool';
@@ -53,9 +54,7 @@ subtest 'affix functions' => sub {
     isa_ok Affix::affix( $lib, 'get_double',    [ Example() ], Double ),         [qw[Affix]], 'get_double';
     isa_ok Affix::affix( $lib, 'get_ptr',       [ Example() ], Pointer [Void] ), [qw[Affix]], 'get_ptr';
     isa_ok Affix::affix( $lib, 'get_str',       [ Example() ], String ),         [qw[Affix]], 'get_str';
-
-    # TODO
-    isa_ok Affix::affix( $lib, 'get_struct', [], Example() ), [qw[Affix]], 'get_struct';
+    isa_ok Affix::affix( $lib, 'get_struct',    [],            Example() ),      [qw[Affix]], 'get_struct';
 };
 my $struct = {
     bool      => !0,
@@ -92,7 +91,7 @@ is get_double($struct),              float( 1.2345, tolerance => 0.000001 ), 'ge
 is get_ptr($struct)->raw(20),        'Anything can go here',                 'get_ptr( $struct )';
 is get_str($struct),                 'Something can go here too',            'get_str( $struct )';
 {
-    my $todo = todo "I'll get to it...";
+    #~ my $todo = todo "I'll get to it...";
     is get_struct(),
         {
         bool      => T(),

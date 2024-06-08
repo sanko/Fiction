@@ -464,12 +464,12 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
                 SV *type = *av_fetch(a->argtypes, st_pos, 0);
                 const DCaggr *aggr = _aggregate(aTHX_ type);
                 const DCpointer __________ptr = sv2ptr(aTHX_ type, ST(st_pos));
-                DumpHex(__________ptr, 32);
+                //~ DumpHex(__________ptr, 32);
                 dcArgAggr(cvm, aggr, __________ptr);
                 break;
             }
             default:
-                sv_dump(*av_fetch(a->argtypes, st_pos, 0));
+                //~ sv_dump(*av_fetch(a->argtypes, st_pos, 0));
                 croak("Unhandled type! %c", a->signature[sig_pos]);
             }
         }
@@ -586,7 +586,7 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
     case STRUCT_FLAG: {
         DCpointer ret = safecalloc(1, AXT_TYPE_SIZEOF(a->restype));
         dcCallAggr(cvm, a->entry_point, ret_aggr, ret);
-        DumpHex(ret, AXT_TYPE_SIZEOF(a->restype));
+        //~ DumpHex(ret, AXT_TYPE_SIZEOF(a->restype));
         SV *HOLD = ptr2sv(aTHX_ a->restype, ret);
         //~ sv_setsv(a->res, sv_2mortal(MUTABLE_SV(HOLD)));
         a->res = sv_2mortal(HOLD);

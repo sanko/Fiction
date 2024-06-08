@@ -617,18 +617,26 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
         for (size_t i = 0; i < field_count; i++) {
             SV *subtype = *av_fetch(fields, i, 0);
             SV *val;
-            switch (AXT_TYPE_NUMERIC(subtype)) {
-            case CHAR_FLAG:
-            case SCHAR_FLAG:
-            case UCHAR_FLAG: {
-                DCpointer p = INT2PTR(DCpointer, PTR2IV(ptr) + AXT_TYPE_OFFSET(subtype));
-                val = newSVpvn_utf8((char *)p, 1, is_utf8_string((U8 *)p, 1));
-            } break;
-            default:
-                val = ptr2sv(aTHX_ subtype,
-                             INT2PTR(DCpointer, PTR2IV(ptr) + AXT_TYPE_OFFSET(subtype)));
-                break;
-            }
+            DCpointer p = INT2PTR(DCpointer, PTR2IV(ptr) + AXT_TYPE_OFFSET(subtype));
+            if (sv_derived_from(subtype, "Affix::Type::Pointer"))
+                if (*(DCpointer *)p == NULL)
+                    val = newSV(0);
+                else if (sv_derived_from(AXT_TYPE_SUBTYPE(subtype), "Affix::Type::Char"))
+                    val = ptr2sv(aTHX_ AXT_TYPE_SUBTYPE(subtype), *(DCpointer *)p);
+                else
+                    val = newSV(
+                        0); // No idea but this shouldn't be here. Rework this so that it isn't.
+            else
+                switch (AXT_TYPE_NUMERIC(subtype)) {
+                case CHAR_FLAG:
+                case SCHAR_FLAG:
+                case UCHAR_FLAG: {
+                    val = newSVpvn_utf8((char *)p, 1, is_utf8_string((U8 *)p, 1));
+                } break;
+                default:
+                    val = ptr2sv(aTHX_ subtype, p);
+                    break;
+                }
             (void)hv_store_ent(RETVAL_, *AXT_TYPE_FIELD(subtype), val, 0);
         }
         SvSetSV(ret, newRV(MUTABLE_SV(RETVAL_)));
