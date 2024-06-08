@@ -94,7 +94,7 @@ DCaggr *_aggregate(pTHX_ SV *type) {
                 case STRUCT_FLAG:
                 case UNION_FLAG:
                 case CPPSTRUCT_FLAG:
-                    dcAggrField(retval, DC_SIGCHAR_AGGREGATE, offset, 1);
+                    dcAggrField(retval, DC_SIGCHAR_AGGREGATE, offset, 1, _aggregate(aTHX_ field));
                     break;
                 default:
                     // TODO: WCHAR_FLAG
