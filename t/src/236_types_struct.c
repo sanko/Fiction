@@ -18,6 +18,7 @@ typedef struct {
     const char *str;
     struct {
         int i;
+        char c;
     } nested;
     // TODO:
     // Union
@@ -85,6 +86,11 @@ int get_nested_int(Example ex) {
     return ex.nested.i;
 }
 
+size_t get_nested_offset(){
+    return offsetof(Example, nested);
+}
+
+
 Example get_struct() {
     Example ret = {.is_true = 1,
                    .ch = 'M',
@@ -101,6 +107,7 @@ Example get_struct() {
                    .d = 9.7,
                    .ptr = NULL, // TODO
                    .str = "Hello!",
-                   .nested = {.i = 1090}};
+                   .nested = {.i = 1111, .c = 'Q'}};
+                   DumpHex(&(ret.nested), 32);
     return ret;
 }
