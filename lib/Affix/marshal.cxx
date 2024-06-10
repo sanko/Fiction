@@ -609,6 +609,8 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
     } break;
     case STRUCT_FLAG: {
         //~ warn("TODO: unmarshal struct");
+        //~ DumpHex(ptr, AXT_TYPE_SIZEOF(type) * 5);
+        //~ DD(type);
         ret = newSV(0);
         HV *RETVAL_ = newHV_mortal();
         HV *_type = MUTABLE_HV(SvRV(type));

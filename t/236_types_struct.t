@@ -23,7 +23,8 @@ typedef Example => Struct [
     float     => Float,
     double    => Double,
     ptr       => Pointer [Void],
-    str       => String
+    str       => String,
+    struct    => Struct [ int => Int, char => Char ]
 
     #~ TODO:
     #~ Union
@@ -55,6 +56,10 @@ subtest 'affix functions' => sub {
     isa_ok Affix::affix( $lib, 'get_ptr',       [ Example() ], Pointer [Void] ), [qw[Affix]], 'get_ptr';
     isa_ok Affix::affix( $lib, 'get_str',       [ Example() ], String ),         [qw[Affix]], 'get_str';
     isa_ok Affix::affix( $lib, 'get_struct',    [],            Example() ),      [qw[Affix]], 'get_struct';
+
+    # TODO
+    isa_ok Affix::affix( $lib, 'get_nested_offset', [],            Size_t ), [qw[Affix]], 'get_nested_offset';
+    isa_ok Affix::affix( $lib, 'get_nested_int',    [ Example() ], Int ),    [qw[Affix]], 'get_nested_int';
 };
 my $struct = {
     bool      => !0,
@@ -71,7 +76,8 @@ my $struct = {
     float     => 3.14,
     double    => 1.2345,
     ptr       => 'Anything can go here',
-    str       => 'Something can go here too'
+    str       => 'Something can go here too',
+    struct    => { int => 4321, char => 'M' }
 };
 #
 is Affix::Type::sizeof( Example() ), SIZEOF(),                               'our size calculation vs platform';
@@ -90,6 +96,15 @@ is get_float($struct),               float( 3.14, tolerance => 0.000001 ),   'ge
 is get_double($struct),              float( 1.2345, tolerance => 0.000001 ), 'get_double( $struct )';
 is get_ptr($struct)->raw(20),        'Anything can go here',                 'get_ptr( $struct )';
 is get_str($struct),                 'Something can go here too',            'get_str( $struct )';
+
+#~ TODO
+use Data::Dump;
+
+#~ ddx Example()->[5][-1][4] = 72;
+is get_nested_int($struct), 4321, 'get_nested_int( $struct )';
+
+#~ is get_nested_offset(), 2;
+#~ die;
 {
     #~ my $todo = todo "I'll get to it...";
     is get_struct(),
@@ -108,7 +123,8 @@ is get_str($struct),                 'Something can go here too',            'ge
         uint      => 8890,
         ulong     => 97531,
         ulonglong => 9988776655,
-        ushort    => 88
+        ushort    => 88,
+        struct    => { int => 1111, char => 'Q' }
         },
         'get_struct()';
 }
