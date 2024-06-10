@@ -20,6 +20,7 @@ typedef struct {
         int i;
         char c;
     } nested;
+    struct {const char * str2;} nested2;
     // TODO:
     // Union
     // Struct
@@ -81,13 +82,19 @@ const char *get_str(Example ex) {
 }
 
 // TODO:
+size_t get_nested_offset() {
+    return offsetof(Example, nested);
+}
 
 int get_nested_int(Example ex) {
     return ex.nested.i;
 }
 
-size_t get_nested_offset() {
-    return offsetof(Example, nested);
+size_t get_nested2_offset() {
+    return offsetof(Example, nested2);
+}
+const char * get_nested_str(Example ex) {
+    return ex.nested2.str2;
 }
 
 Example get_struct() {
@@ -106,7 +113,8 @@ Example get_struct() {
                    .d = 9.7,
                    .ptr = NULL, // TODO
                    .str = "Hello!",
-                   .nested = {.i = 1111, .c = 'Q'}};
-    //~ DumpHex(&(ret.nested), 32);
+                   .nested = {.i = 1111, .c = 'Q'},
+                   .nested2 ={.str2 = "Whoa?"}};
+    DumpHex(&(ret.nested), sizeof(ret));
     return ret;
 }
