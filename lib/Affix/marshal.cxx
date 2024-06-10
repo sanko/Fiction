@@ -609,8 +609,7 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
     } break;
     case STRUCT_FLAG: {
         //~ warn("TODO: unmarshal struct");
-                warn("STRUCT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-        DumpHex(ptr, AXT_TYPE_SIZEOF(type)*5);
+        //~ DumpHex(ptr, AXT_TYPE_SIZEOF(type) * 5);
         //~ DD(type);
         ret = newSV(0);
         HV *RETVAL_ = newHV_mortal();
@@ -636,11 +635,6 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
                 case UCHAR_FLAG: {
                     val = newSVpvn_utf8((char *)p, 1, is_utf8_string((U8 *)p, 1));
                 } break;
-                case STRUCT_FLAG:
-                    warn("--------------------nested struct");
-                    DumpHex(p, AXT_TYPE_SIZEOF(subtype));
-                    val = ptr2sv(aTHX_ subtype, p);
-                break;
                 default:
                     val = ptr2sv(aTHX_ subtype, p);
                     break;

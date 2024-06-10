@@ -86,10 +86,9 @@ int get_nested_int(Example ex) {
     return ex.nested.i;
 }
 
-size_t get_nested_offset(){
+size_t get_nested_offset() {
     return offsetof(Example, nested);
 }
-
 
 Example get_struct() {
     Example ret = {.is_true = 1,
@@ -108,6 +107,6 @@ Example get_struct() {
                    .ptr = NULL, // TODO
                    .str = "Hello!",
                    .nested = {.i = 1111, .c = 'Q'}};
-                   DumpHex(&(ret.nested), 32);
+    //~ DumpHex(&(ret.nested), 32);
     return ret;
 }
