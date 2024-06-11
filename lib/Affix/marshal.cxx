@@ -1,9 +1,10 @@
 #include "../Affix.h"
 
 DCpointer sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
-    //~ DD(type);
+    DD(type);
     //~ DD(data);
     if (!SvOK(data) && SvREADONLY(data)) return NULL; // explicit undef
+        warn("ret == %p");
     size_t len = 0;
     switch (AXT_TYPE_NUMERIC(type)) {
     case VOID_FLAG: {
@@ -49,7 +50,6 @@ DCpointer sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
     case CHAR_FLAG:
     case SCHAR_FLAG: {
         if (SvOK(data)) {
-
             if (SvROK(data) && SvTYPE(SvRV(data)) == SVt_PVAV) {
                 AV *array = MUTABLE_AV(SvRV(data));
                 len = av_count(array);
@@ -63,7 +63,9 @@ DCpointer sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
             else {
                 char *i = SvUTF8(data) ? SvPVutf8(data, len) : SvPV(data, len);
                 if (ret == NULL) Newxz(ret, len + 1, char);
+                //~ else Renew(ret, len+1, char);
                 Copy(i, ret, len, char);
+                DumpHex(ret, len);
             }
         }
     } break;
@@ -459,7 +461,8 @@ SV *ptr2obj(pTHX_ SV *type, DCpointer ptr) {
 }
 
 SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
-    //~ DD(type);
+    DD(type);
+    DumpHex(ptr, 128);
     if (ptr == NULL) return newSV(0); // Don't waste any time on NULL pointers
     SV *ret;
     switch (AXT_TYPE_NUMERIC(type)) {
@@ -471,7 +474,8 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
     } break;
     case CHAR_FLAG:
     case SCHAR_FLAG:
-    case UCHAR_FLAG: {
+    case UCHAR_FLAG: {    DD(type);
+    DumpHex(ptr, 128);
         size_t len = strlen((char *)ptr);
         ret = newSVpvn_utf8((char *)ptr, len, is_utf8_string((U8 *)ptr, len));
     } break;
@@ -521,11 +525,6 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
             } while (tmp != NULL);
             ret = newRV_noinc(MUTABLE_SV(ret_av));
         } break;
-        case CHAR_FLAG:
-        case UCHAR_FLAG:
-        case SCHAR_FLAG:
-            ret = ptr2sv(aTHX_ subtype, ptr);
-            break;
         case WCHAR_FLAG: {
             size_t len = wcslen((wchar_t *)ptr);
             if (len) ret = wchar2utf(aTHX_(wchar_t *) ptr, len);

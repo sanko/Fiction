@@ -63,11 +63,12 @@ subtest 'affix functions' => sub {
 
     # TODO
     isa_ok Affix::affix( $lib, 'get_nested_offset', [], Size_t ), [qw[Affix]], 'get_nested_offset';
-    isa_ok Affix::affix( $lib, 'get_nested2_offset', [], Size_t ), [qw[Affix]], 'get_nested2_offset';
+    isa_ok Affix::affix( $lib, 'get_nested2_offset', [], Size_t ), [qw[Affix]],
+        'get_nested2_offset';
     isa_ok Affix::affix( $lib, 'get_nested_int', [ Example() ], Int ), [qw[Affix]],
         'get_nested_int';
-    isa_ok Affix::affix( $lib, 'get_nested_str', [Example()], String ), [qw[Affix]], 'get_nested_str';
-
+    isa_ok Affix::affix( $lib, 'get_nested_str', [ Example() ], String ), [qw[Affix]],
+        'get_nested_str';
 };
 my $struct = {
     bool      => !0,
@@ -86,7 +87,7 @@ my $struct = {
     ptr       => 'Anything can go here',
     str       => 'Something can go here too',
     struct    => { int => 4321, char => 'M' },
-    struct2   => { str => 'Whoa' }
+    struct2   => { str => 'Well, this would work.' }
 };
 #
 is Affix::Type::sizeof( Example() ), SIZEOF(),  'our size calculation vs platform';
@@ -110,13 +111,14 @@ is get_str($struct),          'Something can go here too',            'get_str( 
 use Data::Dump;
 
 #~ ddx Example()->[5][-1][4] = 72;
-is get_nested_int($struct), 4321, 'get_nested_int( $struct )';
-is get_nested_str($struct), 'Whoa', 'get_nested_str( $struct )';
+is get_nested_int($struct), 4321,                  'get_nested_int( $struct )';
+is get_nested_str($struct), 'Whoa',                'get_nested_str( $struct )';
+is get_nested_offset(),     Example()->[5][-2][4], 'get_nested_offset()';
+is get_nested2_offset(),    Example()->[5][-1][4], 'get_nested2_offset()';
 
-is get_nested_offset(), Example()->[5][-2][4], 'get_nested_offset()';
-is get_nested2_offset(), Example()->[5][-1][4], 'get_nested2_offset()';
 #~ die;
-ddx  get_struct();
+ddx get_struct();
+...;
 {
     #~ my $todo = todo "I'll get to it...";
     is get_struct(),
