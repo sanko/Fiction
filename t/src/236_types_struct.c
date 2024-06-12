@@ -15,6 +15,12 @@ typedef struct {
     double rate;
     int term; // months
 } TinyExample;
+#define offsetof_member(member_name)                                                               \
+    size_t offsetof_##member_name() {                                                              \
+        return offsetof(TinyExample, member_name);                                                 \
+    }
+
+offsetof_member(name);
 
 size_t offsetof_name_first() {
     return offsetof(TinyExample, name.first);
@@ -25,6 +31,21 @@ size_t offsetof_name_middle() {
 size_t offsetof_name_last() {
     return offsetof(TinyExample, name.last);
 }
+
+offsetof_member(dob);
+
+size_t offsetof_dob_y() {
+    return offsetof(TinyExample, dob.y);
+}
+size_t offsetof_dob_m() {
+    return offsetof(TinyExample, dob.m);
+}
+size_t offsetof_dob_d() {
+    return offsetof(TinyExample, dob.d);
+}
+
+offsetof_member(rate);
+offsetof_member(term);
 
 typedef struct {
     bool is_true;

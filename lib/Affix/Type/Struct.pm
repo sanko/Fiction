@@ -85,7 +85,7 @@ package Affix::Type::Struct 0.5 {
         if ( length $tail && $now->isa('Affix::Type::Struct') ) {
             return $now->offsetof($tail);
         }
-        $offset += $now->[Affix::SLOT_TYPE_OFFSET];
+        $offset += $now->[Affix::SLOT_TYPE_OFFSET] + ( $s->[Affix::SLOT_TYPE_OFFSET] // 0 );
         return $offset;
     }
 };

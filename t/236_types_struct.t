@@ -11,15 +11,21 @@ ok my $lib = compile_test_lib('236_types_struct'), 'build test lib';
 subtest TinyExample => sub {
     isa_ok my $type = Struct [
         name => Struct [ first => String, last => String, middle => Char ],
-
-        #~ dob  => Struct [ y     => Int,    m    => Int,    d      => Int ],
-        #~ rate => Double,
-        #~ term => Int       # month
+        dob  => Struct [ y     => Int,    m    => Int,    d      => Int ],
+        rate => Double,
+        term => Int       # month
         ],
         [ 'Affix::Type::Struct', 'Affix::Type' ];
+    is $type->offsetof('name'),        wrap( $lib, 'offsetof_name',        [], Size_t )->(), 'offsetof(name)';
     is $type->offsetof('name.first'),  wrap( $lib, 'offsetof_name_first',  [], Size_t )->(), 'offsetof(name.first)';
     is $type->offsetof('name.middle'), wrap( $lib, 'offsetof_name_middle', [], Size_t )->(), 'offsetof(name.middle)';
     is $type->offsetof('name.last'),   wrap( $lib, 'offsetof_name_last',   [], Size_t )->(), 'offsetof(name.last)';
+    is $type->offsetof('dob'),         wrap( $lib, 'offsetof_dob',         [], Size_t )->(), 'offsetof(dob)';
+    is $type->offsetof('dob.y'),       wrap( $lib, 'offsetof_dob_y',       [], Size_t )->(), 'offsetof(dob.y)';
+    is $type->offsetof('dob.m'),       wrap( $lib, 'offsetof_dob_m',       [], Size_t )->(), 'offsetof(dob.m)';
+    is $type->offsetof('dob.d'),       wrap( $lib, 'offsetof_dob_d',       [], Size_t )->(), 'offsetof(dob.d)';
+    is $type->offsetof('rate'),        wrap( $lib, 'offsetof_rate',        [], Size_t )->(), 'offsetof(rate)';
+    is $type->offsetof('term'),        wrap( $lib, 'offsetof_term',        [], Size_t )->(), 'offsetof(term)';
 };
 done_testing;
 exit;
