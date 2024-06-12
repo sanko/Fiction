@@ -36,35 +36,79 @@ package Affix::Type::Struct 0.5 {
                 #~ $sizeof +
                 #~ Affix::Platform::padding_needed_for( $sizeof + $__sizeof, $__align );
                 int( ( $sizeof + $__align - 1 ) / $__align ) * $__align;
+            warn sprintf '%10s => %d', $field, $subtype->[Affix::SLOT_TYPE_OFFSET];
 
             # offset
             $subtype->[Affix::SLOT_TYPE_FIELD] = $field;    # field name
+            #~ use Data::Dump;
+            #~ ddx $subtype;
             push @store, $subtype;
+            use Data::Dump;
+            ddx \@store;
             push @fields, sprintf '%s => %s', $field, $subtype;
 
-            #~ warn sprintf 'Before: struct size: %d, element size: %d, align: %d, offset: %d', $sizeof, $__sizeof, $__align,
-            #~ $subtype->[Affix::SLOT_TYPE_OFFSET];
-            #~ $sizeof += $__sizeof + Affix::Platform::padding_needed_for( $sizeof + $__sizeof, $__align );
+#~ warn sprintf 'Before: struct size: %d, element size: %d, align: %d, offset: %d', $sizeof, $__sizeof, $__align,
+#~ $subtype->[Affix::SLOT_TYPE_OFFSET];
+#~ $sizeof += $__sizeof + Affix::Platform::padding_needed_for( $sizeof + $__sizeof, $__align );
             $sizeof = $subtype->[Affix::SLOT_TYPE_OFFSET] + $__sizeof;
 
             #~ warn sprintf 'After:  struct size: %d, element size: %d', $sizeof, $__sizeof;
         }
+        #~ use Data::Dump;
+        #~ ddx \@store;
         bless [
-            sprintf( 'Struct[ %s ]', join ', ', @fields ),                                              # SLOT_TYPE_STRINGIFY
-            Affix::STRUCT_FLAG(),                                                                       # SLOT_TYPE_NUMERIC
-            $sizeof + Affix::Platform::padding_needed_for( $sizeof, Affix::Platform::BYTE_ALIGN() ),    # SLOT_TYPE_SIZEOF
-            Affix::Platform::BYTE_ALIGN(),                                                              # SLOT_TYPE_ALIGNMENT
-            undef,                                                                                      # SLOT_TYPE_OFFSET
-            \@store,                                                                                    # SLOT_TYPE_SUBTYPE
-            1,                                                                                          # SLOT_TYPE_ARRAYLEN
-            !1,                                                                                         # SLOT_TYPE_CONST
-            !1,                                                                                         # SLOT_TYPE_VOLATILE
-            !1,                                                                                         # SLOT_TYPE_RESTRICT
-            undef,                                                                                      # SLOT_TYPE_TYPEDEF
-            undef,                                                                                      # SLOT_TYPE_AGGREGATE
-            undef                                                                                       # SLOT_TYPE_FIELD
+            sprintf( 'Struct[ %s ]', join ', ', @fields ),    # SLOT_TYPE_STRINGIFY
+            Affix::STRUCT_FLAG(),                             # SLOT_TYPE_NUMERIC
+            $sizeof
+                + Affix::Platform::padding_needed_for( $sizeof, Affix::Platform::BYTE_ALIGN() )
+            ,                                                 # SLOT_TYPE_SIZEOF
+            Affix::Platform::BYTE_ALIGN(),                    # SLOT_TYPE_ALIGNMENT
+            undef,                                            # SLOT_TYPE_OFFSET
+            \@store,                                         # SLOT_TYPE_SUBTYPE
+            1,                                                # SLOT_TYPE_ARRAYLEN
+            !1,                                               # SLOT_TYPE_CONST
+            !1,                                               # SLOT_TYPE_VOLATILE
+            !1,                                               # SLOT_TYPE_RESTRICT
+            undef,                                            # SLOT_TYPE_TYPEDEF
+            undef,                                            # SLOT_TYPE_AGGREGATE
+            undef                                             # SLOT_TYPE_FIELD
             ],
             'Affix::Type::Struct';
+    }
+
+    sub offsetof {
+        my ( $s, $path ) = @_;
+        warn scalar $s;
+        warn $path;
+
+        my $offset = 0;
+        my ( $field, $tail ) = split '\.', $path, 2;
+        $field //= $path;
+         use Data::Dump;
+         ddx $s->[Affix::SLOT_TYPE_SUBTYPE];
+        my $now;
+        my $i = 0;
+        for my $element ( @{ $s->[Affix::SLOT_TYPE_SUBTYPE] } ){
+            use Data::Dump;
+            #~ ddx $element;
+            warn sprintf '----> [%d] %s vs %s',$i++,$element->[Affix::SLOT_TYPE_FIELD], $field;
+            $now = $element and last
+
+
+            if $element->[Affix::SLOT_TYPE_FIELD]eq $field;
+        }
+        use Data::Dump;
+        #~ ddx $now;
+        return () unless defined $now;
+        if ( length $tail
+
+        #~ && $now->isa('Affix::Type::Struct')
+        ) {
+            return $now->offsetof($tail);
+        }
+
+        $offset += $now->[Affix::SLOT_TYPE_OFFSET];
+        return $offset;
     }
 };
 1;

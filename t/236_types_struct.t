@@ -2,13 +2,42 @@ use Test2::V0 '!subtest';
 use Test2::Util::Importer 'Test2::Tools::Subtest' => ( subtest_streamed => { -as => 'subtest' } );
 BEGIN { chdir '../' if !-d 't'; }
 use lib '../lib', 'lib', '../blib/arch', '../blib/lib', 'blib/arch', 'blib/lib', '../../', '.';
-use Affix qw[:types];
+use Affix qw[:types wrap];
 $|++;
 use t::lib::helper;
 plan skip_all 'dyncall does not support passing aggregates by value on this platform'
     unless Affix::Platform::AggrByValue();
 #
 ok my $lib = compile_test_lib('236_types_struct'), 'build test lib';
+use Data::Dump;
+ddx
+ Affix::Type::Struct::Struct [
+            first => String,
+            last  => String,
+
+            #~ middle => Char
+        ];
+...;
+subtest TinyExample => sub {
+    isa_ok my $type = Struct [
+        name =>Int,
+
+        #~ dob  => Struct [ y     => Int,    m    => Int,    d      => Int ],
+        #~ rate => Double,
+        #~ term => Int       # month
+        ],
+        [ 'Affix::Type::Struct', 'Affix::Type' ];
+    use Data::Dump;
+    warn ddx $type;
+    ...;
+    is $type->offsetof('name.first'), wrap( $lib, 'offsetof_name_first', [], Size_t )->(),
+        'offsetof(name.first)';
+
+#~ is $type->offsetof('name.middle'), wrap( $lib, 'offsetof_name_middle', [], Size_t )->(), 'offsetof(name.middle)';
+#~ is $type->offsetof('name.last'),   wrap( $lib, 'offsetof_name_last',   [], Size_t )->(), 'offsetof(name.last)';
+};
+done_testing;
+exit;
 typedef Example => Struct [
     bool      => Bool,
     char      => Char,
@@ -25,8 +54,8 @@ typedef Example => Struct [
     double    => Double,
     ptr       => Pointer [Void],
     str       => String,
-    struct    => Struct [ int => Int, char => Char ],
-    struct2   => Struct [ str => String ]
+    struct    => Struct [ int  => Int, char => Char ],
+    struct2   => Struct [ str2 => String ]
 
     #~ TODO:
     #~ Union
@@ -37,9 +66,8 @@ typedef Example => Struct [
     #~ Pointer[SV]
     #~ Array
 ];
-
-#~ use Data::Dump;
-#~ ddx Example();
+use Data::Dump;
+ddx Example();
 subtest 'affix functions' => sub {
     isa_ok Affix::affix( $lib, 'SIZEOF',       [],            Size_t ), [qw[Affix]], 'SIZEOF';
     isa_ok Affix::affix( $lib, 'get_bool',     [ Example() ], Bool ),   [qw[Affix]], 'get_bool';

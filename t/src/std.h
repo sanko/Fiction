@@ -82,5 +82,5 @@ void _DumpHex(const void *addr, size_t len, const char *file, int line) {
         i++;
     }
     fprintf(stderr, " | %s\n", buff);
-    fflush(stdout);
+    fflush(stderr);
 }

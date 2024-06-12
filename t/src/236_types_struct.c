@@ -1,5 +1,22 @@
 #include "std.h"
 // ext: .c
+
+
+typedef struct{
+    struct {char * first; char * last; char middle;} name;
+    struct { int y; int m; int d; } dob;
+    double rate;
+    int term; // months
+}TinyExample;
+
+size_t offsetof_name_first(){return offsetof(TinyExample, name.first);}
+size_t offsetof_name_middle(){return offsetof(TinyExample, name.middle);}
+size_t offsetof_name_last(){return offsetof(TinyExample, name.last);}
+
+
+
+
+
 typedef struct {
     bool is_true;
     char ch;
@@ -15,7 +32,7 @@ typedef struct {
     float f;
     double d;
     void *ptr;
-    const char *str;
+     char *str;
     struct {
         int i;
         char c;
@@ -95,7 +112,7 @@ size_t get_nested2_offset() {
 }
 char* get_nested_str(Example ex) {
     warn("HERE! I! AM!");
-    if(!&ex) croak("UGH!!!");
+    //~ if(!&ex) croak("UGH!!!");
     warn("str2 is %s", ex.nested2.str2);
     return ex.nested2.str2;
 }
@@ -118,6 +135,12 @@ Example get_struct() {
                    .str = "Hello!",
                    .nested = {.i = 1111, .c = 'Q'},
                    .nested2 ={.str2 = "Alpha"}};
-    DumpHex(&(ret.nested2), sizeof(ret));
-    return ret;
+    DumpHex(&(ret), sizeof(ret));
+
+                   warn("------------------.str2 offset: %d", offsetof(Example, nested2.str2));
+                   //~ DumpHex(*(DCpointer*)ret.nested2, sizeof(ret.nested2));
+     DumpHex(ret.nested2.str2, 16);
+
+     DumpHex(&(ret.nested2), sizeof(ret.nested2));
+   return ret;
 }
