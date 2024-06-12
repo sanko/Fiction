@@ -2,12 +2,27 @@ use Test2::V0 '!subtest';
 use Test2::Util::Importer 'Test2::Tools::Subtest' => ( subtest_streamed => { -as => 'subtest' } );
 BEGIN { chdir '../' if !-d 't'; }
 use lib '../lib', 'lib', '../blib/arch', '../blib/lib', 'blib/arch', 'blib/lib', '../../', '.';
-use Affix qw[:types];
+use Affix qw[:types wrap];
 $|++;
 use t::lib::helper;
 plan skip_all 'dyncall does not support passing aggregates by value on this platform' unless Affix::Platform::AggrByValue();
 #
 ok my $lib = compile_test_lib('236_types_struct'), 'build test lib';
+subtest TinyExample => sub {
+    isa_ok my $type = Struct [
+        name => Struct [ first => String, last => String, middle => Char ],
+
+        #~ dob  => Struct [ y     => Int,    m    => Int,    d      => Int ],
+        #~ rate => Double,
+        #~ term => Int       # month
+        ],
+        [ 'Affix::Type::Struct', 'Affix::Type' ];
+    is $type->offsetof('name.first'),  wrap( $lib, 'offsetof_name_first',  [], Size_t )->(), 'offsetof(name.first)';
+    is $type->offsetof('name.middle'), wrap( $lib, 'offsetof_name_middle', [], Size_t )->(), 'offsetof(name.middle)';
+    is $type->offsetof('name.last'),   wrap( $lib, 'offsetof_name_last',   [], Size_t )->(), 'offsetof(name.last)';
+};
+done_testing;
+exit;
 typedef Example => Struct [
     bool      => Bool,
     char      => Char,
@@ -24,7 +39,8 @@ typedef Example => Struct [
     double    => Double,
     ptr       => Pointer [Void],
     str       => String,
-    struct    => Struct [ int => Int, char => Char ]
+    struct    => Struct [ int  => Int, char => Char ],
+    struct2   => Struct [ str2 => String ]
 
     #~ TODO:
     #~ Union
@@ -35,9 +51,8 @@ typedef Example => Struct [
     #~ Pointer[SV]
     #~ Array
 ];
-
-#~ use Data::Dump;
-#~ ddx Example();
+use Data::Dump;
+ddx Example();
 subtest 'affix functions' => sub {
     isa_ok Affix::affix( $lib, 'SIZEOF',        [],            Size_t ),         [qw[Affix]], 'SIZEOF';
     isa_ok Affix::affix( $lib, 'get_bool',      [ Example() ], Bool ),           [qw[Affix]], 'get_bool';
@@ -58,8 +73,10 @@ subtest 'affix functions' => sub {
     isa_ok Affix::affix( $lib, 'get_struct',    [],            Example() ),      [qw[Affix]], 'get_struct';
 
     # TODO
-    isa_ok Affix::affix( $lib, 'get_nested_offset', [],            Size_t ), [qw[Affix]], 'get_nested_offset';
-    isa_ok Affix::affix( $lib, 'get_nested_int',    [ Example() ], Int ),    [qw[Affix]], 'get_nested_int';
+    isa_ok Affix::affix( $lib, 'get_nested_offset',  [],            Size_t ), [qw[Affix]], 'get_nested_offset';
+    isa_ok Affix::affix( $lib, 'get_nested2_offset', [],            Size_t ), [qw[Affix]], 'get_nested2_offset';
+    isa_ok Affix::affix( $lib, 'get_nested_int',     [ Example() ], Int ),    [qw[Affix]], 'get_nested_int';
+    isa_ok Affix::affix( $lib, 'get_nested_str',     [ Example() ], String ), [qw[Affix]], 'get_nested_str';
 };
 my $struct = {
     bool      => !0,
@@ -77,7 +94,8 @@ my $struct = {
     double    => 1.2345,
     ptr       => 'Anything can go here',
     str       => 'Something can go here too',
-    struct    => { int => 4321, char => 'M' }
+    struct    => { int => 4321, char => 'M' },
+    struct2   => { str => 'Well, this would work.' }
 };
 #
 is Affix::Type::sizeof( Example() ), SIZEOF(),                               'our size calculation vs platform';
@@ -101,10 +119,14 @@ is get_str($struct),                 'Something can go here too',            'ge
 use Data::Dump;
 
 #~ ddx Example()->[5][-1][4] = 72;
-is get_nested_int($struct), 4321, 'get_nested_int( $struct )';
+is get_nested_int($struct), 4321,                  'get_nested_int( $struct )';
+is get_nested_str($struct), 'Whoa',                'get_nested_str( $struct )';
+is get_nested_offset(),     Example()->[5][-2][4], 'get_nested_offset()';
+is get_nested2_offset(),    Example()->[5][-1][4], 'get_nested2_offset()';
 
-#~ is get_nested_offset(), 2;
 #~ die;
+ddx get_struct();
+...;
 {
     #~ my $todo = todo "I'll get to it...";
     is get_struct(),
@@ -124,7 +146,8 @@ is get_nested_int($struct), 4321, 'get_nested_int( $struct )';
         ulong     => 97531,
         ulonglong => 9988776655,
         ushort    => 88,
-        struct    => { int => 1111, char => 'Q' }
+        struct    => { int => 1111, char => 'Q' },
+        struct2   => { str => 'Whoa?' }
         },
         'get_struct()';
 }

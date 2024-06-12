@@ -1,5 +1,31 @@
 #include "std.h"
 // ext: .c
+
+typedef struct {
+    struct {
+        char *first;
+        char *last;
+        char middle;
+    } name;
+    struct {
+        int y;
+        int m;
+        int d;
+    } dob;
+    double rate;
+    int term; // months
+} TinyExample;
+
+size_t offsetof_name_first() {
+    return offsetof(TinyExample, name.first);
+}
+size_t offsetof_name_middle() {
+    return offsetof(TinyExample, name.middle);
+}
+size_t offsetof_name_last() {
+    return offsetof(TinyExample, name.last);
+}
+
 typedef struct {
     bool is_true;
     char ch;
@@ -15,11 +41,14 @@ typedef struct {
     float f;
     double d;
     void *ptr;
-    const char *str;
+    char *str;
     struct {
         int i;
         char c;
     } nested;
+    struct {
+        char *str2;
+    } nested2;
     // TODO:
     // Union
     // Struct
@@ -81,13 +110,22 @@ const char *get_str(Example ex) {
 }
 
 // TODO:
+size_t get_nested_offset() {
+    return offsetof(Example, nested);
+}
 
 int get_nested_int(Example ex) {
     return ex.nested.i;
 }
 
-size_t get_nested_offset() {
-    return offsetof(Example, nested);
+size_t get_nested2_offset() {
+    return offsetof(Example, nested2);
+}
+char *get_nested_str(Example ex) {
+    warn("HERE! I! AM!");
+    //~ if(!&ex) croak("UGH!!!");
+    warn("str2 is %s", ex.nested2.str2);
+    return ex.nested2.str2;
 }
 
 Example get_struct() {
@@ -106,7 +144,14 @@ Example get_struct() {
                    .d = 9.7,
                    .ptr = NULL, // TODO
                    .str = "Hello!",
-                   .nested = {.i = 1111, .c = 'Q'}};
-    //~ DumpHex(&(ret.nested), 32);
+                   .nested = {.i = 1111, .c = 'Q'},
+                   .nested2 = {.str2 = "Alpha"}};
+    DumpHex(&(ret), sizeof(ret));
+
+    warn("------------------.str2 offset: %d", offsetof(Example, nested2.str2));
+    //~ DumpHex(*(DCpointer*)ret.nested2, sizeof(ret.nested2));
+    DumpHex(ret.nested2.str2, 16);
+
+    DumpHex(&(ret.nested2), sizeof(ret.nested2));
     return ret;
 }
