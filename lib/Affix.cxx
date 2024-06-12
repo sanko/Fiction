@@ -2247,6 +2247,7 @@ XS_EXTERNAL(boot_Affix) {
     export_constant("Affix", "SLOT_TYPE_SIZEOF", "flags", SLOT_TYPE_SIZEOF);
     export_constant("Affix", "SLOT_TYPE_ALIGNMENT", "flags", SLOT_TYPE_ALIGNMENT);
     export_constant("Affix", "SLOT_TYPE_OFFSET", "flags", SLOT_TYPE_OFFSET);
+    export_constant("Affix", "SLOT_TYPE_SUBTYPE", "flags", SLOT_TYPE_SUBTYPE);
     export_constant("Affix", "SLOT_TYPE_ARRAYLEN", "flags", SLOT_TYPE_ARRAYLEN);
     export_constant("Affix", "SLOT_TYPE_CONST", "flags", SLOT_TYPE_CONST);
     export_constant("Affix", "SLOT_TYPE_VOLATILE", "flags", SLOT_TYPE_VOLATILE);
