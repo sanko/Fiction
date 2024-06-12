@@ -27,8 +27,9 @@ subtest TinyExample => sub {
     is $type->offsetof('rate'),        wrap( $lib, 'offsetof_rate',        [], Size_t )->(), 'offsetof(rate)';
     is $type->offsetof('term'),        wrap( $lib, 'offsetof_term',        [], Size_t )->(), 'offsetof(term)';
 };
-done_testing;
-exit;
+
+#~ done_testing;
+#~ exit;
 typedef Example => Struct [
     bool      => Bool,
     char      => Char,
@@ -57,8 +58,6 @@ typedef Example => Struct [
     #~ Pointer[SV]
     #~ Array
 ];
-use Data::Dump;
-ddx Example();
 subtest 'affix functions' => sub {
     isa_ok Affix::affix( $lib, 'SIZEOF',        [],            Size_t ),         [qw[Affix]], 'SIZEOF';
     isa_ok Affix::affix( $lib, 'get_bool',      [ Example() ], Bool ),           [qw[Affix]], 'get_bool';
@@ -100,8 +99,8 @@ my $struct = {
     double    => 1.2345,
     ptr       => 'Anything can go here',
     str       => 'Something can go here too',
-    struct    => { int => 4321, char => 'M' },
-    struct2   => { str => 'Well, this would work.' }
+    struct    => { int  => 4321, char => 'M' },
+    struct2   => { str2 => 'Well, this would work.' }
 };
 #
 is Affix::Type::sizeof( Example() ), SIZEOF(),                               'our size calculation vs platform';
@@ -122,19 +121,15 @@ is get_ptr($struct)->raw(20),        'Anything can go here',                 'ge
 is get_str($struct),                 'Something can go here too',            'get_str( $struct )';
 
 #~ TODO
-use Data::Dump;
-
+#~ use Data::Dump;
 #~ ddx Example()->[5][-1][4] = 72;
-is get_nested_int($struct), 4321,                  'get_nested_int( $struct )';
-is get_nested_str($struct), 'Whoa',                'get_nested_str( $struct )';
-is get_nested_offset(),     Example()->[5][-2][4], 'get_nested_offset()';
-is get_nested2_offset(),    Example()->[5][-1][4], 'get_nested2_offset()';
+is get_nested_int($struct), 4321,                     'get_nested_int( $struct )';
+is get_nested_str($struct), 'Well, this would work.', 'get_nested_str( $struct )';
+is get_nested_offset(),     Example()->[5][-2][4],    'get_nested_offset()';
+is get_nested2_offset(),    Example()->[5][-1][4],    'get_nested2_offset()';
 
 #~ die;
-ddx get_struct();
-...;
 {
-    #~ my $todo = todo "I'll get to it...";
     is get_struct(),
         {
         bool      => T(),
@@ -152,8 +147,8 @@ ddx get_struct();
         ulong     => 97531,
         ulonglong => 9988776655,
         ushort    => 88,
-        struct    => { int => 1111, char => 'Q' },
-        struct2   => { str => 'Whoa?' }
+        struct    => { int  => 1111, char => 'Q' },
+        struct2   => { str2 => 'Alpha' }
         },
         'get_struct()';
 }

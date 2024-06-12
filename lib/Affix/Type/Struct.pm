@@ -36,8 +36,8 @@ package Affix::Type::Struct 0.5 {
                 #~ $sizeof +
                 #~ Affix::Platform::padding_needed_for( $sizeof + $__sizeof, $__align );
                 int( ( $sizeof + $__align - 1 ) / $__align ) * $__align;
-            warn sprintf '%10s => %d', $field, $subtype->[Affix::SLOT_TYPE_OFFSET];
 
+            #~ warn sprintf '%10s => %d', $field, $subtype->[Affix::SLOT_TYPE_OFFSET];
             # offset
             $subtype->[Affix::SLOT_TYPE_FIELD] = $field;     # field name
             push @store, bless [@$subtype], ref $subtype;    # clone
