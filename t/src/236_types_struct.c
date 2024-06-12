@@ -1,21 +1,30 @@
 #include "std.h"
 // ext: .c
 
-
-typedef struct{
-    struct {char * first; char * last; char middle;} name;
-    struct { int y; int m; int d; } dob;
+typedef struct {
+    struct {
+        char *first;
+        char *last;
+        char middle;
+    } name;
+    struct {
+        int y;
+        int m;
+        int d;
+    } dob;
     double rate;
     int term; // months
-}TinyExample;
+} TinyExample;
 
-size_t offsetof_name_first(){return offsetof(TinyExample, name.first);}
-size_t offsetof_name_middle(){return offsetof(TinyExample, name.middle);}
-size_t offsetof_name_last(){return offsetof(TinyExample, name.last);}
-
-
-
-
+size_t offsetof_name_first() {
+    return offsetof(TinyExample, name.first);
+}
+size_t offsetof_name_middle() {
+    return offsetof(TinyExample, name.middle);
+}
+size_t offsetof_name_last() {
+    return offsetof(TinyExample, name.last);
+}
 
 typedef struct {
     bool is_true;
@@ -32,12 +41,14 @@ typedef struct {
     float f;
     double d;
     void *ptr;
-     char *str;
+    char *str;
     struct {
         int i;
         char c;
     } nested;
-    struct {char* str2;} nested2;
+    struct {
+        char *str2;
+    } nested2;
     // TODO:
     // Union
     // Struct
@@ -110,7 +121,7 @@ int get_nested_int(Example ex) {
 size_t get_nested2_offset() {
     return offsetof(Example, nested2);
 }
-char* get_nested_str(Example ex) {
+char *get_nested_str(Example ex) {
     warn("HERE! I! AM!");
     //~ if(!&ex) croak("UGH!!!");
     warn("str2 is %s", ex.nested2.str2);
@@ -134,13 +145,13 @@ Example get_struct() {
                    .ptr = NULL, // TODO
                    .str = "Hello!",
                    .nested = {.i = 1111, .c = 'Q'},
-                   .nested2 ={.str2 = "Alpha"}};
+                   .nested2 = {.str2 = "Alpha"}};
     DumpHex(&(ret), sizeof(ret));
 
-                   warn("------------------.str2 offset: %d", offsetof(Example, nested2.str2));
-                   //~ DumpHex(*(DCpointer*)ret.nested2, sizeof(ret.nested2));
-     DumpHex(ret.nested2.str2, 16);
+    warn("------------------.str2 offset: %d", offsetof(Example, nested2.str2));
+    //~ DumpHex(*(DCpointer*)ret.nested2, sizeof(ret.nested2));
+    DumpHex(ret.nested2.str2, 16);
 
-     DumpHex(&(ret.nested2), sizeof(ret.nested2));
-   return ret;
+    DumpHex(&(ret.nested2), sizeof(ret.nested2));
+    return ret;
 }
