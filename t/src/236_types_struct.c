@@ -15,13 +15,10 @@ typedef struct {
     double rate;
     int term; // months
 } TinyExample;
-#define offsetof_member(member_name)                                                               \
-    size_t offsetof_##member_name() {                                                              \
-        return offsetof(TinyExample, member_name);                                                 \
-    }
 
-offsetof_member(name);
-
+size_t offsetof_name() {
+    return offsetof(TinyExample, name);
+}
 size_t offsetof_name_first() {
     return offsetof(TinyExample, name.first);
 }
@@ -31,9 +28,9 @@ size_t offsetof_name_middle() {
 size_t offsetof_name_last() {
     return offsetof(TinyExample, name.last);
 }
-
-offsetof_member(dob);
-
+size_t offsetof_dob() {
+    return offsetof(TinyExample, dob);
+}
 size_t offsetof_dob_y() {
     return offsetof(TinyExample, dob.y);
 }
@@ -43,9 +40,12 @@ size_t offsetof_dob_m() {
 size_t offsetof_dob_d() {
     return offsetof(TinyExample, dob.d);
 }
-
-offsetof_member(rate);
-offsetof_member(term);
+size_t offsetof_rate() {
+    return offsetof(TinyExample, rate);
+}
+size_t offsetof_term() {
+    return offsetof(TinyExample, term);
+}
 
 typedef struct {
     bool is_true;
@@ -143,9 +143,6 @@ size_t get_nested2_offset() {
     return offsetof(Example, nested2);
 }
 char *get_nested_str(Example ex) {
-    warn("HERE! I! AM!");
-    //~ if(!&ex) croak("UGH!!!");
-    warn("str2 is %s", ex.nested2.str2);
     return ex.nested2.str2;
 }
 
@@ -167,12 +164,5 @@ Example get_struct() {
                    .str = "Hello!",
                    .nested = {.i = 1111, .c = 'Q'},
                    .nested2 = {.str2 = "Alpha"}};
-    DumpHex(&(ret), sizeof(ret));
-
-    warn("------------------.str2 offset: %d", offsetof(Example, nested2.str2));
-    //~ DumpHex(*(DCpointer*)ret.nested2, sizeof(ret.nested2));
-    DumpHex(ret.nested2.str2, 16);
-
-    DumpHex(&(ret.nested2), sizeof(ret.nested2));
     return ret;
 }

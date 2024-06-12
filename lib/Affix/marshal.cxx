@@ -608,9 +608,6 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
             ;
     } break;
     case STRUCT_FLAG: {
-        warn("TODO: unmarshal struct");
-        DumpHex(ptr, AXT_TYPE_SIZEOF(type) * 5);
-        //~ DD(type);
         ret = newSV(0);
         HV *RETVAL_ = newHV_mortal();
         HV *_type = MUTABLE_HV(SvRV(type));
@@ -618,7 +615,6 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
         size_t field_count = av_count(fields);
         for (size_t i = 0; i < field_count; i++) {
             SV *subtype = *av_fetch(fields, i, 0);
-            DD(subtype);
             SV *val;
             DCpointer p = INT2PTR(DCpointer, PTR2IV(ptr) + AXT_TYPE_OFFSET(subtype));
             if (sv_derived_from(subtype, "Affix::Type::Pointer"))
