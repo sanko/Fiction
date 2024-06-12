@@ -8,7 +8,7 @@ use t::lib::helper;
 plan skip_all 'dyncall does not support passing aggregates by value on this platform' unless Affix::Platform::AggrByValue();
 #
 ok my $lib = compile_test_lib('236_types_struct'), 'build test lib';
-subtest TinyExample => sub {
+subtest offsetof => sub {
     isa_ok my $type = Struct [
         name => Struct [ first => String, last => String, middle => Char ],
         dob  => Struct [ y     => Int,    m    => Int,    d      => Int ],
@@ -119,14 +119,10 @@ is get_float($struct),               float( 3.14, tolerance => 0.000001 ),   'ge
 is get_double($struct),              float( 1.2345, tolerance => 0.000001 ), 'get_double( $struct )';
 is get_ptr($struct)->raw(20),        'Anything can go here',                 'get_ptr( $struct )';
 is get_str($struct),                 'Something can go here too',            'get_str( $struct )';
-
-#~ TODO
-#~ use Data::Dump;
-#~ ddx Example()->[5][-1][4] = 72;
-is get_nested_int($struct), 4321,                     'get_nested_int( $struct )';
-is get_nested_str($struct), 'Well, this would work.', 'get_nested_str( $struct )';
-is get_nested_offset(),     Example()->[5][-2][4],    'get_nested_offset()';
-is get_nested2_offset(),    Example()->[5][-1][4],    'get_nested2_offset()';
+is get_nested_int($struct),          4321,                                   'get_nested_int( $struct )';
+is get_nested_str($struct),          'Well, this would work.',               'get_nested_str( $struct )';
+is get_nested_offset(),              Example()->offsetof('struct'),          'get_nested_offset()';
+is get_nested2_offset(),             Example()->offsetof('struct2'),         'get_nested2_offset()';
 
 #~ die;
 {
