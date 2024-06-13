@@ -44,6 +44,18 @@ static MGVTBL pin_vtbl = {
     NULL      // local
 };
 
+void _pin(pTHX_ SV *sv, SV *type, DCpointer ptr) {
+
+    MAGIC *mg = sv_magicext(sv, NULL, PERL_MAGIC_ext, &pin_vtbl, NULL, 0);
+    {
+        var_ptr *_ptr;
+        Newx(_ptr, 1, var_ptr);
+        _ptr->ptr = ptr;
+        _ptr->type_sv = newSVsv(type);
+        mg->mg_ptr = (char *)_ptr;
+    }
+}
+
 XS_INTERNAL(Affix_pin) {
     dXSARGS;
     if (items != 4) croak_xs_usage(cv, "var, lib, symbol, type");
@@ -88,14 +100,7 @@ XS_INTERNAL(Affix_pin) {
     const char *symbol = (const char *)SvPV_nolen(ST(2));
     DCpointer ptr = dlFindSymbol(_lib, symbol);
     if (ptr == NULL) { croak("Failed to locate '%s'", symbol); }
-    MAGIC *mg = sv_magicext(ST(0), NULL, PERL_MAGIC_ext, &pin_vtbl, NULL, 0);
-    {
-        var_ptr *_ptr;
-        Newx(_ptr, 1, var_ptr);
-        _ptr->ptr = ptr;
-        _ptr->type_sv = newSVsv(ST(3));
-        mg->mg_ptr = (char *)_ptr;
-    }
+    _pin(aTHX_ ST(0), ST(3), ptr);
     XSRETURN_YES;
 }
 

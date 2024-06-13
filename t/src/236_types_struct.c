@@ -70,6 +70,16 @@ typedef struct {
     struct {
         char *str2;
     } nested2;
+    union
+    {
+        int i;
+        float f;
+    } u;
+    union
+    {
+        int i;
+        char *str;
+    } u2;
     // TODO:
     // Union
     // Struct
@@ -146,6 +156,14 @@ char *get_nested_str(Example ex) {
     return ex.nested2.str2;
 }
 
+size_t get_union2_offset() {
+    return offsetof(Example, u2);
+}
+
+size_t get_union2_str_offset() {
+    return offsetof(Example, u2.str);
+}
+
 Example get_struct() {
     Example ret = {.is_true = 1,
                    .ch = 'M',
@@ -163,6 +181,10 @@ Example get_struct() {
                    .ptr = NULL, // TODO
                    .str = "Hello!",
                    .nested = {.i = 1111, .c = 'Q'},
-                   .nested2 = {.str2 = "Alpha"}};
+                   .nested2 = {.str2 = "Alpha"},
+                   .u = {.f = 9876.123},
+                   .u2 = {.str = "Beta"}
+
+    };
     return ret;
 }

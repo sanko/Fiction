@@ -47,11 +47,11 @@ typedef Example => Struct [
     ptr       => Pointer [Void],
     str       => String,
     struct    => Struct [ int  => Int, char => Char ],
-    struct2   => Struct [ str2 => String ]
+    struct2   => Struct [ str2 => String ],
+    union     => Union [ i => Int, f   => Float ],
+    union2    => Union [ i => Int, str => String ]
 
     #~ TODO:
-    #~ Union
-    #~ Struct
     #~ WChar
     #~ WString
     #~ CodeRef
@@ -59,29 +59,29 @@ typedef Example => Struct [
     #~ Array
 ];
 subtest 'affix functions' => sub {
-    isa_ok Affix::affix( $lib, 'SIZEOF',        [],            Size_t ),         [qw[Affix]], 'SIZEOF';
-    isa_ok Affix::affix( $lib, 'get_bool',      [ Example() ], Bool ),           [qw[Affix]], 'get_bool';
-    isa_ok Affix::affix( $lib, 'get_char',      [ Example() ], Char ),           [qw[Affix]], 'get_char';
-    isa_ok Affix::affix( $lib, 'get_uchar',     [ Example() ], UChar ),          [qw[Affix]], 'get_uchar';
-    isa_ok Affix::affix( $lib, 'get_short',     [ Example() ], Short ),          [qw[Affix]], 'get_short';
-    isa_ok Affix::affix( $lib, 'get_ushort',    [ Example() ], UShort ),         [qw[Affix]], 'get_ushort';
-    isa_ok Affix::affix( $lib, 'get_int',       [ Example() ], Int ),            [qw[Affix]], 'get_int';
-    isa_ok Affix::affix( $lib, 'get_uint',      [ Example() ], UInt ),           [qw[Affix]], 'get_uint';
-    isa_ok Affix::affix( $lib, 'get_long',      [ Example() ], Long ),           [qw[Affix]], 'get_long';
-    isa_ok Affix::affix( $lib, 'get_ulong',     [ Example() ], ULong ),          [qw[Affix]], 'get_ulong';
-    isa_ok Affix::affix( $lib, 'get_longlong',  [ Example() ], LongLong ),       [qw[Affix]], 'get_longlong';
-    isa_ok Affix::affix( $lib, 'get_ulonglong', [ Example() ], ULongLong ),      [qw[Affix]], 'get_ulonglong';
-    isa_ok Affix::affix( $lib, 'get_float',     [ Example() ], Float ),          [qw[Affix]], 'get_float';
-    isa_ok Affix::affix( $lib, 'get_double',    [ Example() ], Double ),         [qw[Affix]], 'get_double';
-    isa_ok Affix::affix( $lib, 'get_ptr',       [ Example() ], Pointer [Void] ), [qw[Affix]], 'get_ptr';
-    isa_ok Affix::affix( $lib, 'get_str',       [ Example() ], String ),         [qw[Affix]], 'get_str';
-    isa_ok Affix::affix( $lib, 'get_struct',    [],            Example() ),      [qw[Affix]], 'get_struct';
-
-    # TODO
-    isa_ok Affix::affix( $lib, 'get_nested_offset',  [],            Size_t ), [qw[Affix]], 'get_nested_offset';
-    isa_ok Affix::affix( $lib, 'get_nested2_offset', [],            Size_t ), [qw[Affix]], 'get_nested2_offset';
-    isa_ok Affix::affix( $lib, 'get_nested_int',     [ Example() ], Int ),    [qw[Affix]], 'get_nested_int';
-    isa_ok Affix::affix( $lib, 'get_nested_str',     [ Example() ], String ), [qw[Affix]], 'get_nested_str';
+    isa_ok Affix::affix( $lib, 'SIZEOF',                [],            Size_t ),         [qw[Affix]], 'SIZEOF';
+    isa_ok Affix::affix( $lib, 'get_bool',              [ Example() ], Bool ),           [qw[Affix]], 'get_bool';
+    isa_ok Affix::affix( $lib, 'get_char',              [ Example() ], Char ),           [qw[Affix]], 'get_char';
+    isa_ok Affix::affix( $lib, 'get_uchar',             [ Example() ], UChar ),          [qw[Affix]], 'get_uchar';
+    isa_ok Affix::affix( $lib, 'get_short',             [ Example() ], Short ),          [qw[Affix]], 'get_short';
+    isa_ok Affix::affix( $lib, 'get_ushort',            [ Example() ], UShort ),         [qw[Affix]], 'get_ushort';
+    isa_ok Affix::affix( $lib, 'get_int',               [ Example() ], Int ),            [qw[Affix]], 'get_int';
+    isa_ok Affix::affix( $lib, 'get_uint',              [ Example() ], UInt ),           [qw[Affix]], 'get_uint';
+    isa_ok Affix::affix( $lib, 'get_long',              [ Example() ], Long ),           [qw[Affix]], 'get_long';
+    isa_ok Affix::affix( $lib, 'get_ulong',             [ Example() ], ULong ),          [qw[Affix]], 'get_ulong';
+    isa_ok Affix::affix( $lib, 'get_longlong',          [ Example() ], LongLong ),       [qw[Affix]], 'get_longlong';
+    isa_ok Affix::affix( $lib, 'get_ulonglong',         [ Example() ], ULongLong ),      [qw[Affix]], 'get_ulonglong';
+    isa_ok Affix::affix( $lib, 'get_float',             [ Example() ], Float ),          [qw[Affix]], 'get_float';
+    isa_ok Affix::affix( $lib, 'get_double',            [ Example() ], Double ),         [qw[Affix]], 'get_double';
+    isa_ok Affix::affix( $lib, 'get_ptr',               [ Example() ], Pointer [Void] ), [qw[Affix]], 'get_ptr';
+    isa_ok Affix::affix( $lib, 'get_str',               [ Example() ], String ),         [qw[Affix]], 'get_str';
+    isa_ok Affix::affix( $lib, 'get_struct',            [],            Example() ),      [qw[Affix]], 'get_struct';
+    isa_ok Affix::affix( $lib, 'get_nested_offset',     [],            Size_t ),         [qw[Affix]], 'get_nested_offset';
+    isa_ok Affix::affix( $lib, 'get_nested2_offset',    [],            Size_t ),         [qw[Affix]], 'get_nested2_offset';
+    isa_ok Affix::affix( $lib, 'get_nested_int',        [ Example() ], Int ),            [qw[Affix]], 'get_nested_int';
+    isa_ok Affix::affix( $lib, 'get_nested_str',        [ Example() ], String ),         [qw[Affix]], 'get_nested_str';
+    isa_ok Affix::affix( $lib, 'get_union2_offset',     [],            Size_t ),         [qw[Affix]], 'get_union2_offset';
+    isa_ok Affix::affix( $lib, 'get_union2_str_offset', [],            Size_t ),         [qw[Affix]], 'get_union2_str_offset';
 };
 my $struct = {
     bool      => !0,
@@ -100,7 +100,9 @@ my $struct = {
     ptr       => 'Anything can go here',
     str       => 'Something can go here too',
     struct    => { int  => 4321, char => 'M' },
-    struct2   => { str2 => 'Well, this would work.' }
+    struct2   => { str2 => 'Well, this would work.' },
+    union     => { f    => 1122233.009988 },
+    union2    => { str  => 'sheesh' }
 };
 #
 is Affix::Type::sizeof( Example() ), SIZEOF(),                               'our size calculation vs platform';
@@ -123,29 +125,29 @@ is get_nested_int($struct),          4321,                                   'ge
 is get_nested_str($struct),          'Well, this would work.',               'get_nested_str( $struct )';
 is get_nested_offset(),              Example()->offsetof('struct'),          'get_nested_offset()';
 is get_nested2_offset(),             Example()->offsetof('struct2'),         'get_nested2_offset()';
-
-#~ die;
-{
-    is get_struct(),
-        {
-        bool      => T(),
-        char      => 'M',
-        double    => float( 9.7, tolerance => 0.00001 ),
-        float     => float( 2.3, tolerance => 0.00001 ),
-        int       => 1123,
-        long      => 13579,
-        longlong  => 1122334455,
-        ptr       => U(),
-        short     => 35,
-        str       => 'Hello!',
-        uchar     => 'm',
-        uint      => 8890,
-        ulong     => 97531,
-        ulonglong => 9988776655,
-        ushort    => 88,
-        struct    => { int  => 1111, char => 'Q' },
-        struct2   => { str2 => 'Alpha' }
-        },
-        'get_struct()';
-}
+is get_union2_offset(),              Example()->offsetof('union2'),          'get_union2_offset()';
+is get_union2_str_offset(),          Example()->offsetof('union2.str'),      'get_union2_str_offset()';
+is get_struct(),
+    {
+    bool      => T(),
+    char      => 'M',
+    double    => float( 9.7, tolerance => 0.00001 ),
+    float     => float( 2.3, tolerance => 0.00001 ),
+    int       => 1123,
+    long      => 13579,
+    longlong  => 1122334455,
+    ptr       => U(),
+    short     => 35,
+    str       => 'Hello!',
+    uchar     => 'm',
+    uint      => 8890,
+    ulong     => 97531,
+    ulonglong => 9988776655,
+    ushort    => 88,
+    struct    => { int  => 1111, char => 'Q' },
+    struct2   => { str2 => 'Alpha' },
+    union     => hash { field f   => float( 9876.123, tolerance => 0.001 ); etc; },
+    union2    => hash { field str => 'Beta';                                etc; },
+    },
+    'get_struct()';
 done_testing;

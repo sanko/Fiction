@@ -406,6 +406,8 @@ struct fiction {
     bool aggr_restype;
 };
 
+void _pin(pTHX_ SV *sv, SV *type, DCpointer ptr); // pin.cxx
+
 // XS Boot
 void boot_Affix_pin(pTHX_ CV *);
 void boot_Affix_Pointer(pTHX_ CV *);

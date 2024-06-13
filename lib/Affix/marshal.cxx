@@ -422,7 +422,7 @@ DCpointer sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
             if (field_name_ptr == NULL) croak("Malformed Struct[...] field; missing field name");
             const char *field_name = SvPV(*field_name_ptr, len);
             if (UNLIKELY(!hv_exists(struct_hv, field_name, len)))
-                croak("Malformed Struct[...] field; missing '%s' field", field_name);
+                croak("Malformed Struct[...]; missing '%s' field", field_name);
             SV **field_data = hv_fetch(struct_hv, field_name, len, 0);
             if (UNLIKELY(sv_derived_from(field, "Affix::Type::Pointer"))) {
                 DCpointer ptr = sv2ptr(aTHX_ field, *field_data);
@@ -433,6 +433,38 @@ DCpointer sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
                 (void)sv2ptr(aTHX_ field, *field_data,
                              INT2PTR(DCpointer, PTR2IV(ret) + AXT_TYPE_OFFSET(field)));
         }
+    } break;
+    case UNION_FLAG: { // Kinda like STRUCT_FLAG but different
+        if (UNLIKELY(!SvROK(data) || SvTYPE(SvRV(data)) != SVt_PVHV)) {
+            warn("Expected a hash reference to marshal into a %s", AXT_TYPE_STRINGIFY(type));
+            return NULL;
+        }
+        if (ret == NULL) ret = safecalloc(1, AXT_TYPE_SIZEOF(type));
+        HV *struct_hv = MUTABLE_HV(SvRV(data));
+        AV *fields = MUTABLE_AV(SvRV(AXT_TYPE_SUBTYPE(type)));
+        size_t field_count = av_count(fields);
+        //~ warn("Trying to marshal struct with %d fields to a pointer", field_count);
+        bool okay = false;
+        STRLEN len;
+        for (size_t i = 0; i < field_count; ++i) {
+            SV *field = *av_fetch(fields, i, 0);
+            SV **field_name_ptr = AXT_TYPE_FIELD(field);
+            if (field_name_ptr == NULL) croak("Malformed Struct[...] field; missing field name");
+            if (field_name_ptr == NULL) continue;
+            const char *field_name = SvPV(*field_name_ptr, len);
+            if (LIKELY(!hv_exists(struct_hv, field_name, len))) continue;
+            okay = true;
+            SV **field_data = hv_fetch(struct_hv, field_name, len, 0);
+            if (UNLIKELY(sv_derived_from(field, "Affix::Type::Pointer"))) {
+                DCpointer ptr = sv2ptr(aTHX_ field, *field_data);
+                Move(&ptr, INT2PTR(DCpointer, PTR2IV(ret) + AXT_TYPE_OFFSET(field)),
+                     SIZEOF_INTPTR_T, char);
+            }
+            else
+                (void)sv2ptr(aTHX_ field, *field_data,
+                             INT2PTR(DCpointer, PTR2IV(ret) + AXT_TYPE_OFFSET(field)));
+        }
+        if (!okay) croak("Malformed Union[...] field; missing defined field");
     } break;
     default:
         croak("Attempt to marshal unknown/unhandled type in sv2ptr: %s", AXT_TYPE_STRINGIFY(type));
@@ -636,6 +668,26 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
                     val = ptr2sv(aTHX_ subtype, p);
                     break;
                 }
+            (void)hv_store_ent(RETVAL_, *AXT_TYPE_FIELD(subtype), val, 0);
+        }
+        SvSetSV(ret, newRV(MUTABLE_SV(RETVAL_)));
+    } break;
+    case UNION_FLAG: {
+        ret = newSV(0);
+        HV *RETVAL_ = newHV_mortal();
+        HV *_type = MUTABLE_HV(SvRV(type));
+        AV *fields = MUTABLE_AV(SvRV(AXT_TYPE_SUBTYPE(type)));
+        size_t field_count = av_count(fields);
+        for (size_t i = 0; i < field_count; i++) {
+            SV *subtype = *av_fetch(fields, i, 0);
+            SV *val = newSV(0);
+            DCpointer p = INT2PTR(DCpointer, PTR2IV(ptr) + AXT_TYPE_OFFSET(subtype));
+
+            if (sv_derived_from(subtype, "Affix::Type::Pointer"))
+                _pin(aTHX_ val, subtype, *(DCpointer *)p);
+            else
+                _pin(aTHX_ val, subtype, p);
+
             (void)hv_store_ent(RETVAL_, *AXT_TYPE_FIELD(subtype), val, 0);
         }
         SvSetSV(ret, newRV(MUTABLE_SV(RETVAL_)));

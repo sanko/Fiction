@@ -11,6 +11,7 @@ package Affix::Type 0.5 {
         }
     }
     use Affix::Type::Struct qw[:all];
+    use Affix::Type::Union  qw[:all];
     $Carp::Internal{ (__PACKAGE__) }++;
     use parent 'Exporter';
     our ( @EXPORT_OK, %EXPORT_TAGS );
@@ -153,27 +154,6 @@ package Affix::Type 0.5 {
     }
 
     # TODO: CPPStruct
-    sub Union : prototype($) {
-        my (@types) = @{ +shift };
-        my @fields;
-        my $sizeof    = 0;
-        my $alignment = 0;
-        my $packed    = 0;
-
-        #~ for my ( $field, $type )(@types) { # Perl 5.36
-        for ( my $i = 0; $i < $#types; $i += 2 ) {
-            my $field = $types[$i];
-            my $type  = $types[ $i + 1 ];
-            push @fields, sprintf '%s => %s', $field, $type;
-            my $__sizeof = $type->sizeof;
-            if ( $sizeof < $__sizeof ) {
-                $sizeof    = $__sizeof;
-                $alignment = $type->align;
-            }
-        }
-        Affix::Type::Union->new( sprintf( 'Union[ %s ]', join ', ', @fields ), Affix::UNION_FLAG(), $sizeof, $alignment, \@types );
-    }
-
     #~ $pkg, $str, $flag, $sizeof, $align, $offset, $subtype, $array_len
     sub CodeRef : prototype($) {
         my (@elements) = @{ +shift };
