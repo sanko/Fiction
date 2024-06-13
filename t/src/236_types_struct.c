@@ -1,4 +1,5 @@
 #include "std.h"
+#include "wchar.h"
 // ext: .c
 
 typedef struct {
@@ -80,6 +81,7 @@ typedef struct {
         int i;
         char *str;
     } u2;
+    wchar_t w;
     // TODO:
     // WChar
     // WString
@@ -162,6 +164,10 @@ size_t get_union2_str_offset() {
     return offsetof(Example, u2.str);
 }
 
+wchar_t get_wchar(Example ex) {
+    return ex.w;
+}
+
 Example get_struct() {
     Example ret = {.is_true = 1,
                    .ch = 'M',
@@ -181,8 +187,7 @@ Example get_struct() {
                    .nested = {.i = 1111, .c = 'Q'},
                    .nested2 = {.str2 = "Alpha"},
                    .u = {.f = 9876.123},
-                   .u2 = {.str = "Beta"}
-
-    };
+                   .u2 = {.str = "Beta"},
+                   .w = L'火'};
     return ret;
 }
