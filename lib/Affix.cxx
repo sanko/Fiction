@@ -383,11 +383,11 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
 #else
                     // dcArgChar(cvm, str[0]);
 #endif
-                    dcArgLong(cvm, str[0]);
+                    dcArgLongLong(cvm, str[0]);
                     safefree(str);
                 }
                 else
-                    dcArgInt(cvm, 0);
+                    dcArgLongLong(cvm, 0);
                 break;
             }
             case SHORT_FLAG:
@@ -468,7 +468,8 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
             }
             default:
                 //~ sv_dump(*av_fetch(a->argtypes, st_pos, 0));
-                croak("Unhandled type! %c", a->signature[sig_pos]);
+                croak("Unhandled argument type: %s",
+                      AXT_TYPE_STRINGIFY(*av_fetch(a->argtypes, st_pos, 0)));
             }
         }
     }
@@ -512,6 +513,9 @@ extern "C" void Fiction_trigger(pTHX_ CV *cv) {
         SvIOK_on(a->res);
     } break;
     case WCHAR_FLAG: {
+        warn("RETURNING WIDE "
+             "CHAR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+             "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         wchar_t src[1];
         src[0] = (wchar_t)dcCallLongLong(cvm, a->entry_point);
         a->res = wchar2utf(aTHX_ src, 1);
@@ -2084,6 +2088,7 @@ XS_INTERNAL(Affix_sv_dump) {
     sv_dump(sv);
     XSRETURN_EMPTY;
 }
+
 // Cribbed from Perl::Destruct::Level so leak testing works without yet another prereq
 XS_INTERNAL(Affix_set_destruct_level) {
     dVAR;
@@ -2094,28 +2099,102 @@ XS_INTERNAL(Affix_set_destruct_level) {
     XSRETURN_EMPTY;
 }
 
-//~ my ( $pkg, $str, $flag, $sizeof, $align, $offset, $subtype, $array_len, $field ) = @_;
 XS_INTERNAL(Affix_Type_new) {
     dVAR;
     dXSARGS;
-    if (items < 6 || items > 7)
-        croak_xs_usage(cv, "package, stringify, sizeof, alignment, offset, subtype, array_len, "
-                           "aggregate, typedef, cast");
-
-    Affix_Type *type;
-    Newxz(type, 1, Affix_Type);
-
-    SV *RETSV = sv_newmortal();
-    sv_setref_pv(RETSV, SvPV_nolen(ST(0)), (DCpointer)type);
-    ST(0) = RETSV;
-
-    type->stringify = SvPV_nolen(ST(1));
-    type->numeric = SvIV(ST(2));
-    type->size = SvIV(ST(3));
-    type->alignment = SvIV(ST(4));
-    type->offset = SvIV(ST(5));
-
+    if (items != 5) croak_xs_usage(cv, "package, stringify, flag, sizeof, alignment");
+    Affix_Type *type = new Affix_Type(SvPV_nolen(ST(1)), SvIV(ST(2)), SvIV(ST(3)), SvIV(ST(4)));
+    SV *RETVAL = sv_newmortal();
+    sv_setref_pv(RETVAL, SvPV_nolen(ST(0)), (DCpointer)type);
+    ST(0) = RETVAL;
     XSRETURN(1);
+}
+
+XS_INTERNAL(Affix_Type_offset) {
+    dXSARGS;
+    PERL_UNUSED_VAR(items);
+    Affix_Type *type;
+    type = INT2PTR(Affix_Type *, SvIV(SvRV(ST(0))));
+    croak("TODO: offset");
+    if (type != NULL) {}
+    XSRETURN_EMPTY;
+}
+
+XS_INTERNAL(Affix_Type_alignment) {
+    dXSARGS;
+    PERL_UNUSED_VAR(items);
+    Affix_Type *type;
+    type = INT2PTR(Affix_Type *, SvIV(SvRV(ST(0))));
+    if (type != NULL) XSRETURN_IV(type->alignment());
+    XSRETURN_EMPTY;
+}
+
+XS_INTERNAL(Affix_Type_stringify) {
+    dXSARGS;
+    PERL_UNUSED_VAR(items);
+    Affix_Type *type;
+    type = INT2PTR(Affix_Type *, SvIV(SvRV(ST(0))));
+    if (type != NULL) XSRETURN_PV(type->stringify());
+    XSRETURN_EMPTY;
+}
+
+XS_INTERNAL(Affix_Type_typedef) {
+    dXSARGS;
+    PERL_UNUSED_VAR(items);
+    Affix_Type *type;
+    type = INT2PTR(Affix_Type *, SvIV(SvRV(ST(0))));
+    croak("TODO: typedef");
+    if (type != NULL) {
+        //~ safefree(type);
+    }
+    XSRETURN_EMPTY;
+}
+
+XS_INTERNAL(Affix_Type_sizeof) {
+    dXSARGS;
+    PERL_UNUSED_VAR(items);
+    Affix_Type *type;
+    type = INT2PTR(Affix_Type *, SvIV(SvRV(ST(0))));
+    if (type != NULL) XSRETURN_IV(type->size);
+    XSRETURN_EMPTY;
+}
+
+XS_INTERNAL(Affix_Type_pointer) {
+    dXSARGS;
+    PERL_UNUSED_VAR(items);
+    Affix_Type *type;
+    type = INT2PTR(Affix_Type *, SvIV(SvRV(ST(0))));
+    if (type != NULL) {
+        switch (items) {
+        case 2:
+            type->pointer_flag = SvTRUE(ST(1));
+        // fallthrough
+        case 1:
+            XSRETURN_IV(type->pointer_flag);
+        default:
+            if (items != 5) croak_xs_usage(cv, "type, [flag]");
+        };
+    }
+    XSRETURN_EMPTY;
+}
+
+XS_INTERNAL(Affix_Type_const) {
+    dXSARGS;
+    PERL_UNUSED_VAR(items);
+    Affix_Type *type;
+    type = INT2PTR(Affix_Type *, SvIV(SvRV(ST(0))));
+    if (type != NULL) {
+        switch (items) {
+        case 2:
+            type->const_flag = SvTRUE(ST(1));
+        // fallthrough
+        case 1:
+            XSRETURN_IV(type->const_flag);
+        default:
+            if (items != 5) croak_xs_usage(cv, "type, [flag]");
+        };
+    }
+    XSRETURN_EMPTY;
 }
 
 XS_INTERNAL(Affix_Type_DESTROY) {
@@ -2123,13 +2202,7 @@ XS_INTERNAL(Affix_Type_DESTROY) {
     PERL_UNUSED_VAR(items);
     Affix_Type *type;
     type = INT2PTR(Affix_Type *, SvIV(SvRV(ST(0))));
-    if (type != NULL) {
-        warn("stringify: %s", type->stringify);
-        //~ safefree((DCpointer)type->stringify);
-        //~ if (type->subtype != NULL) safefree(type->subtype);
-        //~ if (type->aggregate != NULL) dcFreeAggr(type->aggregate);
-        safefree(type);
-    }
+    if (type != NULL) { delete type; }
     XSRETURN_EMPTY;
 }
 
@@ -2196,6 +2269,13 @@ XS_EXTERNAL(boot_Affix) {
     // Type system
     //~ my ( $pkg, $str, $flag, $sizeof, $align, $offset, $subtype, $array_len, $field ) = @_;
     (void)newXSproto_portable("Affix::Typex::new", Affix_Type_new, __FILE__, "$$$$$$");
+    (void)newXSproto_portable("Affix::Typex::sizeof", Affix_Type_sizeof, __FILE__, "$");
+    (void)newXSproto_portable("Affix::Typex::alignment", Affix_Type_alignment, __FILE__, "$");
+    (void)newXSproto_portable("Affix::Typex::offset", Affix_Type_offset, __FILE__, "$;$");
+    (void)newXSproto_portable("Affix::Typex::typedef", Affix_Type_typedef, __FILE__, "$$");
+    (void)newXSproto_portable("Affix::Typex::pointer", Affix_Type_pointer, __FILE__, "$;$");
+    (void)newXSproto_portable("Affix::Typex::const", Affix_Type_const, __FILE__, "$;$");
+    (void)newXSproto_portable("Affix::Typex::stringify", Affix_Type_stringify, __FILE__, "$$");
     (void)newXSproto_portable("Affix::Typex::DESTROY", Affix_Type_DESTROY, __FILE__, "$");
 
     // general purpose flags

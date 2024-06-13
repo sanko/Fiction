@@ -49,7 +49,6 @@ DCpointer sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
     case CHAR_FLAG:
     case SCHAR_FLAG: {
         if (SvOK(data)) {
-
             if (SvROK(data) && SvTYPE(SvRV(data)) == SVt_PVAV) {
                 AV *array = MUTABLE_AV(SvRV(data));
                 len = av_count(array);
@@ -398,12 +397,46 @@ DCpointer sv2ptr(pTHX_ SV *type, SV *data, DCpointer ret) {
 
     } break;
     case WCHAR_FLAG: {
+        /*
+        if (SvOK(data)) {
+            if (SvROK(data) && SvTYPE(SvRV(data)) == SVt_PVAV) {
+                AV *array = MUTABLE_AV(SvRV(data));
+                len = av_count(array);
+                if (ret == NULL) Newxz(ret, len, int);
+                char i;
+                for (size_t x = 0; x < len; ++x) {
+                    i = (char)SvIV(*av_fetch(array, x, 0));
+                    Copy(&i, INT2PTR(char *, PTR2IV(ret) + (x * SIZEOF_CHAR)), 1, char);
+                }
+            }
+            else {
+                char *i = SvUTF8(data) ? SvPVutf8(data, len) : SvPV(data, len);
+                if (ret == NULL) Newxz(ret, len + 1, char);
+                Copy(i, ret, len, char);
+            }
+        }
+        */
+
         STRLEN len;
+        warn("line %d", __LINE__);
         (void)SvPVutf8(data, len);
+        warn("line %d", __LINE__);
+
         wchar_t *value = utf2wchar(aTHX_ data, len + 1);
+        warn("line %d [value: %s]", __LINE__, value);
+
         len = wcslen(value);
-        Renew(ret, len + 1, wchar_t);
-        Copy(value, ret, len + 1, wchar_t);
+        warn("line %d [len: %d]", __LINE__, len);
+        DumpHex(ret, 16);
+
+        //~ Renew(ret, len, wchar_t);
+        DumpHex(ret, 16);
+
+        warn("line %d", __LINE__);
+
+        Copy(value, ret, len, wchar_t);
+        warn("line %d", __LINE__);
+
     } break;
     case STRUCT_FLAG: {
         if (UNLIKELY(!SvROK(data) || SvTYPE(SvRV(data)) != SVt_PVHV)) {
@@ -560,7 +593,14 @@ SV *ptr2sv(pTHX_ SV *type, DCpointer ptr) {
             break;
         case WCHAR_FLAG: {
             size_t len = wcslen((wchar_t *)ptr);
+
             if (len) ret = wchar2utf(aTHX_(wchar_t *) ptr, len);
+            //~ if(len == 1) {
+            //~ (void)SvUPGRADE(ret, SVt_PVNV);
+            //~ SvIV_set(ret, SvIV(wcstol(*(wchar_t *)ptr, INT2PTR(wchar_t *, PTR2IV(ptr) +
+            //SIZEOF_WCHAR), 1)));
+            //~ SvIOK_on(ret);
+            //~ }
         } break;
         default: {
             if (len == 1) { ret = ptr2sv(aTHX_ subtype, ptr); }
