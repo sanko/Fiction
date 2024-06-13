@@ -11,8 +11,8 @@ subtest offsetof => sub {
     isa_ok my $type = Struct [
         name => Struct [ first => String, last => String, middle => Char ],
         dob  => Struct [ y     => Int,    m    => Int,    d      => Int ],
-        rate => Double,
-        term => Int       # month
+        rate => Double,    # percentage
+        term => Int        # months
         ],
         [ 'Affix::Type::Struct', 'Affix::Type' ];
     is $type->offsetof('name'),        wrap( $lib, 'offsetof_name',        [], Size_t )->(), 'offsetof(name)';

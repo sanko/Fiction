@@ -81,8 +81,6 @@ typedef struct {
         char *str;
     } u2;
     // TODO:
-    // Union
-    // Struct
     // WChar
     // WString
     // CodeRef

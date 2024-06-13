@@ -49,7 +49,7 @@ double inline_c_sin(double in) {
 subtest 'verify' => sub {
     my $int = rand;
     my $sin = sin $int;
-    diag sprintf 'diag(%f) == %f', $int, $sin;
+    diag sprintf 'pow(%f) == %f', $int, $sin;
     is $sin_default->($int),     float( $sin, tolerance => 0.000000001 ), 'Affix coderef';
     is _affix_sin_default($int), float( $sin, tolerance => 0.000000001 ), 'Affix affix\'d';
     is ffi_sin($int),            float( $sin, tolerance => 0.000000001 ), 'FFI::Platypus attach';
