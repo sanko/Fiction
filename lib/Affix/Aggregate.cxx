@@ -96,9 +96,12 @@ DCaggr *_aggregate(pTHX_ SV *type) {
                 case CPPSTRUCT_FLAG:
                     dcAggrField(retval, DC_SIGCHAR_AGGREGATE, offset, 1, _aggregate(aTHX_ field));
                     break;
+                case WCHAR_FLAG:
+                    dcAggrField(retval, DC_SIGCHAR_LONGLONG, offset, 1);
+                    break;
                 default:
                     // TODO: WCHAR_FLAG
-                    croak("Unhandled type in Struct: %s", AXT_TYPE_STRINGIFY(field));
+                    croak("Unhandled type in aggregate: %s", AXT_TYPE_STRINGIFY(field));
                     break;
                 }
             }

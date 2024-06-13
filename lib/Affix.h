@@ -260,7 +260,8 @@ following address will be aligned to `alignment`. */
 #define SLOT_TYPE_RESTRICT 9
 #define SLOT_TYPE_TYPEDEF 10
 #define SLOT_TYPE_AGGREGATE 11
-#define SLOT_TYPE_FIELD 12 // Field name if in a Struct or Union
+#define SLOT_TYPE_FIELD 12   // Field name if in a Struct or Union
+#define SLOT_TYPE_POINTER 13 //
 
 #define SLOT_CODEREF_RET SLOT_TYPE_SUBTYPE
 #define SLOT_CODEREF_ARGS 12
@@ -292,23 +293,42 @@ following address will be aligned to `alignment`. */
 #define AXT_POINTER_COUNT(t) SvIV(*av_fetch(MUTABLE_AV(SvRV(t)), SLOT_POINTER_COUNT, 0))
 #define AXT_POINTER_POSITION(t) SvIV(*av_fetch(MUTABLE_AV(SvRV(t)), SLOT_POINTER_POSITION, 0))
 
-typedef struct {
-    const char *stringify;
+class Affix_Type
+{
+  public:
+    Affix_Type(const char *stringify, char numeric, size_t size, size_t alignment)
+        : _stringify(stringify), numeric(numeric), size(size), _alignment(alignment) {};
+    const char *stringify() {
+        char *ret = Perl_form_nocontext("%s%s%s", (const_flag ? "Const[ " : ""), _stringify,
+                                        (const_flag ? " ]" : ""));
+        for (size_t i = 0; i < pointer_depth; ++i)
+            ret = Perl_form_nocontext("Pointer[ %s ]", ret);
+        return ret;
+    };
+    size_t alignment(size_t depth = 0) {
+        return pointer_depth > depth ? ALIGNOF_INTPTR_T : _alignment;
+    }
+
+  public: // for now...
     char numeric;
+    bool const_flag = false;
+    bool volitile_flag = false;
+    bool restrict_flag = false;
+
+    size_t pointer_depth = 0;
     size_t size;
-    size_t alignment;
+    size_t _alignment;
     size_t offset;
-    void *subtype; // Affix_Type
     size_t arraylen;
-    bool const_flag;
-    bool volitile_flag;
-    bool restrict_flag;
+    const char *_stringify;
+    void *subtype; // Affix_Type
+
     const char *type_name;
     DCaggr *aggregate;
     void **args; // list of Affix_Type
     const char *sig;
     const char *field; // If part of a struct
-} Affix_Type;
+};
 
 typedef struct {
     intptr_t address;

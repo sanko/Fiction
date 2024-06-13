@@ -48,7 +48,8 @@ typedef Example => Struct [
     struct    => Struct [ int  => Int, char => Char ],
     struct2   => Struct [ str2 => String ],
     union     => Union [ i => Int, f   => Float ],
-    union2    => Union [ i => Int, str => String ]
+    union2    => Union [ i => Int, str => String ],
+    wchar     => WChar,
 
     #~ TODO:
     #~ WChar
@@ -87,6 +88,10 @@ subtest 'affix functions' => sub {
     };
     isa_ok Affix::affix( $lib, 'get_union2_offset',     [], Size_t ), [qw[Affix]], 'get_union2_offset';
     isa_ok Affix::affix( $lib, 'get_union2_str_offset', [], Size_t ), [qw[Affix]], 'get_union2_str_offset';
+    subtest 'more functions with aggregates' => sub {
+        plan skip_all 'dyncall does not support passing aggregates by value on this platform' unless Affix::Platform::AggrByValue();
+        isa_ok Affix::affix( $lib, 'get_wchar', [ Example() ], WChar ), [qw[Affix]], 'get_wchar';
+    };
 };
 my $struct = {
     bool      => !0,
@@ -107,9 +112,11 @@ my $struct = {
     struct    => { int  => 4321, char => 'M' },
     struct2   => { str2 => 'Well, this would work.' },
     union     => { f    => 1122233.009988 },
-    union2    => { str  => 'sheesh' }
+    union2    => { str  => 'sheesh' },
+    wchar     => 'ッ'
 };
 #
+#~ die pack 'i', ord 'ッ';
 is Affix::Type::sizeof( Example() ), SIZEOF(), 'our size calculation vs platform';
 subtest 'functions with aggregates' => sub {
     plan skip_all 'dyncall does not support passing aggregates by value on this platform' unless Affix::Platform::AggrByValue();
@@ -130,6 +137,7 @@ subtest 'functions with aggregates' => sub {
     is get_str($struct),          'Something can go here too',            'get_str( $struct )';
     is get_nested_int($struct),   4321,                                   'get_nested_int( $struct )';
     is get_nested_str($struct),   'Well, this would work.',               'get_nested_str( $struct )';
+    is get_wchar($struct),        'ッ',                                    'get_wchar( $struct )';
 };
 is get_nested_offset(),     Example()->offsetof('struct'),     'get_nested_offset()';
 is get_nested2_offset(),    Example()->offsetof('struct2'),    'get_nested2_offset()';
@@ -158,6 +166,7 @@ subtest 'the full monty' => sub {
         struct2   => { str2 => 'Alpha' },
         union     => hash { field f   => float( 9876.123, tolerance => 0.001 ); etc; },
         union2    => hash { field str => 'Beta';                                etc; },
+        wchar     => '火'
         },
         'get_struct()';
 };
